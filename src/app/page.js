@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -239,13 +240,13 @@ export default function Home() {
             ))}
           </nav>
 
-          <a
-            href="#cta"
+          <Link
+            href="/area-membros"
             className={`${primaryButtonClass} px-7 py-3 text-[13px]`}
             style={{ color: "#081200", WebkitTextFillColor: "#081200" }}
           >
             QUERO COMEÇAR AGORA!
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -291,13 +292,13 @@ export default function Home() {
             </div>
 
             <div className="mt-7">
-              <a
-                href="#cta"
+              <Link
+                href="/area-membros"
                 className={`${primaryButtonClass} flex h-[54px] w-full max-w-[560px] items-center justify-center text-[17px]`}
                 style={{ color: "#081200", WebkitTextFillColor: "#081200" }}
               >
                 QUERO APRENDER AGORA!
-              </a>
+              </Link>
 
               <div className="mt-4 flex items-center gap-3 text-[13px] text-white/70">
                 <span className="text-[#ffc63b]">🔒</span>
@@ -645,13 +646,13 @@ export default function Home() {
                 grátis em dinheiro real
               </p>
 
-              <a
-                href="#"
+              <Link
+                href="/area-membros"
                 className={`${primaryButtonClass} mt-5 inline-flex h-[50px] min-w-[290px] items-center justify-center px-8 text-[15px]`}
                 style={{ color: "#081200", WebkitTextFillColor: "#081200" }}
               >
                 QUERO COMEÇAR AGORA!
-              </a>
+              </Link>
 
               <div className="mt-3 text-[12px] text-white/62">
                 🔒 Acesso imediato • Garantia de 7 dias • Suporte incluso
