@@ -123,31 +123,47 @@ function ClockIcon({ className = "h-4 w-4" }) {
   );
 }
 
+function getStatusBadgeClass(status) {
+  if (status === "green") {
+    return "border-[#2c4720] bg-[rgba(141,241,38,0.08)] text-[#6ea900] dark:text-[#8df126]";
+  }
+
+  if (status === "red") {
+    return "border-[#4a2729] bg-[rgba(219,143,143,0.08)] text-[#b85d5d] dark:text-[#db8f8f]";
+  }
+
+  if (status === "cashout") {
+    return "border-[#7b6d20] bg-[rgba(234,214,99,0.12)] text-[#8a7410] dark:border-[#3b3a20] dark:bg-[rgba(234,214,99,0.08)] dark:text-[#ead663]";
+  }
+
+  return "border-slate-200 bg-slate-100 text-slate-700 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72";
+}
+
 function StatCard({ label, value, meta, icon, tone = "default" }) {
   const iconTone =
     tone === "green"
       ? "text-[#8df126]"
       : tone === "red"
       ? "text-[#db8f8f]"
-      : "text-[#86a5cf]";
+      : "text-sky-600 dark:text-[#86a5cf]";
 
   return (
-    <div className="rounded-[24px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-5 shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
+    <div className="rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-[0_14px_30px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/32">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-500 dark:text-white/32">
             {label}
           </p>
-          <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-white">
+          <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
             {value}
           </h3>
           <p
             className={`mt-3 text-[13px] font-medium ${
               tone === "green"
-                ? "text-[#8df126]"
+                ? "text-[#6ea900] dark:text-[#8df126]"
                 : tone === "red"
-                ? "text-[#db8f8f]"
-                : "text-white/52"
+                ? "text-[#b85d5d] dark:text-[#db8f8f]"
+                : "text-slate-500 dark:text-white/52"
             }`}
           >
             {meta}
@@ -155,7 +171,7 @@ function StatCard({ label, value, meta, icon, tone = "default" }) {
         </div>
 
         <div
-          className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/[0.06] bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] ${iconTone}`}
+          className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] ${iconTone}`}
         >
           {icon}
         </div>
@@ -166,33 +182,37 @@ function StatCard({ label, value, meta, icon, tone = "default" }) {
 
 function TopMiniCard({ label, value }) {
   return (
-    <div className="rounded-[18px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] px-4 py-4 shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/34">
+    <div className="rounded-[18px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-white/34">
         {label}
       </div>
-      <div className="mt-2 text-[24px] font-black tracking-[-0.05em] text-white">
+      <div className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
         {value}
       </div>
     </div>
   );
 }
 
-function Input({ label, ...props }) {
+function Input({ label, className = "", ...props }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.08em] text-white/42">
+      <span className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-white/42">
         {label}
       </span>
       <input
         {...props}
-        className="h-12 w-full rounded-[16px] border border-white/[0.06] bg-[rgba(255,255,255,0.03)] px-4 text-[14px] text-white outline-none transition placeholder:text-white/20 focus:border-[#8df126]/50 focus:bg-[rgba(255,255,255,0.04)]"
+        className={`h-12 w-full rounded-[16px] border border-slate-200 bg-white px-4 text-[14px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#8df126]/50 focus:bg-white dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white dark:placeholder:text-white/20 dark:focus:bg-[rgba(255,255,255,0.04)] ${className}`}
       />
     </label>
   );
 }
 
 function EmptyState({ text }) {
-  return <div className="px-4 py-10 text-center text-[14px] text-white/42">{text}</div>;
+  return (
+    <div className="px-4 py-10 text-center text-[14px] text-slate-500 dark:text-white/42">
+      {text}
+    </div>
+  );
 }
 
 function PaginationControls({ page, totalPages, onPageChange }) {
@@ -200,9 +220,9 @@ function PaginationControls({ page, totalPages, onPageChange }) {
 
   return (
     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-[13px] text-white/42">
-        Página <span className="font-semibold text-white">{page}</span> de{" "}
-        <span className="font-semibold text-white">{totalPages}</span>
+      <p className="text-[13px] text-slate-500 dark:text-white/42">
+        Página <span className="font-semibold text-slate-900 dark:text-white">{page}</span> de{" "}
+        <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -210,7 +230,7 @@ function PaginationControls({ page, totalPages, onPageChange }) {
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page === 1}
-          className="inline-flex h-10 items-center rounded-[12px] border border-white/[0.06] bg-white/[0.03] px-4 text-[13px] font-semibold text-white/78 transition hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-10 items-center rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/78 dark:hover:bg-white/[0.05]"
         >
           Anterior
         </button>
@@ -226,8 +246,8 @@ function PaginationControls({ page, totalPages, onPageChange }) {
               onClick={() => onPageChange(pageNumber)}
               className={`inline-flex h-10 w-10 items-center justify-center rounded-[12px] border text-[13px] font-bold transition ${
                 active
-                  ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#8df126]"
-                  : "border-white/[0.06] bg-white/[0.03] text-white/72 hover:bg-white/[0.05]"
+                  ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#6ea900] dark:text-[#8df126]"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72 dark:hover:bg-white/[0.05]"
               }`}
             >
               {pageNumber}
@@ -239,7 +259,7 @@ function PaginationControls({ page, totalPages, onPageChange }) {
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page === totalPages}
-          className="inline-flex h-10 items-center rounded-[12px] border border-white/[0.06] bg-white/[0.03] px-4 text-[13px] font-semibold text-white/78 transition hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-10 items-center rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/78 dark:hover:bg-white/[0.05]"
         >
           Próxima
         </button>
@@ -289,26 +309,28 @@ function EntriesTable({
     activeCashoutSection === sectionKey && cashoutTarget !== null;
 
   return (
-    <div className="rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
+    <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
       <div className="flex flex-col gap-2">
-        <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+        <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
           Planilha
         </p>
-        <h2 className="text-[24px] font-black tracking-[-0.05em] text-white">{title}</h2>
-        <p className="text-[13px] text-white/44">{subtitle}</p>
+        <h2 className="text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
+          {title}
+        </h2>
+        <p className="text-[13px] text-slate-500 dark:text-white/44">{subtitle}</p>
       </div>
 
       {showCashoutPanel ? (
-        <div className="mt-6 rounded-[22px] border border-[#3b3a20] bg-[rgba(234,214,99,0.08)] p-4">
+        <div className="mt-6 rounded-[22px] border border-[#d6c565] bg-[rgba(234,214,99,0.12)] p-4 dark:border-[#3b3a20] dark:bg-[rgba(234,214,99,0.08)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#ead663]">
+              <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8a7410] dark:text-[#ead663]">
                 Cashout
               </p>
-              <h3 className="mt-2 truncate text-[18px] font-black text-white">
+              <h3 className="mt-2 truncate text-[18px] font-black text-slate-900 dark:text-white">
                 {cashoutTarget.event}
               </h3>
-              <p className="mt-1 text-[13px] text-white/56">
+              <p className="mt-1 text-[13px] text-slate-600 dark:text-white/56">
                 Stake {formatCurrency(calculateEntryResult(cashoutTarget).stake)} • Odd{" "}
                 {calculateEntryResult(cashoutTarget).odd.toFixed(2).replace(".", ",")}
               </p>
@@ -336,7 +358,7 @@ function EntriesTable({
               <button
                 type="button"
                 onClick={onCancelCashout}
-                className="inline-flex h-12 items-center justify-center rounded-[16px] border border-white/[0.06] bg-[rgba(255,255,255,0.03)] px-5 text-[14px] font-semibold text-white/78"
+                className="inline-flex h-12 items-center justify-center rounded-[16px] border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white/78 dark:hover:bg-[rgba(255,255,255,0.05)]"
               >
                 Cancelar
               </button>
@@ -345,33 +367,33 @@ function EntriesTable({
         </div>
       ) : null}
 
-      <div className="mt-6 overflow-hidden rounded-[22px] border border-white/[0.06]">
+      <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 dark:border-white/[0.06]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1120px]">
-            <thead className="bg-[rgba(255,255,255,0.03)]">
+            <thead className="bg-slate-50 dark:bg-[rgba(255,255,255,0.03)]">
               <tr className="text-left">
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                   Data
                 </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                   Evento
                 </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                   Stake
                 </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                   Odd
                 </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                   Status
                 </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                   Retorno
                 </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                   Lucro
                 </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                   Ações
                 </th>
               </tr>
@@ -390,44 +412,49 @@ function EntriesTable({
                   const status = getStatusMeta(entry.status);
 
                   return (
-                    <tr key={entry.id} className="border-t border-white/[0.06]">
-                      <td className="px-4 py-4 text-[14px] text-white/76">
+                    <tr
+                      key={entry.id}
+                      className="border-t border-slate-200 dark:border-white/[0.06]"
+                    >
+                      <td className="px-4 py-4 text-[14px] text-slate-600 dark:text-white/76">
                         {formatDate(entry.date)}
                       </td>
 
                       <td className="px-4 py-4">
-                        <div className="max-w-[250px] truncate text-[14px] font-semibold text-white">
+                        <div className="max-w-[250px] truncate text-[14px] font-semibold text-slate-900 dark:text-white">
                           {entry.event}
                         </div>
                       </td>
 
-                      <td className="px-4 py-4 text-[14px] font-semibold text-white">
+                      <td className="px-4 py-4 text-[14px] font-semibold text-slate-900 dark:text-white">
                         {formatCurrency(result.stake)}
                       </td>
 
-                      <td className="px-4 py-4 text-[14px] text-white/82">
+                      <td className="px-4 py-4 text-[14px] text-slate-700 dark:text-white/82">
                         {result.odd.toFixed(2).replace(".", ",")}
                       </td>
 
                       <td className="px-4 py-4">
                         <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-bold ${status.className}`}
+                          className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-bold ${getStatusBadgeClass(
+                            entry.status
+                          )}`}
                         >
                           {status.label}
                         </span>
                       </td>
 
-                      <td className="px-4 py-4 text-[14px] text-white/82">
+                      <td className="px-4 py-4 text-[14px] text-slate-700 dark:text-white/82">
                         {entry.status === "pending" ? "--" : formatCurrency(result.retorno)}
                       </td>
 
                       <td
                         className={`px-4 py-4 text-[14px] font-bold ${
                           result.lucro > 0
-                            ? "text-[#8df126]"
+                            ? "text-[#6ea900] dark:text-[#8df126]"
                             : result.lucro < 0
-                            ? "text-[#db8f8f]"
-                            : "text-white/60"
+                            ? "text-[#b85d5d] dark:text-[#db8f8f]"
+                            : "text-slate-500 dark:text-white/60"
                         }`}
                       >
                         {entry.status === "pending"
@@ -440,7 +467,7 @@ function EntriesTable({
                           <button
                             type="button"
                             onClick={() => onStatusChange(entry.id, "green", sectionKey)}
-                            className="h-8 rounded-[9px] border border-[#2c4720] bg-[rgba(141,241,38,0.08)] px-3 text-[11px] font-bold text-[#8df126]"
+                            className="h-8 rounded-[9px] border border-[#2c4720] bg-[rgba(141,241,38,0.08)] px-3 text-[11px] font-bold text-[#6ea900] dark:text-[#8df126]"
                           >
                             Green
                           </button>
@@ -448,7 +475,7 @@ function EntriesTable({
                           <button
                             type="button"
                             onClick={() => onStatusChange(entry.id, "red", sectionKey)}
-                            className="h-8 rounded-[9px] border border-[#4a2729] bg-[rgba(219,143,143,0.08)] px-3 text-[11px] font-bold text-[#db8f8f]"
+                            className="h-8 rounded-[9px] border border-[#4a2729] bg-[rgba(219,143,143,0.08)] px-3 text-[11px] font-bold text-[#b85d5d] dark:text-[#db8f8f]"
                           >
                             Red
                           </button>
@@ -456,7 +483,7 @@ function EntriesTable({
                           <button
                             type="button"
                             onClick={() => onStatusChange(entry.id, "cashout", sectionKey)}
-                            className="h-8 rounded-[9px] border border-[#3b3a20] bg-[rgba(234,214,99,0.08)] px-3 text-[11px] font-bold text-[#ead663]"
+                            className="h-8 rounded-[9px] border border-[#7b6d20] bg-[rgba(234,214,99,0.12)] px-3 text-[11px] font-bold text-[#8a7410] dark:border-[#3b3a20] dark:bg-[rgba(234,214,99,0.08)] dark:text-[#ead663]"
                           >
                             Cashout
                           </button>
@@ -466,7 +493,7 @@ function EntriesTable({
                               type="button"
                               title="Voltar para pendente"
                               onClick={() => onStatusChange(entry.id, "pending", sectionKey)}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-white/[0.06] bg-white/[0.03] text-white/70"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/70 dark:hover:bg-white/[0.05]"
                             >
                               <ClockIcon className="h-4 w-4" />
                             </button>
@@ -476,7 +503,7 @@ function EntriesTable({
                             type="button"
                             title="Excluir aposta"
                             onClick={() => onDelete(entry.id)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-white/[0.06] bg-white/[0.03] text-white/60"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/60 dark:hover:bg-white/[0.05]"
                           >
                             <TrashIcon className="h-4 w-4" />
                           </button>
@@ -750,24 +777,24 @@ export default function BancaPage() {
   }
 
   return (
-    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[#08111b] text-white">
+    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-transparent text-slate-900 dark:text-white">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(92,126,176,0.16),transparent_22%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_18%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(59,130,246,0.10),transparent_24%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.08),transparent_20%),linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] dark:bg-[radial-gradient(circle_at_12%_8%,rgba(92,126,176,0.16),transparent_22%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_18%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
       </div>
 
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
         <section className="mx-auto max-w-[1550px] px-5 py-6 md:px-8">
-          <div className="flex flex-col gap-4 rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(16,25,37,0.92)_0%,rgba(13,21,32,0.92)_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.20)] lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.92)_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] lg:flex-row lg:items-center lg:justify-between dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,rgba(16,25,37,0.92)_0%,rgba(13,21,32,0.92)_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.20)]">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#8df126]">
+              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#6ea900] dark:text-[#8df126]">
                 Gestão de banca
               </p>
 
-              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-white">
+              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-slate-900 dark:text-white">
                 Planilha da banca
               </h1>
 
-              <p className="mt-2 text-[14px] text-white/48">
+              <p className="mt-2 text-[14px] text-slate-500 dark:text-white/48">
                 Salve apostas rápido e depois marque como green, red ou cashout.
               </p>
             </div>
@@ -775,7 +802,7 @@ export default function BancaPage() {
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href="/area-membros/estatisticas"
-                className="inline-flex h-12 items-center gap-2 rounded-[16px] border border-white/[0.06] bg-[rgba(255,255,255,0.03)] px-5 text-[14px] font-semibold text-white/84 transition hover:bg-[rgba(255,255,255,0.05)]"
+                className="inline-flex h-12 items-center gap-2 rounded-[16px] border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white/84 dark:hover:bg-[rgba(255,255,255,0.05)]"
               >
                 <ChartIcon className="h-4 w-4" />
                 Estatísticas
@@ -796,7 +823,7 @@ export default function BancaPage() {
           </div>
 
           {message ? (
-            <div className="mt-4 rounded-[18px] border border-[#2c4720] bg-[rgba(141,241,38,0.08)] px-4 py-3 text-[14px] font-medium text-[#8df126]">
+            <div className="mt-4 rounded-[18px] border border-[#2c4720] bg-[rgba(141,241,38,0.08)] px-4 py-3 text-[14px] font-medium text-[#6ea900] dark:text-[#8df126]">
               {message}
             </div>
           ) : null}
@@ -854,16 +881,16 @@ export default function BancaPage() {
           <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
             <div
               id="nova-aposta-card"
-              className="self-start rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.22)]"
+              className="self-start rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]"
             >
               <div className="mb-6">
-                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
                   Nova aposta
                 </p>
-                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-white">
+                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
                   Registrar entrada
                 </h2>
-                <p className="mt-2 text-[14px] text-white/46">
+                <p className="mt-2 text-[14px] text-slate-500 dark:text-white/46">
                   Preencha apenas o essencial para salvar rápido.
                 </p>
               </div>
@@ -921,7 +948,7 @@ export default function BancaPage() {
                         date: getTodayInputValue(),
                       })
                     }
-                    className="inline-flex h-12 items-center rounded-[16px] border border-white/[0.06] bg-[rgba(255,255,255,0.03)] px-5 text-[14px] font-semibold text-white/76 transition hover:bg-[rgba(255,255,255,0.05)]"
+                    className="inline-flex h-12 items-center rounded-[16px] border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white/76 dark:hover:bg-[rgba(255,255,255,0.05)]"
                   >
                     Limpar
                   </button>
@@ -929,12 +956,12 @@ export default function BancaPage() {
               </form>
             </div>
 
-            <aside className="self-start rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
-              <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+            <aside className="self-start rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
+              <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
                 Configuração
               </p>
 
-              <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-white">
+              <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
                 Banca inicial
               </h2>
 
@@ -957,7 +984,7 @@ export default function BancaPage() {
               <button
                 type="button"
                 onClick={handleSaveInitialBankroll}
-                className="mt-5 inline-flex h-12 items-center rounded-[16px] border border-white/[0.06] bg-[rgba(255,255,255,0.03)] px-5 text-[14px] font-semibold text-white/82 transition hover:bg-[rgba(255,255,255,0.05)]"
+                className="mt-5 inline-flex h-12 items-center rounded-[16px] border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white/82 dark:hover:bg-[rgba(255,255,255,0.05)]"
               >
                 Salvar banca inicial
               </button>

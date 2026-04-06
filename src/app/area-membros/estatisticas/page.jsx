@@ -75,24 +75,40 @@ function TicketIcon({ className = "h-5 w-5" }) {
   );
 }
 
+function getStatusBadgeClass(status) {
+  if (status === "green") {
+    return "border-[#2c4720] bg-[rgba(141,241,38,0.08)] text-[#6ea900] dark:text-[#8df126]";
+  }
+
+  if (status === "red") {
+    return "border-[#4a2729] bg-[rgba(219,143,143,0.08)] text-[#b85d5d] dark:text-[#db8f8f]";
+  }
+
+  if (status === "cashout") {
+    return "border-[#7b6d20] bg-[rgba(234,214,99,0.12)] text-[#8a7410] dark:border-[#3b3a20] dark:bg-[rgba(234,214,99,0.08)] dark:text-[#ead663]";
+  }
+
+  return "border-slate-200 bg-slate-100 text-slate-700 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72";
+}
+
 function StatCard({ label, value, meta, tone = "default", icon }) {
   return (
-    <div className="rounded-[24px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-5 shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
+    <div className="rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-[0_14px_30px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/32">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-500 dark:text-white/32">
             {label}
           </p>
-          <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-white">
+          <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
             {value}
           </h3>
           <p
             className={`mt-3 text-[13px] font-medium ${
               tone === "green"
-                ? "text-[#8df126]"
+                ? "text-[#6ea900] dark:text-[#8df126]"
                 : tone === "red"
-                ? "text-[#db8f8f]"
-                : "text-white/52"
+                ? "text-[#b85d5d] dark:text-[#db8f8f]"
+                : "text-slate-500 dark:text-white/52"
             }`}
           >
             {meta}
@@ -100,12 +116,12 @@ function StatCard({ label, value, meta, tone = "default", icon }) {
         </div>
 
         <div
-          className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/[0.06] bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] ${
+          className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] ${
             tone === "green"
               ? "text-[#8df126]"
               : tone === "red"
               ? "text-[#db8f8f]"
-              : "text-[#86a5cf]"
+              : "text-sky-600 dark:text-[#86a5cf]"
           }`}
         >
           {icon}
@@ -118,12 +134,12 @@ function StatCard({ label, value, meta, tone = "default", icon }) {
 function SummaryPill({ label, value, tone = "neutral" }) {
   const toneClass =
     tone === "green"
-      ? "border-[#2c4720] bg-[linear-gradient(180deg,#132012_0%,#111a12_100%)] text-[#8df126]"
+      ? "border-[#b9dea2] bg-[linear-gradient(180deg,#f3fde9_0%,#edf8e6_100%)] text-[#6ea900] dark:border-[#2c4720] dark:bg-[linear-gradient(180deg,#132012_0%,#111a12_100%)] dark:text-[#8df126]"
       : tone === "red"
-      ? "border-[#4a2729] bg-[linear-gradient(180deg,#1b1214_0%,#171012_100%)] text-[#db8f8f]"
+      ? "border-[#e6b8bb] bg-[linear-gradient(180deg,#fff3f4_0%,#fceced_100%)] text-[#b85d5d] dark:border-[#4a2729] dark:bg-[linear-gradient(180deg,#1b1214_0%,#171012_100%)] dark:text-[#db8f8f]"
       : tone === "yellow"
-      ? "border-[#3b3a20] bg-[linear-gradient(180deg,#1c1a10_0%,#17150e_100%)] text-[#ead663]"
-      : "border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] text-white/78";
+      ? "border-[#eadf9f] bg-[linear-gradient(180deg,#fffbe8_0%,#fdf7df_100%)] text-[#8a7410] dark:border-[#3b3a20] dark:bg-[linear-gradient(180deg,#1c1a10_0%,#17150e_100%)] dark:text-[#ead663]"
+      : "border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] text-slate-700 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:text-white/78";
 
   return (
     <div className={`rounded-[16px] border px-4 py-4 ${toneClass}`}>
@@ -142,8 +158,8 @@ function FilterButton({ active, children, onClick }) {
       onClick={onClick}
       className={`inline-flex h-10 items-center rounded-[12px] border px-4 text-[13px] font-semibold transition ${
         active
-          ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#8df126]"
-          : "border-white/[0.06] bg-white/[0.03] text-white/72 hover:bg-white/[0.05]"
+          ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#6ea900] dark:text-[#8df126]"
+          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72 dark:hover:bg-white/[0.05]"
       }`}
     >
       {children}
@@ -156,9 +172,9 @@ function PaginationControls({ page, totalPages, onPageChange }) {
 
   return (
     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-[13px] text-white/42">
-        Página <span className="font-semibold text-white">{page}</span> de{" "}
-        <span className="font-semibold text-white">{totalPages}</span>
+      <p className="text-[13px] text-slate-500 dark:text-white/42">
+        Página <span className="font-semibold text-slate-900 dark:text-white">{page}</span> de{" "}
+        <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -166,7 +182,7 @@ function PaginationControls({ page, totalPages, onPageChange }) {
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page === 1}
-          className="inline-flex h-10 items-center rounded-[12px] border border-white/[0.06] bg-white/[0.03] px-4 text-[13px] font-semibold text-white/78 transition hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-10 items-center rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/78 dark:hover:bg-white/[0.05]"
         >
           Anterior
         </button>
@@ -182,8 +198,8 @@ function PaginationControls({ page, totalPages, onPageChange }) {
               onClick={() => onPageChange(pageNumber)}
               className={`inline-flex h-10 w-10 items-center justify-center rounded-[12px] border text-[13px] font-bold transition ${
                 active
-                  ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#8df126]"
-                  : "border-white/[0.06] bg-white/[0.03] text-white/72 hover:bg-white/[0.05]"
+                  ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#6ea900] dark:text-[#8df126]"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72 dark:hover:bg-white/[0.05]"
               }`}
             >
               {pageNumber}
@@ -195,7 +211,7 @@ function PaginationControls({ page, totalPages, onPageChange }) {
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page === totalPages}
-          className="inline-flex h-10 items-center rounded-[12px] border border-white/[0.06] bg-white/[0.03] px-4 text-[13px] font-semibold text-white/78 transition hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-10 items-center rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/78 dark:hover:bg-white/[0.05]"
         >
           Próxima
         </button>
@@ -306,7 +322,7 @@ function EvolutionChart({ evolution }) {
   const areaPoints = `0,100 ${points} 100,100`;
 
   return (
-    <div className="rounded-[22px] border border-white/[0.06] bg-[linear-gradient(180deg,#0d1520_0%,#0b121b_100%)] p-4">
+    <div className="rounded-[22px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#0d1520_0%,#0b121b_100%)]">
       <div className="h-[300px] w-full">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
           <defs>
@@ -328,9 +344,10 @@ function EvolutionChart({ evolution }) {
               y1={line}
               x2="100"
               y2={line}
-              stroke="rgba(255,255,255,0.06)"
+              stroke="currentColor"
               strokeWidth="0.6"
               strokeDasharray="2 3"
+              className="text-slate-300 dark:text-white/10"
             />
           ))}
 
@@ -358,7 +375,7 @@ function EvolutionChart({ evolution }) {
         </svg>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3 overflow-x-auto text-[12px] font-medium text-white/36">
+      <div className="mt-4 flex items-center justify-between gap-3 overflow-x-auto text-[12px] font-medium text-slate-500 dark:text-white/36">
         <span>{data[0]?.label || "Inicial"}</span>
         <span>Evolução da banca</span>
         <span>{data[data.length - 1]?.label || "Atual"}</span>
@@ -427,35 +444,35 @@ export default function EstatisticasPage() {
       : "Valor base definido na planilha";
 
   return (
-    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[#08111b] text-white">
+    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-transparent text-slate-900 dark:text-white">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(92,126,176,0.16),transparent_22%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_18%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(59,130,246,0.10),transparent_24%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.08),transparent_20%),linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] dark:bg-[radial-gradient(circle_at_12%_8%,rgba(92,126,176,0.16),transparent_22%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_18%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
       </div>
 
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
         <section className="mx-auto max-w-[1550px] px-5 py-6 md:px-8">
-          <div className="flex flex-col gap-4 rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(16,25,37,0.92)_0%,rgba(13,21,32,0.92)_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.20)] lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.92)_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] lg:flex-row lg:items-center lg:justify-between dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,rgba(16,25,37,0.92)_0%,rgba(13,21,32,0.92)_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.20)]">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#8df126]">
+              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#6ea900] dark:text-[#8df126]">
                 Gestão de banca
               </p>
 
-              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-white">
+              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-slate-900 dark:text-white">
                 Estatísticas
               </h1>
 
-              <p className="mt-2 text-[14px] text-white/48">
+              <p className="mt-2 text-[14px] text-slate-500 dark:text-white/48">
                 Histórico completo, indicadores e evolução da banca.
               </p>
             </div>
 
             <Link
-  href="/area-membros/banca"
-  className="inline-flex h-12 w-fit items-center gap-2 rounded-[16px] border border-[#a6ff4d]/20 bg-[#8df126] px-5 text-[14px] font-bold text-[#081200] shadow-[0_10px_24px_rgba(141,241,38,0.18)] transition hover:brightness-105"
->
-  <TicketIcon className="h-4 w-4 text-[#081200]" />
-  <span className="text-[#081200]">Voltar para banca</span>
-</Link>
+              href="/area-membros/banca"
+              className="inline-flex h-12 w-fit items-center gap-2 rounded-[16px] border border-[#a6ff4d]/20 bg-[#8df126] px-5 text-[14px] font-bold text-[#081200] shadow-[0_10px_24px_rgba(141,241,38,0.18)] transition hover:brightness-105"
+            >
+              <TicketIcon className="h-4 w-4 text-[#081200]" />
+              <span className="text-[#081200]">Voltar para banca</span>
+            </Link>
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -493,18 +510,18 @@ export default function EstatisticasPage() {
           </div>
 
           <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
+            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+                  <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
                     Evolução
                   </p>
-                  <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-white">
+                  <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
                     Evolução da banca
                   </h2>
                 </div>
 
-                <div className="rounded-full border border-white/[0.06] bg-[linear-gradient(180deg,#152131_0%,#111a26_100%)] px-3 py-1.5 text-[12px] font-semibold text-[#8df126]">
+                <div className="rounded-full border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-3 py-1.5 text-[12px] font-semibold text-[#6ea900] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111a26_100%)] dark:text-[#8df126]">
                   {formatCurrency(stats.currentBankroll)} atual
                 </div>
               </div>
@@ -514,12 +531,12 @@ export default function EstatisticasPage() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
+            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
                   Resumo do período
                 </p>
-                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-white">
+                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
                   Indicadores
                 </h2>
               </div>
@@ -553,13 +570,13 @@ export default function EstatisticasPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
+          <div className="mt-6 rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-col gap-2">
-                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
                   Histórico completo
                 </p>
-                <h2 className="text-[24px] font-black tracking-[-0.05em] text-white">
+                <h2 className="text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
                   Todas as apostas
                 </h2>
               </div>
@@ -592,30 +609,30 @@ export default function EstatisticasPage() {
               </div>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-[22px] border border-white/[0.06]">
+            <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 dark:border-white/[0.06]">
               <div className="overflow-x-auto">
                 <table className="min-w-[1080px] w-full">
-                  <thead className="bg-[rgba(255,255,255,0.03)]">
+                  <thead className="bg-slate-50 dark:bg-[rgba(255,255,255,0.03)]">
                     <tr className="text-left">
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                         Data
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                         Evento
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                         Stake
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                         Odd
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                         Status
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                         Retorno
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-white/34">
+                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
                         Lucro
                       </th>
                     </tr>
@@ -626,7 +643,7 @@ export default function EstatisticasPage() {
                       <tr>
                         <td
                           colSpan={7}
-                          className="px-4 py-12 text-center text-[14px] text-white/42"
+                          className="px-4 py-12 text-center text-[14px] text-slate-500 dark:text-white/42"
                         >
                           Nenhuma aposta encontrada nesse filtro.
                         </td>
@@ -637,49 +654,51 @@ export default function EstatisticasPage() {
                         const status = getStatusMeta(entry.status);
 
                         return (
-                          <tr key={entry.id} className="border-t border-white/[0.06]">
-                            <td className="px-4 py-4 text-[14px] text-white/76">
+                          <tr key={entry.id} className="border-t border-slate-200 dark:border-white/[0.06]">
+                            <td className="px-4 py-4 text-[14px] text-slate-600 dark:text-white/76">
                               {formatDate(entry.date)}
                             </td>
 
                             <td className="px-4 py-4">
                               <div className="max-w-[320px]">
-                                <div className="truncate text-[14px] font-semibold text-white">
+                                <div className="truncate text-[14px] font-semibold text-slate-900 dark:text-white">
                                   {entry.event}
                                 </div>
-                                <div className="mt-1 truncate text-[12px] text-white/38">
+                                <div className="mt-1 truncate text-[12px] text-slate-500 dark:text-white/38">
                                   {entry.market || "Sem mercado informado"}
                                 </div>
                               </div>
                             </td>
 
-                            <td className="px-4 py-4 text-[14px] font-semibold text-white">
+                            <td className="px-4 py-4 text-[14px] font-semibold text-slate-900 dark:text-white">
                               {formatCurrency(result.stake)}
                             </td>
 
-                            <td className="px-4 py-4 text-[14px] text-white/82">
+                            <td className="px-4 py-4 text-[14px] text-slate-700 dark:text-white/82">
                               {result.odd.toFixed(2).replace(".", ",")}
                             </td>
 
                             <td className="px-4 py-4">
                               <span
-                                className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-bold ${status.className}`}
+                                className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-bold ${getStatusBadgeClass(
+                                  entry.status
+                                )}`}
                               >
                                 {status.label}
                               </span>
                             </td>
 
-                            <td className="px-4 py-4 text-[14px] text-white/82">
+                            <td className="px-4 py-4 text-[14px] text-slate-700 dark:text-white/82">
                               {entry.status === "pending" ? "--" : formatCurrency(result.retorno)}
                             </td>
 
                             <td
                               className={`px-4 py-4 text-[14px] font-bold ${
                                 result.lucro > 0
-                                  ? "text-[#8df126]"
+                                  ? "text-[#6ea900] dark:text-[#8df126]"
                                   : result.lucro < 0
-                                  ? "text-[#db8f8f]"
-                                  : "text-white/60"
+                                  ? "text-[#b85d5d] dark:text-[#db8f8f]"
+                                  : "text-slate-500 dark:text-white/60"
                               }`}
                             >
                               {entry.status === "pending"

@@ -132,27 +132,29 @@ export default function DashboardPage() {
 
   function StatCard({ item }) {
     return (
-      <div className="rounded-[24px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-5 shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
+      <div className="rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-[0_14px_30px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/32">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-500 dark:text-white/32">
               {item.label}
             </p>
 
-            <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-white">
+            <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
               {item.value}
             </h3>
 
             <p
               className={`mt-3 text-[13px] font-medium ${
-                item.positive ? "text-[#8df126]" : "text-[#e58f8f]"
+                item.positive
+                  ? "text-[#6ea900] dark:text-[#8df126]"
+                  : "text-[#b85d5d] dark:text-[#e58f8f]"
               }`}
             >
               {item.meta}
             </p>
           </div>
 
-          <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/[0.06] bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] text-[#86a5cf]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] text-sky-600 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] dark:text-[#86a5cf]">
             <Icon type={item.icon} className="h-5 w-5" />
           </div>
         </div>
@@ -163,10 +165,10 @@ export default function DashboardPage() {
   function SummaryPill({ item }) {
     const colorClass =
       item.color === "green"
-        ? "border-[#2c4720] bg-[linear-gradient(180deg,#132012_0%,#111a12_100%)] text-[#8df126]"
+        ? "border-[#b9dea2] bg-[linear-gradient(180deg,#f3fde9_0%,#edf8e6_100%)] text-[#6ea900] dark:border-[#2c4720] dark:bg-[linear-gradient(180deg,#132012_0%,#111a12_100%)] dark:text-[#8df126]"
         : item.color === "red"
-        ? "border-[#4a2729] bg-[linear-gradient(180deg,#1b1214_0%,#171012_100%)] text-[#db8f8f]"
-        : "border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] text-white/78";
+        ? "border-[#e6b8bb] bg-[linear-gradient(180deg,#fff3f4_0%,#fceced_100%)] text-[#b85d5d] dark:border-[#4a2729] dark:bg-[linear-gradient(180deg,#1b1214_0%,#171012_100%)] dark:text-[#db8f8f]"
+        : "border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] text-slate-700 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:text-white/78";
 
     return (
       <div className={`rounded-[16px] border px-4 py-4 ${colorClass}`}>
@@ -196,7 +198,7 @@ export default function DashboardPage() {
     const areaPoints = `0,100 ${points} 100,100`;
 
     return (
-      <div className="rounded-[22px] border border-white/[0.06] bg-[linear-gradient(180deg,#0d1520_0%,#0b121b_100%)] p-4">
+      <div className="rounded-[22px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#0d1520_0%,#0b121b_100%)]">
         <div className="h-[280px] w-full">
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
             <defs>
@@ -218,9 +220,10 @@ export default function DashboardPage() {
                 y1={line}
                 x2="100"
                 y2={line}
-                stroke="rgba(255,255,255,0.06)"
+                stroke="currentColor"
                 strokeWidth="0.6"
                 strokeDasharray="2 3"
+                className="text-slate-300 dark:text-white/10"
               />
             ))}
 
@@ -247,7 +250,7 @@ export default function DashboardPage() {
           </svg>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-2 text-[12px] font-medium text-white/36">
+        <div className="mt-4 flex items-center justify-between gap-2 text-[12px] font-medium text-slate-500 dark:text-white/36">
           <span>Início</span>
           <span>Evolução da banca</span>
           <span>Atual</span>
@@ -257,29 +260,29 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[#08111b] text-white">
+    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-transparent text-slate-900 dark:text-white">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,rgba(92,126,176,0.15),transparent_20%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_16%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,rgba(59,130,246,0.10),transparent_22%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.08),transparent_18%),linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] dark:bg-[radial-gradient(circle_at_10%_8%,rgba(92,126,176,0.15),transparent_20%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_16%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
       </div>
 
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
-        <header className="relative z-30 shrink-0 border-b border-white/[0.06] bg-[rgba(9,15,24,0.92)] backdrop-blur-xl">
+        <header className="relative z-30 shrink-0 border-b border-slate-200 bg-[rgba(255,255,255,0.92)] backdrop-blur-xl dark:border-white/[0.06] dark:bg-[rgba(9,15,24,0.92)]">
           <div className="mx-auto flex max-w-[1550px] flex-col gap-4 px-5 py-5 md:px-8 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#8df126]">
+              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#6ea900] dark:text-[#8df126]">
                 Gestão de banca
               </p>
 
-              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-white">
+              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-slate-900 dark:text-white">
                 Resumo da banca
               </h1>
 
-              <p className="mt-2 text-[14px] text-white/48">
+              <p className="mt-2 text-[14px] text-slate-500 dark:text-white/48">
                 Acompanhe a evolução, resultados e controle da sua banca.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 rounded-[15px] border border-white/[0.06] bg-white/[0.02] p-1">
+            <div className="flex items-center gap-2 rounded-[15px] border border-slate-200 bg-slate-100/80 p-1 dark:border-white/[0.06] dark:bg-white/[0.02]">
               {periods.map((period) => {
                 const isActive = period === activePeriod;
                 return (
@@ -288,7 +291,7 @@ export default function DashboardPage() {
                     className={`rounded-[11px] px-4 py-2 text-[13px] font-semibold transition ${
                       isActive
                         ? "bg-[#8df126] text-[#081200] shadow-[0_6px_16px_rgba(141,241,38,0.20)]"
-                        : "text-white/48 hover:text-white/82"
+                        : "text-slate-500 hover:text-slate-900 dark:text-white/48 dark:hover:text-white/82"
                     }`}
                   >
                     {period}
@@ -300,21 +303,21 @@ export default function DashboardPage() {
         </header>
 
         <section className="mx-auto max-w-[1550px] px-5 py-6 md:px-8">
-          <div className="relative overflow-hidden rounded-[30px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-7 shadow-[0_20px_44px_rgba(0,0,0,0.22)]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_20%,rgba(92,126,176,0.14),transparent_24%)]" />
+          <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-7 shadow-[0_20px_44px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_20px_44px_rgba(0,0,0,0.22)]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_20%,rgba(59,130,246,0.10),transparent_24%)] dark:bg-[radial-gradient(circle_at_14%_20%,rgba(92,126,176,0.14),transparent_24%)]" />
 
             <div className="relative z-10">
-              <div className="inline-flex rounded-full border border-white/[0.07] bg-white/[0.03] px-4 py-2 text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+              <div className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:border-white/[0.07] dark:bg-white/[0.03] dark:text-[#8df126]">
                 Resumo principal
               </div>
 
-              <h2 className="mt-5 text-[36px] font-black leading-[0.95] tracking-[-0.06em] text-white md:text-[44px]">
+              <h2 className="mt-5 text-[36px] font-black leading-[0.95] tracking-[-0.06em] text-slate-900 md:text-[44px] dark:text-white">
                 Controle total da
                 <br />
-                <span className="text-[#8df126]">sua gestão de banca</span>
+                <span className="text-[#6ea900] dark:text-[#8df126]">sua gestão de banca</span>
               </h2>
 
-              <p className="mt-4 max-w-[620px] text-[15px] leading-[1.6] text-white/58">
+              <p className="mt-4 max-w-[620px] text-[15px] leading-[1.6] text-slate-600 dark:text-white/58">
                 Veja com clareza onde sua banca está, quanto evoluiu no período e
                 como seu desempenho está se comportando.
               </p>
@@ -328,18 +331,18 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
+            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+                  <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
                     Evolução
                   </p>
-                  <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-white">
+                  <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
                     Evolução da banca
                   </h2>
                 </div>
 
-                <div className="rounded-full border border-white/[0.06] bg-[linear-gradient(180deg,#152131_0%,#111a26_100%)] px-3 py-1.5 text-[12px] font-semibold text-[#8df126]">
+                <div className="rounded-full border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-3 py-1.5 text-[12px] font-semibold text-[#6ea900] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111a26_100%)] dark:text-[#8df126]">
                   R$ 1.842,00 atual
                 </div>
               </div>
@@ -349,12 +352,12 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/[0.06] bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
+            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8df126]">
+                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
                   Resumo do período
                 </p>
-                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-white">
+                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
                   Indicadores
                 </h2>
               </div>
