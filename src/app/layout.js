@@ -3,7 +3,7 @@ import SiteThemeProvider from "@/components/theme-provider";
 
 export const metadata = {
   title: "Alpha Tips",
-  description: "Área de membros",
+  description: "Painel completo para apostadores esportivos",
 };
 
 export default function RootLayout({ children }) {

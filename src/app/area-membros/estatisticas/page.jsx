@@ -3,6 +3,22 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Activity,
+  ArrowLeft,
+  ArrowDownRight,
+  ArrowUpRight,
+  BarChart3,
+  CalendarDays,
+  CircleDollarSign,
+  Download,
+  Gauge,
+  LineChart,
+  ShieldCheck,
+  Target,
+  Trophy,
+  Wallet,
+} from "lucide-react";
+import {
   calculateEntryResult,
   calculateStats,
   formatCurrency,
@@ -10,219 +26,32 @@ import {
   getStatusMeta,
   loadBankrollEntries,
   loadBankrollSettings,
+  roundToTwo,
 } from "@/lib/bankrollStorage";
 
-const HISTORY_PAGE_SIZE = 10;
+const PERIODS = [
+  { label: "Hoje", value: "today" },
+  { label: "7 dias", value: "7d" },
+  { label: "30 dias", value: "30d" },
+  { label: "Este mês", value: "month" },
+  { label: "Personalizado", value: "custom" },
+];
 
-function ChartIcon({ className = "h-5 w-5" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M5 16L10 11L13.2 14.2L19 8.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M15.5 8.5H19V12"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function WalletIcon({ className = "h-5 w-5" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M4 8.5C4 7.12 5.12 6 6.5 6H17.5C18.88 6 20 7.12 20 8.5V15.5C20 16.88 18.88 18 17.5 18H6.5C5.12 18 4 16.88 4 15.5V8.5Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-      <path d="M15.5 12H20" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <circle cx="15.5" cy="12" r="1" fill="currentColor" />
-      <path
-        d="M7 6V5.7C7 4.76 7.76 4 8.7 4H17"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function TicketIcon({ className = "h-5 w-5" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M7 7H17C18.1 7 19 7.9 19 9V10C17.9 10 17 10.9 17 12C17 13.1 17.9 14 19 14V15C19 16.1 18.1 17 17 17H7C5.9 17 5 16.1 5 15V14C6.1 14 7 13.1 7 12C7 10.9 6.1 10 5 10V9C5 7.9 5.9 7 7 7Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 8.5V15.5"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeDasharray="1.8 1.8"
-      />
-    </svg>
-  );
-}
-
-function getStatusBadgeClass(status) {
-  if (status === "green") {
-    return "border-[#2c4720] bg-[rgba(141,241,38,0.08)] text-[#6ea900] dark:text-[#8df126]";
-  }
-
-  if (status === "red") {
-    return "border-[#4a2729] bg-[rgba(219,143,143,0.08)] text-[#b85d5d] dark:text-[#db8f8f]";
-  }
-
-  if (status === "cashout") {
-    return "border-[#7b6d20] bg-[rgba(234,214,99,0.12)] text-[#8a7410] dark:border-[#3b3a20] dark:bg-[rgba(234,214,99,0.08)] dark:text-[#ead663]";
-  }
-
-  return "border-slate-200 bg-slate-100 text-slate-700 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72";
-}
-
-function StatCard({ label, value, meta, tone = "default", icon }) {
-  return (
-    <div className="rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-[0_14px_30px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-500 dark:text-white/32">
-            {label}
-          </p>
-          <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-            {value}
-          </h3>
-          <p
-            className={`mt-3 text-[13px] font-medium ${
-              tone === "green"
-                ? "text-[#6ea900] dark:text-[#8df126]"
-                : tone === "red"
-                ? "text-[#b85d5d] dark:text-[#db8f8f]"
-                : "text-slate-500 dark:text-white/52"
-            }`}
-          >
-            {meta}
-          </p>
-        </div>
-
-        <div
-          className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] ${
-            tone === "green"
-              ? "text-[#8df126]"
-              : tone === "red"
-              ? "text-[#db8f8f]"
-              : "text-sky-600 dark:text-[#86a5cf]"
-          }`}
-        >
-          {icon}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SummaryPill({ label, value, tone = "neutral" }) {
-  const toneClass =
-    tone === "green"
-      ? "border-[#b9dea2] bg-[linear-gradient(180deg,#f3fde9_0%,#edf8e6_100%)] text-[#6ea900] dark:border-[#2c4720] dark:bg-[linear-gradient(180deg,#132012_0%,#111a12_100%)] dark:text-[#8df126]"
-      : tone === "red"
-      ? "border-[#e6b8bb] bg-[linear-gradient(180deg,#fff3f4_0%,#fceced_100%)] text-[#b85d5d] dark:border-[#4a2729] dark:bg-[linear-gradient(180deg,#1b1214_0%,#171012_100%)] dark:text-[#db8f8f]"
-      : tone === "yellow"
-      ? "border-[#eadf9f] bg-[linear-gradient(180deg,#fffbe8_0%,#fdf7df_100%)] text-[#8a7410] dark:border-[#3b3a20] dark:bg-[linear-gradient(180deg,#1c1a10_0%,#17150e_100%)] dark:text-[#ead663]"
-      : "border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] text-slate-700 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:text-white/78";
-
-  return (
-    <div className={`rounded-[16px] border px-4 py-4 ${toneClass}`}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] opacity-60">
-        {label}
-      </p>
-      <div className="mt-2 text-[20px] font-black tracking-[-0.04em]">{value}</div>
-    </div>
-  );
-}
-
-function FilterButton({ active, children, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`inline-flex h-10 items-center rounded-[12px] border px-4 text-[13px] font-semibold transition ${
-        active
-          ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#6ea900] dark:text-[#8df126]"
-          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72 dark:hover:bg-white/[0.05]"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function PaginationControls({ page, totalPages, onPageChange }) {
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-[13px] text-slate-500 dark:text-white/42">
-        Página <span className="font-semibold text-slate-900 dark:text-white">{page}</span> de{" "}
-        <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
-      </p>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => onPageChange(page - 1)}
-          disabled={page === 1}
-          className="inline-flex h-10 items-center rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/78 dark:hover:bg-white/[0.05]"
-        >
-          Anterior
-        </button>
-
-        {Array.from({ length: totalPages }).map((_, index) => {
-          const pageNumber = index + 1;
-          const active = pageNumber === page;
-
-          return (
-            <button
-              key={pageNumber}
-              type="button"
-              onClick={() => onPageChange(pageNumber)}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-[12px] border text-[13px] font-bold transition ${
-                active
-                  ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#6ea900] dark:text-[#8df126]"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72 dark:hover:bg-white/[0.05]"
-              }`}
-            >
-              {pageNumber}
-            </button>
-          );
-        })}
-
-        <button
-          type="button"
-          onClick={() => onPageChange(page + 1)}
-          disabled={page === totalPages}
-          className="inline-flex h-10 items-center rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/78 dark:hover:bg-white/[0.05]"
-        >
-          Próxima
-        </button>
-      </div>
-    </div>
-  );
-}
+const RESULT_COLORS = {
+  green: "#059669",
+  red: "#dc2626",
+  cashout: "#d97706",
+  pending: "#64748b",
+};
 
 function getSortableTimestamp(entry) {
   if (entry?.resolvedAt) {
     const value = new Date(entry.resolvedAt).getTime();
+    if (Number.isFinite(value)) return value;
+  }
+
+  if (entry?.date) {
+    const value = new Date(`${entry.date}T12:00:00`).getTime();
     if (Number.isFinite(value)) return value;
   }
 
@@ -231,492 +60,1128 @@ function getSortableTimestamp(entry) {
     if (Number.isFinite(value)) return value;
   }
 
-  if (entry?.date) {
-    const value = new Date(entry.date).getTime();
-    if (Number.isFinite(value)) return value;
-  }
-
   return 0;
 }
 
-function buildEvolution(entries, initialBankroll) {
-  const safeInitial = Number.isFinite(Number(initialBankroll))
-    ? Number(initialBankroll)
-    : 0;
+function getInputDate(date) {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
 
+function getPeriodRange(period, customRange) {
+  const now = new Date();
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+
+  if (period === "today") {
+    return { start, end };
+  }
+
+  if (period === "7d") {
+    start.setDate(start.getDate() - 6);
+    return { start, end };
+  }
+
+  if (period === "30d") {
+    start.setDate(start.getDate() - 29);
+    return { start, end };
+  }
+
+  if (period === "month") {
+    start.setDate(1);
+    return { start, end };
+  }
+
+  const customStart = customRange.start
+    ? new Date(`${customRange.start}T00:00:00`)
+    : new Date("1970-01-01T00:00:00");
+  const customEnd = customRange.end
+    ? new Date(`${customRange.end}T23:59:59`)
+    : end;
+
+  return { start: customStart, end: customEnd };
+}
+
+function filterEntriesByPeriod(entries, range) {
+  return entries.filter((entry) => {
+    const timestamp = getSortableTimestamp(entry);
+    return timestamp >= range.start.getTime() && timestamp <= range.end.getTime();
+  });
+}
+
+function formatPercent(value) {
+  return `${roundToTwo(value).toFixed(1).replace(".", ",")}%`;
+}
+
+function formatSignedCurrency(value) {
+  return `${value > 0 ? "+" : ""}${formatCurrency(value)}`;
+}
+
+function toneFromNumber(value) {
+  if (value > 0) return "positive";
+  if (value < 0) return "negative";
+  return "neutral";
+}
+
+function getToneClasses(tone) {
+  if (tone === "positive") {
+    return {
+      text: "text-emerald-700 dark:text-emerald-300",
+      soft: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20",
+      border: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300",
+    };
+  }
+
+  if (tone === "negative") {
+    return {
+      text: "text-rose-700 dark:text-rose-300",
+      soft: "bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20",
+      border: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-300",
+    };
+  }
+
+  if (tone === "warning") {
+    return {
+      text: "text-amber-800 dark:text-amber-300",
+      soft: "bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20",
+      border: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300",
+    };
+  }
+
+  return {
+    text: "text-slate-700 dark:text-slate-300",
+    soft: "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-white/[0.06] dark:text-slate-300 dark:ring-white/[0.08]",
+    border: "border-slate-200 bg-slate-100 text-slate-700 dark:border-white/[0.08] dark:bg-white/[0.06] dark:text-slate-300",
+  };
+}
+
+function Panel({ children, className = "" }) {
+  return (
+    <section
+      className={`rounded-[18px] border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-white/[0.08] dark:bg-slate-900/92 ${className}`}
+    >
+      {children}
+    </section>
+  );
+}
+
+function SectionHeader({ eyebrow, title, description, action }) {
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+          {eyebrow}
+        </p>
+        <h2 className="mt-1.5 text-[17px] font-semibold tracking-[-0.01em] text-slate-950 dark:text-white">{title}</h2>
+        {description ? (
+          <p className="mt-1 text-[13px] leading-5 text-slate-600 dark:text-slate-400">
+            {description}
+          </p>
+        ) : null}
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </div>
+  );
+}
+
+function MetricCard({ label, value, detail, tone = "neutral", icon: Icon }) {
+  const toneClass = getToneClasses(tone);
+
+  return (
+    <article className="rounded-[16px] border border-slate-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.035)] transition-colors dark:border-white/[0.08] dark:bg-slate-900/92">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{label}</p>
+          <p className="mt-2.5 truncate text-[22px] font-semibold tracking-[-0.035em] text-slate-950 dark:text-white">
+            {value}
+          </p>
+          <p className={`mt-1.5 truncate text-[12px] font-medium ${toneClass.text}`}>{detail}</p>
+        </div>
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] ring-1 ${toneClass.soft}`}
+        >
+          <Icon className="h-4 w-4" strokeWidth={2} />
+        </span>
+      </div>
+    </article>
+  );
+}
+
+function PeriodButton({ active, children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex h-9 items-center rounded-[11px] px-3 text-[13px] font-semibold transition ${
+        active
+          ? "bg-slate-950 text-white shadow-sm dark:bg-white dark:text-slate-950"
+          : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/[0.07] dark:hover:text-white"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function StatusBadge({ status }) {
+  const tone =
+    status === "green"
+      ? "positive"
+      : status === "red"
+      ? "negative"
+      : status === "cashout"
+      ? "warning"
+      : "neutral";
+  const toneClass = getToneClasses(tone);
+  const label = status === "pending" ? "Aberta" : getStatusMeta(status).label;
+
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${toneClass.border}`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function EmptyBlock({ children }) {
+  return (
+    <div className="flex min-h-[140px] items-center justify-center rounded-[14px] border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-[14px] text-slate-500 dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-slate-400">
+      {children}
+    </div>
+  );
+}
+
+function buildBankrollEvolution(entries, initialBankroll, range = null) {
+  const safeInitial = Number.isFinite(Number(initialBankroll)) ? Number(initialBankroll) : 0;
   const settledEntries = [...entries]
     .filter((entry) => entry.status !== "pending")
     .sort((a, b) => getSortableTimestamp(a) - getSortableTimestamp(b));
 
   let bankroll = safeInitial;
+  const startTime = range?.start?.getTime?.() ?? Number.NEGATIVE_INFINITY;
+  const endTime = range?.end?.getTime?.() ?? Number.POSITIVE_INFINITY;
 
-  const evolution = [
-    {
-      label: "Inicial",
+  settledEntries.forEach((entry) => {
+    if (getSortableTimestamp(entry) < startTime) {
+      bankroll = roundToTwo(bankroll + calculateEntryResult(entry).lucro);
+    }
+  });
+
+  let peak = bankroll;
+  let maxDrawdown = 0;
+  const data = [{ label: range ? "Início" : "Inicial", date: "Inicial", value: roundToTwo(bankroll), profit: 0 }];
+
+  settledEntries
+    .filter((entry) => {
+      const timestamp = getSortableTimestamp(entry);
+      return timestamp >= startTime && timestamp <= endTime;
+    })
+    .forEach((entry) => {
+    const result = calculateEntryResult(entry);
+    bankroll = roundToTwo(bankroll + result.lucro);
+    peak = Math.max(peak, bankroll);
+    maxDrawdown = Math.max(maxDrawdown, peak - bankroll);
+
+    data.push({
+      label: entry.date ? formatDate(entry.date) : "Aposta",
+      date: entry.date || "",
       value: bankroll,
-    },
-  ];
-
-  settledEntries.forEach((entry, index) => {
-    bankroll += calculateEntryResult(entry).lucro;
-
-    evolution.push({
-      label: entry.date ? formatDate(entry.date) : `Aposta ${index + 1}`,
-      value: bankroll,
+      profit: result.lucro,
     });
   });
 
-  return evolution;
+  return { data, maxDrawdown: roundToTwo(maxDrawdown) };
 }
 
-function calculateSequences(entries) {
-  const settledEntries = [...entries]
+function buildProfitSeries(entries) {
+  const buckets = new Map();
+
+  entries
     .filter((entry) => entry.status !== "pending")
-    .sort((a, b) => getSortableTimestamp(a) - getSortableTimestamp(b));
+    .forEach((entry) => {
+      const key = entry.date || "Sem data";
+      const current = buckets.get(key) || { date: key, profit: 0, total: 0 };
+      current.profit += calculateEntryResult(entry).lucro;
+      current.total += 1;
+      buckets.set(key, current);
+    });
 
-  let currentGreen = 0;
-  let currentRed = 0;
-  let bestGreen = 0;
-  let worstRed = 0;
+  return [...buckets.values()]
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .map((item) => ({
+      ...item,
+      label: item.date === "Sem data" ? "Sem data" : formatDate(item.date).slice(0, 5),
+      profit: roundToTwo(item.profit),
+    }));
+}
 
-  settledEntries.forEach((entry) => {
-    if (entry.status === "green") {
-      currentGreen += 1;
-      currentRed = 0;
-    } else if (entry.status === "red") {
-      currentRed += 1;
-      currentGreen = 0;
-    } else {
-      currentGreen = 0;
-      currentRed = 0;
+function normalizeMarket(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "Mercado não informado";
+
+  const lower = raw.toLowerCase();
+  if (lower.includes("over") || lower.includes("under")) return "Over/Under";
+  if (lower.includes("ambas") || lower.includes("btts")) return "Ambas marcam";
+  if (lower.includes("handicap")) return "Handicap";
+  if (lower.includes("escanteio") || lower.includes("canto")) return "Escanteios";
+  if (lower.includes("cart")) return "Cartões";
+  if (lower.includes("resultado") || lower.includes("vencedor") || lower.includes("moneyline")) {
+    return "Resultado final";
+  }
+
+  return raw;
+}
+
+function inferCategory(entry) {
+  const text = `${entry.event || ""} ${entry.market || ""} ${entry.notes || ""}`.toLowerCase();
+
+  if (text.includes("nba") || text.includes("basquete")) return "Basquete";
+  if (text.includes("tenis") || text.includes("tênis") || text.includes("atp") || text.includes("wta")) {
+    return "Tênis";
+  }
+  if (text.includes("libertadores")) return "Libertadores";
+  if (text.includes("brasileirão") || text.includes("brasileirao")) return "Brasileirão";
+  if (text.includes("champions")) return "Champions League";
+  if (text.includes("futebol") || text.includes(" x ") || text.includes(" vs ")) return "Futebol";
+
+  return "Outras categorias";
+}
+
+function buildPerformanceRows(entries, getKey) {
+  const buckets = new Map();
+
+  entries.forEach((entry) => {
+    const key = getKey(entry);
+    const current =
+      buckets.get(key) || {
+        label: key,
+        total: 0,
+        settled: 0,
+        greens: 0,
+        stake: 0,
+        profit: 0,
+      };
+    const result = calculateEntryResult(entry);
+
+    current.total += 1;
+    current.stake += result.stake;
+
+    if (entry.status !== "pending") {
+      current.settled += 1;
+      current.profit += result.lucro;
+      if (entry.status === "green") current.greens += 1;
     }
 
-    if (currentGreen > bestGreen) bestGreen = currentGreen;
-    if (currentRed > worstRed) worstRed = currentRed;
+    buckets.set(key, current);
   });
 
+  return [...buckets.values()]
+    .map((row) => ({
+      ...row,
+      stake: roundToTwo(row.stake),
+      profit: roundToTwo(row.profit),
+      hitRate: row.settled > 0 ? roundToTwo((row.greens / row.settled) * 100) : 0,
+      roi: row.stake > 0 ? roundToTwo((row.profit / row.stake) * 100) : 0,
+    }))
+    .sort((a, b) => b.profit - a.profit || b.total - a.total)
+    .slice(0, 6);
+}
+
+function calculateRisk(entries, initialBankroll, currentBankroll) {
+  const results = entries.map((entry) => ({ entry, result: calculateEntryResult(entry) }));
+  const pending = results.filter(({ entry }) => entry.status === "pending");
+  const settled = results.filter(({ entry }) => entry.status !== "pending");
+  const exposure = pending.reduce((sum, item) => sum + item.result.stake, 0);
+  const totalStake = results.reduce((sum, item) => sum + item.result.stake, 0);
+  const averageStake = results.length > 0 ? totalStake / results.length : 0;
+  const maxStake = Math.max(0, ...results.map((item) => item.result.stake));
+  const biggestGreen = Math.max(0, ...settled.map((item) => item.result.lucro));
+  const biggestRed = Math.min(0, ...settled.map((item) => item.result.lucro));
+  const { maxDrawdown } = buildBankrollEvolution(entries, initialBankroll);
+  const variation =
+    Number(initialBankroll) > 0 ? ((currentBankroll - Number(initialBankroll)) / Number(initialBankroll)) * 100 : 0;
+
+  const orderedSettled = [...entries]
+    .filter((entry) => entry.status !== "pending")
+    .sort((a, b) => getSortableTimestamp(b) - getSortableTimestamp(a));
+  const currentStatus = orderedSettled[0]?.status;
+  let currentStreak = 0;
+
+  for (const entry of orderedSettled) {
+    if (entry.status !== currentStatus || (entry.status !== "green" && entry.status !== "red")) break;
+    currentStreak += 1;
+  }
+
   return {
-    bestGreenStreak: bestGreen,
-    worstRedStreak: worstRed,
+    averageStake: roundToTwo(averageStake),
+    maxStake: roundToTwo(maxStake),
+    biggestGreen: roundToTwo(biggestGreen),
+    biggestRed: roundToTwo(biggestRed),
+    exposure: roundToTwo(exposure),
+    exposureRate: currentBankroll > 0 ? roundToTwo((exposure / currentBankroll) * 100) : 0,
+    variation: roundToTwo(variation),
+    maxDrawdown,
+    currentStreak,
+    currentStreakLabel:
+      currentStreak === 0
+        ? "Sem sequência"
+        : `${currentStreak} ${currentStatus === "green" ? "greens" : "reds"}`,
+    currentStreakTone: currentStatus === "green" ? "positive" : currentStatus === "red" ? "negative" : "neutral",
   };
 }
 
-function EvolutionChart({ evolution }) {
-  const data =
-    Array.isArray(evolution) && evolution.length > 0
-      ? evolution
-      : [{ label: "Inicial", value: 0 }];
+function LineAreaChart({ data }) {
+  if (data.length <= 1) {
+    return <EmptyBlock>Registre e finalize apostas para visualizar a evolução da banca.</EmptyBlock>;
+  }
 
-  const max = Math.max(...data.map((item) => item.value));
-  const min = Math.min(...data.map((item) => item.value));
+  const width = 720;
+  const height = 260;
+  const padding = { top: 18, right: 18, bottom: 30, left: 52 };
+  const values = data.map((item) => item.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
   const range = max - min || 1;
-
-  const points = data
-    .map((item, index) => {
-      const x = data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
-      const y = 100 - ((item.value - min) / range) * 76 - 12;
-      return `${x},${y}`;
-    })
-    .join(" ");
-
-  const areaPoints = `0,100 ${points} 100,100`;
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const points = data.map((item, index) => {
+    const x = padding.left + (index / (data.length - 1)) * chartWidth;
+    const y = padding.top + chartHeight - ((item.value - min) / range) * chartHeight;
+    return { ...item, x, y };
+  });
+  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const area = `${padding.left},${height - padding.bottom} ${line} ${
+    width - padding.right
+  },${height - padding.bottom}`;
 
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#0d1520_0%,#0b121b_100%)]">
-      <div className="h-[300px] w-full">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-          <defs>
-            <linearGradient id="bankrollStatsLine" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#6e8fbe" />
-              <stop offset="55%" stopColor="#86a5cf" />
-              <stop offset="100%" stopColor="#8df126" />
-            </linearGradient>
-            <linearGradient id="bankrollStatsArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(110,143,190,0.22)" />
-              <stop offset="100%" stopColor="rgba(110,143,190,0.02)" />
-            </linearGradient>
-          </defs>
+    <div className="overflow-hidden rounded-[16px] border border-slate-200 bg-slate-50 p-2 dark:border-white/[0.08] dark:bg-white/[0.035]">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-[260px] w-full" role="img">
+        <defs>
+          <linearGradient id="bankrollLine" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#0f766e" />
+            <stop offset="100%" stopColor="#059669" />
+          </linearGradient>
+          <linearGradient id="bankrollArea" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#059669" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#059669" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
 
-          {[20, 40, 60, 80].map((line) => (
-            <line
-              key={line}
-              x1="0"
-              y1={line}
-              x2="100"
-              y2={line}
-              stroke="currentColor"
-              strokeWidth="0.6"
-              strokeDasharray="2 3"
-              className="text-slate-300 dark:text-white/10"
-            />
-          ))}
+        {[0, 0.33, 0.66, 1].map((step) => {
+          const y = padding.top + chartHeight * step;
+          const value = max - range * step;
+          return (
+            <g key={step}>
+              <line
+                x1={padding.left}
+                x2={width - padding.right}
+                y1={y}
+                y2={y}
+                stroke="currentColor"
+                strokeDasharray="4 6"
+                className="text-slate-300/80 dark:text-white/10"
+              />
+              <text x="8" y={y + 4} className="fill-slate-500 text-[11px] dark:fill-slate-400">
+                {formatCurrency(value).replace("R$", "")}
+              </text>
+            </g>
+          );
+        })}
 
-          <polygon points={areaPoints} fill="url(#bankrollStatsArea)" />
-          <polyline
-            points={points}
-            fill="none"
-            stroke="url(#bankrollStatsLine)"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        <polygon points={area} fill="url(#bankrollArea)" />
+        <polyline points={line} fill="none" stroke="url(#bankrollLine)" strokeWidth="2.6" strokeLinecap="round" />
+        {points.map((point, index) => (
+          <circle key={`${point.label}-${index}`} cx={point.x} cy={point.y} r="3.4" fill="#059669">
+            <title>
+              {point.label}: {formatCurrency(point.value)}
+            </title>
+          </circle>
+        ))}
 
-          {data.map((item, index) => {
-            const x = data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
-            const y = 100 - ((item.value - min) / range) * 76 - 12;
+        <text x={padding.left} y={height - 10} className="fill-slate-500 text-[11px] dark:fill-slate-400">
+          {data[0]?.label}
+        </text>
+        <text
+          x={width - padding.right}
+          y={height - 10}
+          textAnchor="end"
+          className="fill-slate-500 text-[11px] dark:fill-slate-400"
+        >
+          {data[data.length - 1]?.label}
+        </text>
+      </svg>
+    </div>
+  );
+}
 
-            return (
-              <g key={`${item.label}-${index}`}>
-                <circle cx={x} cy={y} r="1.9" fill="#86a5cf" />
-                <circle cx={x} cy={y} r="3.2" fill="rgba(134,165,207,0.10)" />
-              </g>
-            );
-          })}
-        </svg>
+function PeriodResultSummary({ data }) {
+  if (data.length === 0) {
+    return <EmptyBlock>Finalize apostas no período para ver lucro e prejuízo por data.</EmptyBlock>;
+  }
+
+  const totalProfit = data.reduce((sum, item) => sum + item.profit, 0);
+  const bestDay = data.reduce((best, item) => (item.profit > best.profit ? item : best), data[0]);
+  const worstDay = data.reduce((worst, item) => (item.profit < worst.profit ? item : worst), data[0]);
+  const lastDay = data.at(-1);
+
+  const summary = [
+    {
+      label: "Saldo do período",
+      value: formatSignedCurrency(totalProfit),
+      detail: totalProfit >= 0 ? "Resultado positivo no filtro" : "Resultado negativo no filtro",
+      tone: toneFromNumber(totalProfit),
+    },
+    {
+      label: "Melhor dia",
+      value: formatSignedCurrency(bestDay.profit),
+      detail: bestDay.date === "Sem data" ? "Sem data" : formatDate(bestDay.date),
+      tone: "positive",
+    },
+    {
+      label: "Pior dia",
+      value: formatSignedCurrency(worstDay.profit),
+      detail: worstDay.date === "Sem data" ? "Sem data" : formatDate(worstDay.date),
+      tone: "negative",
+    },
+    {
+      label: "Último dia",
+      value: formatSignedCurrency(lastDay.profit),
+      detail: lastDay.date === "Sem data" ? "Sem data" : formatDate(lastDay.date),
+      tone: toneFromNumber(lastDay.profit),
+    },
+  ];
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {summary.map((item) => {
+        const toneClass = getToneClasses(item.tone);
+
+        return (
+          <div key={item.label} className="min-w-0 rounded-[14px] border border-slate-200 bg-slate-50 p-3.5 dark:border-white/[0.08] dark:bg-white/[0.035]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              {item.label}
+            </p>
+            <p className={`mt-2 truncate text-[18px] font-semibold tracking-[-0.03em] ${toneClass.text}`}>
+              {item.value}
+            </p>
+            <p className="mt-1 truncate text-[12px] text-slate-500 dark:text-slate-400">{item.detail}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ResultDistribution({ stats }) {
+  const items = [
+    { label: "Green", value: stats.greenEntries, color: RESULT_COLORS.green },
+    { label: "Red", value: stats.redEntries, color: RESULT_COLORS.red },
+    { label: "Cashout", value: stats.cashoutEntries, color: RESULT_COLORS.cashout },
+    { label: "Abertas", value: stats.pendingEntries, color: RESULT_COLORS.pending },
+  ];
+  const rawTotal = items.reduce((sum, item) => sum + item.value, 0);
+  const total = Math.max(1, rawTotal);
+  const donutBackground =
+    rawTotal === 0
+      ? "#cbd5e1"
+      : `conic-gradient(${items
+          .reduce(
+            (segments, item) => {
+              const start = segments.offset;
+              const end = start + (item.value / total) * 100;
+              segments.parts.push(`${item.color} ${start}% ${end}%`);
+              segments.offset = end;
+              return segments;
+            },
+            { offset: 0, parts: [] }
+          )
+          .parts.join(", ")})`;
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-[118px_minmax(0,1fr)] sm:items-center">
+      <div
+        className="mx-auto h-[118px] w-[118px] rounded-full"
+        style={{
+          background: donutBackground,
+        }}
+      >
+        <div className="flex h-full w-full items-center justify-center rounded-full p-3.5">
+          <div className="flex h-[76px] w-[76px] flex-col items-center justify-center rounded-full bg-white text-center shadow-inner dark:bg-slate-900">
+            <span className="text-[20px] font-semibold text-slate-950 dark:text-white">{stats.totalEntries}</span>
+            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">apostas</span>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3 overflow-x-auto text-[12px] font-medium text-slate-500 dark:text-white/36">
-        <span>{data[0]?.label || "Inicial"}</span>
-        <span>Evolução da banca</span>
-        <span>{data[data.length - 1]?.label || "Atual"}</span>
+      <div className="grid gap-2">
+        {items.map((item) => {
+          const percent = (item.value / total) * 100;
+          return (
+            <div key={item.label}>
+              <div className="mb-1 flex items-center justify-between gap-3 text-[12px]">
+                <span className="font-medium text-slate-700 dark:text-slate-300">{item.label}</span>
+                <span className="text-slate-500 dark:text-slate-400">
+                  {item.value} · {formatPercent(percent)}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-slate-100 dark:bg-white/[0.06]">
+                <div className="h-1.5 rounded-full" style={{ width: `${percent}%`, backgroundColor: item.color }} />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
+function PerformanceTable({ rows, titleColumn }) {
+  if (rows.length === 0) {
+    return <EmptyBlock>Nenhum dado suficiente para esta análise no período selecionado.</EmptyBlock>;
+  }
+
+  return (
+    <>
+      <div className="hidden overflow-hidden rounded-[14px] border border-slate-200 dark:border-white/[0.08] md:block">
+        <table className="w-full">
+          <thead className="bg-slate-50 dark:bg-white/[0.035]">
+            <tr className="text-left">
+              {[titleColumn, "Apostas", "Lucro/prejuízo", "Acerto", "ROI"].map((heading) => (
+                <th
+                  key={heading}
+                  className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400"
+                >
+                  {heading}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
+            {rows.map((row) => {
+              const toneClass = getToneClasses(toneFromNumber(row.profit));
+              return (
+                <tr key={row.label} className="transition-colors hover:bg-slate-50/80 dark:hover:bg-white/[0.025]">
+                  <td className="px-4 py-3.5 text-[14px] font-semibold text-slate-950 dark:text-white">
+                    {row.label}
+                  </td>
+                  <td className="px-4 py-3.5 text-[14px] text-slate-600 dark:text-slate-300">{row.total}</td>
+                  <td className={`px-4 py-3.5 text-[14px] font-semibold ${toneClass.text}`}>
+                    {formatSignedCurrency(row.profit)}
+                  </td>
+                  <td className="px-4 py-3.5 text-[14px] text-slate-600 dark:text-slate-300">
+                    {formatPercent(row.hitRate)}
+                  </td>
+                  <td className={`px-4 py-3.5 text-[14px] font-semibold ${toneClass.text}`}>
+                    {formatPercent(row.roi)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid gap-3 md:hidden">
+        {rows.map((row) => {
+          const toneClass = getToneClasses(toneFromNumber(row.profit));
+          return (
+            <article
+              key={row.label}
+              className="rounded-[14px] border border-slate-200 bg-slate-50 p-4 dark:border-white/[0.08] dark:bg-white/[0.035]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="truncate text-[14px] font-semibold text-slate-950 dark:text-white">{row.label}</h3>
+                  <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">{row.total} apostas</p>
+                </div>
+                <span className={`text-[14px] font-semibold ${toneClass.text}`}>
+                  {formatSignedCurrency(row.profit)}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-[12px]">
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Acerto</p>
+                  <p className="mt-1 font-semibold text-slate-800 dark:text-slate-200">{formatPercent(row.hitRate)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">ROI</p>
+                  <p className={`mt-1 font-semibold ${toneClass.text}`}>{formatPercent(row.roi)}</p>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function RiskGrid({ risk }) {
+  const items = [
+    { label: "Stake média", value: formatCurrency(risk.averageStake), tone: "neutral" },
+    { label: "Maior stake", value: formatCurrency(risk.maxStake), tone: "neutral" },
+    { label: "Maior green", value: formatSignedCurrency(risk.biggestGreen), tone: "positive" },
+    { label: "Maior red", value: formatSignedCurrency(risk.biggestRed), tone: "negative" },
+    { label: "Exposição atual", value: formatCurrency(risk.exposure), detail: formatPercent(risk.exposureRate), tone: "warning" },
+    { label: "Variação da banca", value: formatPercent(risk.variation), tone: toneFromNumber(risk.variation) },
+    { label: "Drawdown máximo", value: formatCurrency(risk.maxDrawdown), tone: "negative" },
+    { label: "Sequência atual", value: risk.currentStreakLabel, tone: risk.currentStreakTone },
+  ];
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {items.map((item) => {
+        const toneClass = getToneClasses(item.tone);
+        return (
+          <div
+            key={item.label}
+            className="rounded-[14px] border border-slate-200 bg-slate-50 p-3.5 dark:border-white/[0.08] dark:bg-white/[0.035]"
+          >
+            <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{item.label}</p>
+            <p className={`mt-2 truncate text-[17px] font-semibold ${toneClass.text}`}>{item.value}</p>
+            {item.detail ? <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">{item.detail}</p> : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function RecentHistory({ entries }) {
+  const recent = [...entries].sort((a, b) => getSortableTimestamp(b) - getSortableTimestamp(a)).slice(0, 7);
+
+  if (recent.length === 0) {
+    return <EmptyBlock>Nenhuma aposta registrada ainda.</EmptyBlock>;
+  }
+
+  return (
+    <>
+      <div className="hidden overflow-hidden rounded-[14px] border border-slate-200 dark:border-white/[0.08] lg:block">
+        <table className="w-full">
+          <thead className="bg-slate-50 dark:bg-white/[0.035]">
+            <tr className="text-left">
+              {["Data", "Evento", "Mercado", "Stake", "Odd", "Resultado", "Lucro/prejuízo"].map((heading) => (
+                <th
+                  key={heading}
+                  className="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400"
+                >
+                  {heading}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
+            {recent.map((entry) => {
+              const result = calculateEntryResult(entry);
+              const toneClass = getToneClasses(toneFromNumber(result.lucro));
+              return (
+                <tr key={entry.id} className="transition-colors hover:bg-slate-50/80 dark:hover:bg-white/[0.025]">
+                  <td className="whitespace-nowrap px-4 py-3.5 text-[14px] text-slate-600 dark:text-slate-300">
+                    {formatDate(entry.date)}
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <p className="max-w-[280px] truncate text-[14px] font-semibold text-slate-950 dark:text-white">
+                      {entry.event || "Aposta sem título"}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3.5 text-[14px] text-slate-600 dark:text-slate-300">
+                    <span className="block max-w-[180px] truncate">{entry.market || "Não informado"}</span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5 text-[14px] font-medium text-slate-950 dark:text-white">
+                    {formatCurrency(result.stake)}
+                  </td>
+                  <td className="px-4 py-3.5 text-[14px] text-slate-600 dark:text-slate-300">
+                    {result.odd.toFixed(2).replace(".", ",")}
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <StatusBadge status={entry.status} />
+                  </td>
+                  <td className={`whitespace-nowrap px-4 py-3.5 text-[14px] font-semibold ${toneClass.text}`}>
+                    {entry.status === "pending" ? "--" : formatSignedCurrency(result.lucro)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid gap-3 lg:hidden">
+        {recent.map((entry) => {
+          const result = calculateEntryResult(entry);
+          const toneClass = getToneClasses(toneFromNumber(result.lucro));
+
+          return (
+            <article
+              key={entry.id}
+              className="rounded-[14px] border border-slate-200 bg-slate-50 p-4 dark:border-white/[0.08] dark:bg-white/[0.035]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[12px] text-slate-500 dark:text-slate-400">{formatDate(entry.date)}</p>
+                  <h3 className="mt-1 truncate text-[14px] font-semibold text-slate-950 dark:text-white">
+                    {entry.event || "Aposta sem título"}
+                  </h3>
+                  <p className="mt-1 truncate text-[12px] text-slate-500 dark:text-slate-400">
+                    {entry.market || "Não informado"}
+                  </p>
+                </div>
+                <StatusBadge status={entry.status} />
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-3 text-[12px]">
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Stake</p>
+                  <p className="mt-1 font-semibold text-slate-900 dark:text-white">{formatCurrency(result.stake)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Odd</p>
+                  <p className="mt-1 font-semibold text-slate-900 dark:text-white">{result.odd.toFixed(2).replace(".", ",")}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Lucro</p>
+                  <p className={`mt-1 font-semibold ${toneClass.text}`}>
+                    {entry.status === "pending" ? "--" : formatSignedCurrency(result.lucro)}
+                  </p>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function exportCsv(entries) {
+  const headers = ["Data", "Evento", "Mercado", "Stake", "Odd", "Status", "Retorno", "Lucro"];
+  const lines = entries.map((entry) => {
+    const result = calculateEntryResult(entry);
+    return [
+      entry.date || "",
+      entry.event || "",
+      entry.market || "",
+      result.stake,
+      result.odd,
+      entry.status || "",
+      result.retorno,
+      result.lucro,
+    ]
+      .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+      .join(",");
+  });
+  const blob = new Blob([[headers.join(","), ...lines].join("\n")], {
+    type: "text/csv;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "estatisticas-banca.csv";
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function EstatisticasPage() {
   const [entries, setEntries] = useState([]);
   const [settings, setSettings] = useState({ initialBankroll: "" });
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [page, setPage] = useState(1);
+  const [period, setPeriod] = useState("30d");
+  const [customRange, setCustomRange] = useState(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 29);
+    return { start: getInputDate(start), end: getInputDate(end) };
+  });
 
   useEffect(() => {
-    setEntries(loadBankrollEntries());
-    setSettings(loadBankrollSettings());
+    window.queueMicrotask(() => {
+      setEntries(loadBankrollEntries().filter((entry) => !entry.movementType));
+      setSettings(loadBankrollSettings());
+    });
   }, []);
 
-  const stats = useMemo(() => {
-    return calculateStats(entries, settings.initialBankroll);
-  }, [entries, settings.initialBankroll]);
+  const range = useMemo(() => getPeriodRange(period, customRange), [period, customRange]);
+  const filteredEntries = useMemo(() => filterEntriesByPeriod(entries, range), [entries, range]);
+  const allStats = useMemo(
+    () => calculateStats(entries, settings.initialBankroll),
+    [entries, settings.initialBankroll]
+  );
+  const periodStats = useMemo(
+    () => calculateStats(filteredEntries, settings.initialBankroll),
+    [filteredEntries, settings.initialBankroll]
+  );
+  const bankrollEvolution = useMemo(
+    () => buildBankrollEvolution(entries, settings.initialBankroll, range),
+    [entries, settings.initialBankroll, range]
+  );
+  const profitSeries = useMemo(() => buildProfitSeries(filteredEntries), [filteredEntries]);
+  const marketRows = useMemo(
+    () => buildPerformanceRows(filteredEntries, (entry) => normalizeMarket(entry.market)),
+    [filteredEntries]
+  );
+  const categoryRows = useMemo(
+    () => buildPerformanceRows(filteredEntries, inferCategory),
+    [filteredEntries]
+  );
+  const risk = useMemo(
+    () => calculateRisk(filteredEntries, settings.initialBankroll || 0, allStats.currentBankroll),
+    [filteredEntries, settings.initialBankroll, allStats.currentBankroll]
+  );
 
-  const extraStats = useMemo(() => {
-    return {
-      evolution: buildEvolution(entries, settings.initialBankroll),
-      ...calculateSequences(entries),
-    };
-  }, [entries, settings.initialBankroll]);
-
-  const orderedEntries = useMemo(() => {
-    return [...entries].sort((a, b) => getSortableTimestamp(b) - getSortableTimestamp(a));
-  }, [entries]);
-
-  const filteredEntries = useMemo(() => {
-    if (statusFilter === "all") return orderedEntries;
-    return orderedEntries.filter((entry) => entry.status === statusFilter);
-  }, [orderedEntries, statusFilter]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredEntries.length / HISTORY_PAGE_SIZE));
-
-  useEffect(() => {
-    setPage(1);
-  }, [statusFilter]);
-
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
-
-  const paginatedEntries = useMemo(() => {
-    const start = (page - 1) * HISTORY_PAGE_SIZE;
-    const end = start + HISTORY_PAGE_SIZE;
-    return filteredEntries.slice(start, end);
-  }, [filteredEntries, page]);
-
-  const initialBankrollLabel =
-    settings.initialBankroll === "" || settings.initialBankroll === null
-      ? "R$ 0,00"
-      : formatCurrency(stats.initialBankroll);
-
-  const initialBankrollMeta =
-    settings.initialBankroll === "" || settings.initialBankroll === null
-      ? "Defina esse valor na página Banca"
-      : "Valor base definido na planilha";
+  const cards = [
+    {
+      label: "Banca atual",
+      value: formatCurrency(allStats.currentBankroll),
+      detail:
+        settings.initialBankroll === ""
+          ? "Defina a banca inicial na página Banca"
+          : `Base ${formatCurrency(allStats.initialBankroll)}`,
+      tone: toneFromNumber(allStats.netProfit),
+      icon: Wallet,
+    },
+    {
+      label: "Lucro/prejuízo total",
+      value: formatSignedCurrency(allStats.netProfit),
+      detail: `${allStats.totalEntries} apostas registradas`,
+      tone: toneFromNumber(allStats.netProfit),
+      icon: CircleDollarSign,
+    },
+    {
+      label: "Lucro/prejuízo no período",
+      value: formatSignedCurrency(periodStats.netProfit),
+      detail: `${filteredEntries.length} apostas no filtro`,
+      tone: toneFromNumber(periodStats.netProfit),
+      icon: periodStats.netProfit >= 0 ? ArrowUpRight : ArrowDownRight,
+    },
+    {
+      label: "ROI",
+      value: formatPercent(periodStats.roi),
+      detail: `Stake liquidada ${formatCurrency(periodStats.settledStake)}`,
+      tone: toneFromNumber(periodStats.roi),
+      icon: Gauge,
+    },
+    {
+      label: "Taxa de acerto",
+      value: formatPercent(periodStats.hitRate),
+      detail: `${periodStats.greenEntries} greens de ${Math.max(0, periodStats.totalEntries - periodStats.pendingEntries)}`,
+      tone: periodStats.hitRate >= 50 ? "positive" : periodStats.hitRate > 0 ? "warning" : "neutral",
+      icon: Target,
+    },
+    {
+      label: "Total de apostas",
+      value: String(periodStats.totalEntries),
+      detail: `${periodStats.pendingEntries} abertas`,
+      tone: "neutral",
+      icon: BarChart3,
+    },
+    {
+      label: "Greens / Reds / Cashouts",
+      value: `${periodStats.greenEntries}/${periodStats.redEntries}/${periodStats.cashoutEntries}`,
+      detail: "Resultados finalizados",
+      tone: "neutral",
+      icon: Trophy,
+    },
+    {
+      label: "Stake média",
+      value: formatCurrency(periodStats.averageStake),
+      detail: `Odd média ${periodStats.averageOdd.toFixed(2).replace(".", ",")}`,
+      tone: "neutral",
+      icon: Activity,
+    },
+  ];
 
   return (
-    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-transparent text-slate-900 dark:text-white">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(59,130,246,0.10),transparent_24%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.08),transparent_20%),linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] dark:bg-[radial-gradient(circle_at_12%_8%,rgba(92,126,176,0.16),transparent_22%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_18%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
-      </div>
-
-      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
-        <section className="mx-auto max-w-[1550px] px-5 py-6 md:px-8">
-          <div className="flex flex-col gap-4 rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.92)_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] lg:flex-row lg:items-center lg:justify-between dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,rgba(16,25,37,0.92)_0%,rgba(13,21,32,0.92)_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.20)]">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#6ea900] dark:text-[#8df126]">
-                Gestão de banca
+    <main className="min-h-full bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-white">
+      <div className="mx-auto flex max-w-[1480px] flex-col gap-5 px-5 py-5 md:px-8">
+        <header className="rounded-[18px] border border-slate-200/80 bg-white px-5 py-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-white/[0.08] dark:bg-slate-900/92">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <h1 className="text-[30px] font-semibold tracking-[-0.04em] text-slate-950 dark:text-white">
+                  Estatísticas
+                </h1>
+                <Link
+                  href="/area-membros/banca"
+                  className="inline-flex h-9 w-fit items-center justify-center gap-2 rounded-[11px] px-3 text-[13px] font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-950 dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.06] dark:hover:text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar para Banca
+                </Link>
+              </div>
+              <p className="mt-2 max-w-[680px] text-[14px] leading-6 text-slate-600 dark:text-slate-400">
+                Acompanhe a evolução da banca, resultados, risco e desempenho das apostas em um painel de análise.
               </p>
-
-              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-slate-900 dark:text-white">
-                Estatísticas
-              </h1>
-
-              <p className="mt-2 text-[14px] text-slate-500 dark:text-white/48">
-                Histórico completo, indicadores e evolução da banca.
-              </p>
             </div>
 
-            <Link
-              href="/area-membros/banca"
-              className="inline-flex h-12 w-fit items-center gap-2 rounded-[16px] border border-[#a6ff4d]/20 bg-[#8df126] px-5 text-[14px] font-bold text-[#081200] shadow-[0_10px_24px_rgba(141,241,38,0.18)] transition hover:brightness-105"
-            >
-              <TicketIcon className="h-4 w-4 text-[#081200]" />
-              <span className="text-[#081200]">Voltar para banca</span>
-            </Link>
-          </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="Banca inicial"
-              value={initialBankrollLabel}
-              meta={initialBankrollMeta}
-              tone="default"
-              icon={<WalletIcon />}
-            />
-
-            <StatCard
-              label="Banca atual"
-              value={formatCurrency(stats.currentBankroll)}
-              meta={`${stats.totalEntries} apostas registradas`}
-              tone={stats.netProfit >= 0 ? "green" : "red"}
-              icon={<WalletIcon />}
-            />
-
-            <StatCard
-              label="Lucro líquido"
-              value={`${stats.netProfit >= 0 ? "+" : ""}${formatCurrency(stats.netProfit)}`}
-              meta={`Retorno total ${formatCurrency(stats.totalReturn)}`}
-              tone={stats.netProfit >= 0 ? "green" : "red"}
-              icon={<ChartIcon />}
-            />
-
-            <StatCard
-              label="ROI"
-              value={`${stats.roi.toFixed(1).replace(".", ",")}%`}
-              meta={`Taxa de green ${stats.hitRate.toFixed(1).replace(".", ",")}%`}
-              tone={stats.roi >= 0 ? "green" : "red"}
-              icon={<ChartIcon />}
-            />
-          </div>
-
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
-                    Evolução
-                  </p>
-                  <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-                    Evolução da banca
-                  </h2>
-                </div>
-
-                <div className="rounded-full border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-3 py-1.5 text-[12px] font-semibold text-[#6ea900] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111a26_100%)] dark:text-[#8df126]">
-                  {formatCurrency(stats.currentBankroll)} atual
-                </div>
+            <div className="flex flex-col gap-3 xl:items-end">
+              <div className="flex w-fit max-w-full flex-wrap gap-1 rounded-[13px] border border-slate-200 bg-slate-100 p-1 dark:border-white/[0.08] dark:bg-white/[0.04]">
+                {PERIODS.map((option) => (
+                  <PeriodButton
+                    key={option.value}
+                    active={period === option.value}
+                    onClick={() => setPeriod(option.value)}
+                  >
+                    {option.label}
+                  </PeriodButton>
+                ))}
               </div>
 
-              <div className="mt-6">
-                <EvolutionChart evolution={extraStats.evolution} />
-              </div>
-            </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                {period === "custom" ? (
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <label className="flex h-10 items-center gap-2 rounded-[11px] bg-white px-3 text-[12px] font-medium text-slate-600 ring-1 ring-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08]">
+                      <CalendarDays className="h-4 w-4" />
+                      <input
+                        type="date"
+                        value={customRange.start}
+                        onChange={(event) => setCustomRange((current) => ({ ...current, start: event.target.value }))}
+                        className="bg-transparent text-[13px] text-slate-950 outline-none dark:text-white"
+                      />
+                    </label>
+                    <label className="flex h-10 items-center gap-2 rounded-[11px] bg-white px-3 text-[12px] font-medium text-slate-600 ring-1 ring-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08]">
+                      <CalendarDays className="h-4 w-4" />
+                      <input
+                        type="date"
+                        value={customRange.end}
+                        onChange={(event) => setCustomRange((current) => ({ ...current, end: event.target.value }))}
+                        className="bg-transparent text-[13px] text-slate-950 outline-none dark:text-white"
+                      />
+                    </label>
+                  </div>
+                ) : null}
 
-            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
-                  Resumo do período
-                </p>
-                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-                  Indicadores
-                </h2>
-              </div>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <SummaryPill label="Greens" value={String(stats.greenEntries)} tone="green" />
-                <SummaryPill label="Reds" value={String(stats.redEntries)} tone="red" />
-                <SummaryPill label="Cashouts" value={String(stats.cashoutEntries)} tone="yellow" />
-                <SummaryPill label="Pendentes" value={String(stats.pendingEntries)} tone="neutral" />
-                <SummaryPill
-                  label="Stake média"
-                  value={formatCurrency(stats.averageStake)}
-                  tone="neutral"
-                />
-                <SummaryPill
-                  label="Odd média"
-                  value={stats.averageOdd.toFixed(2).replace(".", ",")}
-                  tone="neutral"
-                />
-                <SummaryPill
-                  label="Melhor sequência"
-                  value={`${extraStats.bestGreenStreak} greens`}
-                  tone="green"
-                />
-                <SummaryPill
-                  label="Pior sequência"
-                  value={`${extraStats.worstRedStreak} reds`}
-                  tone="red"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-col gap-2">
-                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
-                  Histórico completo
-                </p>
-                <h2 className="text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-                  Todas as apostas
-                </h2>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <FilterButton active={statusFilter === "all"} onClick={() => setStatusFilter("all")}>
-                  Todas
-                </FilterButton>
-                <FilterButton
-                  active={statusFilter === "pending"}
-                  onClick={() => setStatusFilter("pending")}
+                <button
+                  type="button"
+                  onClick={() => exportCsv(filteredEntries)}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-[11px] bg-white px-3.5 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
                 >
-                  Pendentes
-                </FilterButton>
-                <FilterButton
-                  active={statusFilter === "green"}
-                  onClick={() => setStatusFilter("green")}
-                >
-                  Greens
-                </FilterButton>
-                <FilterButton active={statusFilter === "red"} onClick={() => setStatusFilter("red")}>
-                  Reds
-                </FilterButton>
-                <FilterButton
-                  active={statusFilter === "cashout"}
-                  onClick={() => setStatusFilter("cashout")}
-                >
-                  Cashouts
-                </FilterButton>
+                  <Download className="h-4 w-4" />
+                  Exportar CSV
+                </button>
               </div>
             </div>
-
-            <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 dark:border-white/[0.06]">
-              <div className="overflow-x-auto">
-                <table className="min-w-[1080px] w-full">
-                  <thead className="bg-slate-50 dark:bg-[rgba(255,255,255,0.03)]">
-                    <tr className="text-left">
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                        Data
-                      </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                        Evento
-                      </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                        Stake
-                      </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                        Odd
-                      </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                        Status
-                      </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                        Retorno
-                      </th>
-                      <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                        Lucro
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {paginatedEntries.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={7}
-                          className="px-4 py-12 text-center text-[14px] text-slate-500 dark:text-white/42"
-                        >
-                          Nenhuma aposta encontrada nesse filtro.
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedEntries.map((entry) => {
-                        const result = calculateEntryResult(entry);
-                        const status = getStatusMeta(entry.status);
-
-                        return (
-                          <tr key={entry.id} className="border-t border-slate-200 dark:border-white/[0.06]">
-                            <td className="px-4 py-4 text-[14px] text-slate-600 dark:text-white/76">
-                              {formatDate(entry.date)}
-                            </td>
-
-                            <td className="px-4 py-4">
-                              <div className="max-w-[320px]">
-                                <div className="truncate text-[14px] font-semibold text-slate-900 dark:text-white">
-                                  {entry.event}
-                                </div>
-                                <div className="mt-1 truncate text-[12px] text-slate-500 dark:text-white/38">
-                                  {entry.market || "Sem mercado informado"}
-                                </div>
-                              </div>
-                            </td>
-
-                            <td className="px-4 py-4 text-[14px] font-semibold text-slate-900 dark:text-white">
-                              {formatCurrency(result.stake)}
-                            </td>
-
-                            <td className="px-4 py-4 text-[14px] text-slate-700 dark:text-white/82">
-                              {result.odd.toFixed(2).replace(".", ",")}
-                            </td>
-
-                            <td className="px-4 py-4">
-                              <span
-                                className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-bold ${getStatusBadgeClass(
-                                  entry.status
-                                )}`}
-                              >
-                                {status.label}
-                              </span>
-                            </td>
-
-                            <td className="px-4 py-4 text-[14px] text-slate-700 dark:text-white/82">
-                              {entry.status === "pending" ? "--" : formatCurrency(result.retorno)}
-                            </td>
-
-                            <td
-                              className={`px-4 py-4 text-[14px] font-bold ${
-                                result.lucro > 0
-                                  ? "text-[#6ea900] dark:text-[#8df126]"
-                                  : result.lucro < 0
-                                  ? "text-[#b85d5d] dark:text-[#db8f8f]"
-                                  : "text-slate-500 dark:text-white/60"
-                              }`}
-                            >
-                              {entry.status === "pending"
-                                ? "--"
-                                : `${result.lucro > 0 ? "+" : ""}${formatCurrency(result.lucro)}`}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <PaginationControls page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
+        </header>
+
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {cards.map((card) => (
+            <MetricCard key={card.label} {...card} />
+          ))}
         </section>
+
+        <section>
+          <Panel className="p-5">
+            <SectionHeader
+              eyebrow="Evolução"
+              title="Evolução da banca"
+              description="Linha principal da página, calculada com as apostas finalizadas no período selecionado."
+              action={
+                <span className="inline-flex h-9 items-center gap-2 rounded-[12px] px-3 text-[13px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:text-emerald-300 dark:ring-emerald-400/20">
+                  <LineChart className="h-4 w-4" />
+                  {formatCurrency(bankrollEvolution.data.at(-1)?.value || 0)}
+                </span>
+              }
+            />
+            <div className="mt-4">
+              <LineAreaChart data={bankrollEvolution.data} />
+            </div>
+          </Panel>
+        </section>
+
+        <section>
+          <Panel className="p-5">
+            <SectionHeader
+              eyebrow="Resultados"
+              title="Resultados do período"
+              description="Distribuição dos status e saldo consolidado do filtro atual."
+            />
+
+            <div className="mt-5 grid gap-6 xl:grid-cols-[0.85fr_1.15fr] xl:items-center">
+              <div>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-[14px] font-semibold text-slate-950 dark:text-white">
+                    Distribuição
+                  </h3>
+                  <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                    {periodStats.totalEntries} apostas
+                  </span>
+                </div>
+                <ResultDistribution stats={periodStats} />
+              </div>
+
+              <div className="border-t border-slate-200 pt-5 dark:border-white/[0.06] xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
+                <div className="mb-3">
+                  <h3 className="text-[14px] font-semibold text-slate-950 dark:text-white">
+                    Resumo financeiro
+                  </h3>
+                  <p className="mt-1 text-[13px] text-slate-600 dark:text-slate-400">
+                    Principais números do lucro/prejuízo no período.
+                  </p>
+                </div>
+                <PeriodResultSummary data={profitSeries} />
+              </div>
+            </div>
+          </Panel>
+        </section>
+
+        <section className="grid items-start gap-5 xl:grid-cols-2">
+          <Panel className="p-5">
+            <SectionHeader
+              eyebrow="Mercados"
+              title="Desempenho por mercado"
+              description="Ranking dos mercados por lucro, acerto e ROI."
+            />
+            <div className="mt-4">
+              <PerformanceTable rows={marketRows} titleColumn="Mercado" />
+            </div>
+          </Panel>
+
+          <Panel className="p-5">
+            <SectionHeader
+              eyebrow="Categorias"
+              title="Desempenho por esporte/campeonato"
+              description="Agrupamento simples por categoria inferida dos registros."
+            />
+            <div className="mt-4">
+              <PerformanceTable rows={categoryRows} titleColumn="Esporte/campeonato" />
+            </div>
+          </Panel>
+        </section>
+
+        <Panel className="p-5">
+          <SectionHeader
+            eyebrow="Risco"
+            title="Gestão de risco"
+            description="Indicadores de exposição, drawdown e variação para acompanhar disciplina de banca."
+            action={
+              <Link
+                href="/area-membros/banca"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-[12px] bg-white px-3.5 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Gerenciar banca
+              </Link>
+            }
+          />
+          <div className="mt-4">
+            <RiskGrid risk={risk} />
+          </div>
+        </Panel>
+
+        <Panel className="p-5">
+          <SectionHeader
+            eyebrow="Histórico resumido"
+            title="Últimos resultados"
+            description="Uma visão compacta das apostas mais recentes, sem competir com a página de Banca."
+          />
+          <div className="mt-4">
+            <RecentHistory entries={filteredEntries} />
+          </div>
+        </Panel>
       </div>
     </main>
   );

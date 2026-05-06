@@ -1,374 +1,394 @@
 "use client";
 
-export default function DashboardPage() {
-  const periods = ["7 dias", "30 dias", "Mês"];
-  const activePeriod = "30 dias";
+import Link from "next/link";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  ClipboardList,
+  LineChart,
+  Plus,
+  ShieldCheck,
+  Target,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 
-  const stats = [
-    {
-      label: "Banca atual",
-      value: "R$ 1.842,00",
-      meta: "+8,4% no período",
-      positive: true,
-      icon: "wallet",
-    },
-    {
-      label: "Lucro líquido",
-      value: "+R$ 428,00",
-      meta: "Resultado consolidado",
-      positive: true,
-      icon: "profit",
-    },
-    {
-      label: "ROI",
-      value: "12,4%",
-      meta: "Rentabilidade atual",
-      positive: true,
-      icon: "chart",
-    },
-    {
-      label: "Entradas",
-      value: "38",
-      meta: "No período selecionado",
-      positive: true,
-      icon: "ticket",
-    },
-  ];
+const metrics = [
+  {
+    label: "Banca atual",
+    value: "R$ 18.420",
+    detail: "+7,5% no mês",
+    tone: "positive",
+    icon: Wallet,
+  },
+  {
+    label: "Resultado do mês",
+    value: "+R$ 2.146",
+    detail: "34 apostas finalizadas",
+    tone: "positive",
+    icon: TrendingUp,
+  },
+  {
+    label: "Taxa de acerto",
+    value: "68,4%",
+    detail: "Meta: 62%",
+    tone: "positive",
+    icon: Target,
+  },
+  {
+    label: "ROI",
+    value: "14,2%",
+    detail: "Período atual",
+    tone: "positive",
+    icon: LineChart,
+  },
+  {
+    label: "Apostas em aberto",
+    value: "7",
+    detail: "R$ 620 expostos",
+    tone: "neutral",
+    icon: ClipboardList,
+  },
+  {
+    label: "Status de risco",
+    value: "Baixo",
+    detail: "Stake média: 1,8%",
+    tone: "safe",
+    icon: ShieldCheck,
+  },
+];
 
-  const bankrollSeries = [
-    1180, 1215, 1198, 1260, 1312, 1288, 1365, 1420, 1390, 1510, 1588, 1670,
-    1765, 1842,
-  ];
+const performance = [
+  { label: "Greens", value: "24", tone: "positive" },
+  { label: "Reds", value: "10", tone: "negative" },
+  { label: "Pendentes", value: "7", tone: "neutral" },
+];
 
-  const monthlySummary = [
-    { label: "Greens", value: "24", color: "green" },
-    { label: "Reds", value: "11", color: "red" },
-    { label: "Taxa de acerto", value: "68,5%", color: "neutral" },
-    { label: "Stake média", value: "R$ 45,00", color: "neutral" },
-    { label: "Melhor sequência", value: "7 greens", color: "green" },
-    { label: "Pior sequência", value: "3 reds", color: "red" },
-  ];
+const chartBars = [46, 54, 42, 61, 58, 66, 73, 68, 79, 76, 84, 88];
 
-  function Icon({ type, className = "h-5 w-5" }) {
-    if (type === "wallet") {
-      return (
-        <svg viewBox="0 0 24 24" fill="none" className={className}>
-          <path
-            d="M4 8.5C4 7.12 5.12 6 6.5 6H17.5C18.88 6 20 7.12 20 8.5V15.5C20 16.88 18.88 18 17.5 18H6.5C5.12 18 4 16.88 4 15.5V8.5Z"
-            stroke="currentColor"
-            strokeWidth="1.7"
-          />
-          <path
-            d="M15.5 12H20"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-          <circle cx="15.5" cy="12" r="1" fill="currentColor" />
-          <path
-            d="M7 6V5.7C7 4.76 7.76 4 8.7 4H17"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-        </svg>
-      );
-    }
+const alerts = [
+  {
+    title: "Gestão dentro do plano",
+    text: "Nenhuma entrada acima do limite de stake configurado.",
+    tone: "safe",
+    icon: CheckCircle2,
+  },
+  {
+    title: "Atenção em mercados de escanteios",
+    text: "ROI negativo no recorte recente. Vale revisar antes da próxima entrada.",
+    tone: "warning",
+    icon: AlertTriangle,
+  },
+];
 
-    if (type === "profit") {
-      return (
-        <svg viewBox="0 0 24 24" fill="none" className={className}>
-          <path
-            d="M5 16L10 11L13.2 14.2L19 8.5"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M15.5 8.5H19V12"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-    }
+const recentActivities = [
+  {
+    title: "Barcelona x Sevilla",
+    detail: "Over 2.5 gols",
+    result: "+R$ 139",
+    tone: "positive",
+  },
+  {
+    title: "Chelsea x Brighton",
+    detail: "Empate anula",
+    result: "-R$ 150",
+    tone: "negative",
+  },
+  {
+    title: "Palmeiras x Santos",
+    detail: "Palmeiras vence",
+    result: "Aberta",
+    tone: "neutral",
+  },
+];
 
-    if (type === "chart") {
-      return (
-        <svg viewBox="0 0 24 24" fill="none" className={className}>
-          <path d="M5 18V11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <path d="M10 18V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <path d="M15 18V13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <path d="M20 18V9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-        </svg>
-      );
-    }
+const quickActions = [
+  {
+    label: "Registrar aposta",
+    href: "/area-membros/banca",
+    icon: Plus,
+  },
+  {
+    label: "Ver estatísticas",
+    href: "/area-membros/estatisticas",
+    icon: BarChart3,
+  },
+  {
+    label: "Abrir métodos",
+    href: "/area-membros/metodos",
+    icon: ShieldCheck,
+  },
+];
 
-    if (type === "ticket") {
-      return (
-        <svg viewBox="0 0 24 24" fill="none" className={className}>
-          <path
-            d="M7 7H17C18.1 7 19 7.9 19 9V10C17.9 10 17 10.9 17 12C17 13.1 17.9 14 19 14V15C19 16.1 18.1 17 17 17H7C5.9 17 5 16.1 5 15V14C6.1 14 7 13.1 7 12C7 10.9 6.1 10 5 10V9C5 7.9 5.9 7 7 7Z"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M12 8.5V15.5"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeDasharray="1.8 1.8"
-          />
-        </svg>
-      );
-    }
-
-    return null;
+function getTone(tone) {
+  if (tone === "positive") {
+    return {
+      text: "text-emerald-700 dark:text-emerald-300",
+      subtle: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/20",
+      icon: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/20",
+    };
   }
 
-  function StatCard({ item }) {
-    return (
-      <div className="rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-[0_14px_30px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-500 dark:text-white/32">
-              {item.label}
-            </p>
-
-            <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-              {item.value}
-            </h3>
-
-            <p
-              className={`mt-3 text-[13px] font-medium ${
-                item.positive
-                  ? "text-[#6ea900] dark:text-[#8df126]"
-                  : "text-[#b85d5d] dark:text-[#e58f8f]"
-              }`}
-            >
-              {item.meta}
-            </p>
-          </div>
-
-          <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] text-sky-600 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] dark:text-[#86a5cf]">
-            <Icon type={item.icon} className="h-5 w-5" />
-          </div>
-        </div>
-      </div>
-    );
+  if (tone === "negative") {
+    return {
+      text: "text-rose-700 dark:text-rose-300",
+      subtle: "bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-400/20",
+      icon: "bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-400/20",
+    };
   }
 
-  function SummaryPill({ item }) {
-    const colorClass =
-      item.color === "green"
-        ? "border-[#b9dea2] bg-[linear-gradient(180deg,#f3fde9_0%,#edf8e6_100%)] text-[#6ea900] dark:border-[#2c4720] dark:bg-[linear-gradient(180deg,#132012_0%,#111a12_100%)] dark:text-[#8df126]"
-        : item.color === "red"
-        ? "border-[#e6b8bb] bg-[linear-gradient(180deg,#fff3f4_0%,#fceced_100%)] text-[#b85d5d] dark:border-[#4a2729] dark:bg-[linear-gradient(180deg,#1b1214_0%,#171012_100%)] dark:text-[#db8f8f]"
-        : "border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] text-slate-700 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:text-white/78";
-
-    return (
-      <div className={`rounded-[16px] border px-4 py-4 ${colorClass}`}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] opacity-60">
-          {item.label}
-        </p>
-        <div className="mt-2 text-[20px] font-black tracking-[-0.04em]">
-          {item.value}
-        </div>
-      </div>
-    );
+  if (tone === "warning") {
+    return {
+      text: "text-amber-800 dark:text-amber-300",
+      subtle: "bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20",
+      icon: "bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20",
+    };
   }
 
-  function BankrollChart() {
-    const max = Math.max(...bankrollSeries);
-    const min = Math.min(...bankrollSeries);
-    const range = max - min || 1;
-
-    const points = bankrollSeries
-      .map((value, index) => {
-        const x = (index / (bankrollSeries.length - 1)) * 100;
-        const y = 100 - ((value - min) / range) * 76 - 12;
-        return `${x},${y}`;
-      })
-      .join(" ");
-
-    const areaPoints = `0,100 ${points} 100,100`;
-
-    return (
-      <div className="rounded-[22px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#0d1520_0%,#0b121b_100%)]">
-        <div className="h-[280px] w-full">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-            <defs>
-              <linearGradient id="bankrollLine" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#6e8fbe" />
-                <stop offset="55%" stopColor="#86a5cf" />
-                <stop offset="100%" stopColor="#8df126" />
-              </linearGradient>
-              <linearGradient id="bankrollArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(110,143,190,0.22)" />
-                <stop offset="100%" stopColor="rgba(110,143,190,0.02)" />
-              </linearGradient>
-            </defs>
-
-            {[20, 40, 60, 80].map((line) => (
-              <line
-                key={line}
-                x1="0"
-                y1={line}
-                x2="100"
-                y2={line}
-                stroke="currentColor"
-                strokeWidth="0.6"
-                strokeDasharray="2 3"
-                className="text-slate-300 dark:text-white/10"
-              />
-            ))}
-
-            <polygon points={areaPoints} fill="url(#bankrollArea)" />
-            <polyline
-              points={points}
-              fill="none"
-              stroke="url(#bankrollLine)"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-
-            {bankrollSeries.map((value, index) => {
-              const x = (index / (bankrollSeries.length - 1)) * 100;
-              const y = 100 - ((value - min) / range) * 76 - 12;
-              return (
-                <g key={`${value}-${index}`}>
-                  <circle cx={x} cy={y} r="1.9" fill="#86a5cf" />
-                  <circle cx={x} cy={y} r="3.2" fill="rgba(134,165,207,0.10)" />
-                </g>
-              );
-            })}
-          </svg>
-        </div>
-
-        <div className="mt-4 flex items-center justify-between gap-2 text-[12px] font-medium text-slate-500 dark:text-white/36">
-          <span>Início</span>
-          <span>Evolução da banca</span>
-          <span>Atual</span>
-        </div>
-      </div>
-    );
+  if (tone === "safe") {
+    return {
+      text: "text-teal-700 dark:text-teal-300",
+      subtle: "bg-teal-50 text-teal-700 ring-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:ring-teal-400/20",
+      icon: "bg-teal-50 text-teal-700 ring-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:ring-teal-400/20",
+    };
   }
+
+  return {
+    text: "text-slate-700 dark:text-slate-300",
+    subtle: "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-white/[0.06] dark:text-slate-300 dark:ring-white/[0.08]",
+    icon: "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-white/[0.06] dark:text-slate-300 dark:ring-white/[0.08]",
+  };
+}
+
+function Panel({ children, className = "" }) {
+  return (
+    <section
+      className={`rounded-[20px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900 ${className}`}
+    >
+      {children}
+    </section>
+  );
+}
+
+function SectionTitle({ eyebrow, title }) {
+  return (
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+        {eyebrow}
+      </p>
+      <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-slate-950 dark:text-white">
+        {title}
+      </h2>
+    </div>
+  );
+}
+
+function MetricCard({ metric }) {
+  const Icon = metric.icon;
+  const tone = getTone(metric.tone);
 
   return (
-    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-transparent text-slate-900 dark:text-white">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,rgba(59,130,246,0.10),transparent_22%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.08),transparent_18%),linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] dark:bg-[radial-gradient(circle_at_10%_8%,rgba(92,126,176,0.15),transparent_20%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_16%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
+    <article className="rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_8px_18px_rgba(15,23,42,0.035)] dark:border-white/[0.08] dark:bg-slate-900">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+            {metric.label}
+          </p>
+          <p className="mt-3 text-[25px] font-semibold tracking-[-0.04em] text-slate-950 dark:text-white">
+            {metric.value}
+          </p>
+          <p className={`mt-2 text-[12px] font-medium ${tone.text}`}>{metric.detail}</p>
+        </div>
+
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] ring-1 ${tone.icon}`}>
+          <Icon className="h-4 w-4" strokeWidth={2} />
+        </span>
+      </div>
+    </article>
+  );
+}
+
+function PerformanceChart() {
+  return (
+    <div className="mt-6">
+      <div className="flex h-[150px] items-end gap-2 rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 dark:border-white/[0.08] dark:bg-white/[0.035]">
+        {chartBars.map((height, index) => (
+          <div
+            key={`${height}-${index}`}
+            className="flex flex-1 items-end"
+            aria-hidden="true"
+          >
+            <span
+              className="w-full rounded-t-[7px] bg-slate-800 dark:bg-slate-200"
+              style={{ height: `${height}%`, opacity: 0.32 + index * 0.045 }}
+            />
+          </div>
+        ))}
       </div>
 
-      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
-        <header className="relative z-30 shrink-0 border-b border-slate-200 bg-[rgba(255,255,255,0.92)] backdrop-blur-xl dark:border-white/[0.06] dark:bg-[rgba(9,15,24,0.92)]">
-          <div className="mx-auto flex max-w-[1550px] flex-col gap-4 px-5 py-5 md:px-8 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#6ea900] dark:text-[#8df126]">
-                Gestão de banca
-              </p>
-
-              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-slate-900 dark:text-white">
-                Resumo da banca
-              </h1>
-
-              <p className="mt-2 text-[14px] text-slate-500 dark:text-white/48">
-                Acompanhe a evolução, resultados e controle da sua banca.
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        {performance.map((item) => {
+          const tone = getTone(item.tone);
+          return (
+            <div
+              key={item.label}
+              className="rounded-[14px] border border-slate-200 bg-white px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.03]"
+            >
+              <p className="text-[12px] text-slate-500 dark:text-slate-400">{item.label}</p>
+              <p className={`mt-1 text-[20px] font-semibold tracking-[-0.03em] ${tone.text}`}>
+                {item.value}
               </p>
             </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
-            <div className="flex items-center gap-2 rounded-[15px] border border-slate-200 bg-slate-100/80 p-1 dark:border-white/[0.06] dark:bg-white/[0.02]">
-              {periods.map((period) => {
-                const isActive = period === activePeriod;
+export default function DashboardPage() {
+  return (
+    <main className="min-h-full bg-[#f5f7f9] text-slate-950 dark:bg-slate-950 dark:text-white">
+      <div className="mx-auto flex max-w-[1480px] flex-col gap-6 px-5 py-6 md:px-8">
+        <header className="flex flex-col gap-4 rounded-[20px] border border-slate-200 bg-white px-5 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400">
+              Olá, Thyago
+            </p>
+            <h1 className="mt-1 text-[28px] font-semibold tracking-[-0.04em] text-slate-950 dark:text-white">
+              Resumo do painel
+            </h1>
+            <p className="mt-2 max-w-[640px] text-[14px] leading-6 text-slate-600 dark:text-slate-300">
+              Visão rápida da sua banca, desempenho e pontos que merecem atenção hoje.
+            </p>
+          </div>
+
+          <Link
+            href="/area-membros/banca"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] bg-emerald-600 px-4 text-[13px] font-semibold text-white transition hover:bg-emerald-700 sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            Nova aposta
+          </Link>
+        </header>
+
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {metrics.map((metric) => (
+            <MetricCard key={metric.label} metric={metric} />
+          ))}
+        </section>
+
+        <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <Panel className="p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <SectionTitle eyebrow="Performance" title="Resumo dos últimos 30 dias" />
+              <span className="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-[12px] font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-white/[0.06] dark:text-slate-300 dark:ring-white/[0.08]">
+                +R$ 2.146
+              </span>
+            </div>
+            <PerformanceChart />
+          </Panel>
+
+          <Panel className="p-6">
+            <SectionTitle eyebrow="Avisos" title="Pontos importantes" />
+
+            <div className="mt-5 space-y-3">
+              {alerts.map((alert) => {
+                const Icon = alert.icon;
+                const tone = getTone(alert.tone);
+
                 return (
-                  <button
-                    key={period}
-                    className={`rounded-[11px] px-4 py-2 text-[13px] font-semibold transition ${
-                      isActive
-                        ? "bg-[#8df126] text-[#081200] shadow-[0_6px_16px_rgba(141,241,38,0.20)]"
-                        : "text-slate-500 hover:text-slate-900 dark:text-white/48 dark:hover:text-white/82"
-                    }`}
+                  <div
+                    key={alert.title}
+                    className="rounded-[16px] border border-slate-200 bg-slate-50 p-4 dark:border-white/[0.08] dark:bg-white/[0.035]"
                   >
-                    {period}
-                  </button>
+                    <div className="flex gap-3">
+                      <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] ring-1 ${tone.icon}`}>
+                        <Icon className="h-4 w-4" strokeWidth={2} />
+                      </span>
+                      <div>
+                        <p className="text-[14px] font-semibold text-slate-950 dark:text-white">
+                          {alert.title}
+                        </p>
+                        <p className="mt-1 text-[13px] leading-5 text-slate-600 dark:text-slate-300">
+                          {alert.text}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
-          </div>
-        </header>
+          </Panel>
+        </section>
 
-        <section className="mx-auto max-w-[1550px] px-5 py-6 md:px-8">
-          <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-7 shadow-[0_20px_44px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_20px_44px_rgba(0,0,0,0.22)]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_20%,rgba(59,130,246,0.10),transparent_24%)] dark:bg-[radial-gradient(circle_at_14%_20%,rgba(92,126,176,0.14),transparent_24%)]" />
-
-            <div className="relative z-10">
-              <div className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:border-white/[0.07] dark:bg-white/[0.03] dark:text-[#8df126]">
-                Resumo principal
-              </div>
-
-              <h2 className="mt-5 text-[36px] font-black leading-[0.95] tracking-[-0.06em] text-slate-900 md:text-[44px] dark:text-white">
-                Controle total da
-                <br />
-                <span className="text-[#6ea900] dark:text-[#8df126]">sua gestão de banca</span>
-              </h2>
-
-              <p className="mt-4 max-w-[620px] text-[15px] leading-[1.6] text-slate-600 dark:text-white/58">
-                Veja com clareza onde sua banca está, quanto evoluiu no período e
-                como seu desempenho está se comportando.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {stats.map((item) => (
-              <StatCard key={item.label} item={item} />
-            ))}
-          </div>
-
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
-                    Evolução
-                  </p>
-                  <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-                    Evolução da banca
-                  </h2>
-                </div>
-
-                <div className="rounded-full border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-3 py-1.5 text-[12px] font-semibold text-[#6ea900] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111a26_100%)] dark:text-[#8df126]">
-                  R$ 1.842,00 atual
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <BankrollChart />
-              </div>
+        <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <Panel className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <SectionTitle eyebrow="Atividade" title="Recentes" />
+              <Link
+                href="/area-membros/banca"
+                className="text-[13px] font-semibold text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+              >
+                Ver tudo
+              </Link>
             </div>
 
-            <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
-                  Resumo do período
-                </p>
-                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-                  Indicadores
-                </h2>
-              </div>
+            <div className="mt-5 divide-y divide-slate-100 dark:divide-white/[0.06]">
+              {recentActivities.map((activity) => {
+                const tone = getTone(activity.tone);
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
-                {monthlySummary.map((item) => (
-                  <SummaryPill key={item.label} item={item} />
-                ))}
-              </div>
+                return (
+                  <div
+                    key={`${activity.title}-${activity.detail}`}
+                    className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[14px] font-semibold text-slate-950 dark:text-white">
+                        {activity.title}
+                      </p>
+                      <p className="mt-1 truncate text-[13px] text-slate-500 dark:text-slate-400">
+                        {activity.detail}
+                      </p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold ring-1 ${tone.subtle}`}>
+                      {activity.result}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          </Panel>
+
+          <Panel className="p-6">
+            <SectionTitle eyebrow="Atalhos" title="Ações rápidas" />
+
+            <div className="mt-5 grid gap-3">
+              {quickActions.map((action) => {
+                const Icon = action.icon;
+
+                return (
+                  <Link
+                    key={action.href}
+                    href={action.href}
+                    className="group flex items-center justify-between gap-4 rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-white dark:border-white/[0.08] dark:bg-white/[0.035] dark:hover:border-white/[0.14] dark:hover:bg-white/[0.06]"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-[11px] bg-white text-slate-700 ring-1 ring-slate-200 dark:bg-slate-950 dark:text-slate-300 dark:ring-white/[0.08]">
+                        <Icon className="h-4 w-4" strokeWidth={2} />
+                      </span>
+                      <span className="text-[14px] font-semibold text-slate-900 dark:text-white">
+                        {action.label}
+                      </span>
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-700 dark:group-hover:text-white" />
+                  </Link>
+                );
+              })}
+            </div>
+          </Panel>
         </section>
       </div>
     </main>

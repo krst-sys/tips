@@ -1,7 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import {
+  BarChart3,
+  CheckCircle2,
+  ChevronDown,
+  Clock3,
+  DollarSign,
+  Plus,
+  RotateCcw,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+  XCircle,
+} from "lucide-react";
 import {
   calculateEntryResult,
   calculateStats,
@@ -19,263 +33,30 @@ import {
 const INITIAL_FORM = {
   date: "",
   event: "",
+  market: "",
   stake: "",
   odd: "",
+  notes: "",
 };
 
-const MAX_RECENT_SETTLED = 15;
-const PENDING_PAGE_SIZE = 10;
-const SETTLED_PAGE_SIZE = 5;
+const PAGE_SIZE = 9;
+const MONTH_REFERENCE = new Date();
 
-function PlusIcon({ className = "h-5 w-5" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 5V19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M5 12H19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
+const historyStatusFilters = [
+  { label: "Finalizadas", value: "all" },
+  { label: "Green", value: "green" },
+  { label: "Red", value: "red" },
+  { label: "Cashout", value: "cashout" },
+];
 
-function ChartIcon({ className = "h-5 w-5" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M5 18V11" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M10 18V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M15 18V13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M20 18V9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function WalletIcon({ className = "h-5 w-5" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M4 8.5C4 7.12 5.12 6 6.5 6H17.5C18.88 6 20 7.12 20 8.5V15.5C20 16.88 18.88 18 17.5 18H6.5C5.12 18 4 16.88 4 15.5V8.5Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-      <path d="M15.5 12H20" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <circle cx="15.5" cy="12" r="1" fill="currentColor" />
-      <path
-        d="M7 6V5.7C7 4.76 7.76 4 8.7 4H17"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function TicketIcon({ className = "h-5 w-5" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M7 7H17C18.1 7 19 7.9 19 9V10C17.9 10 17 10.9 17 12C17 13.1 17.9 14 19 14V15C19 16.1 18.1 17 17 17H7C5.9 17 5 16.1 5 15V14C6.1 14 7 13.1 7 12C7 10.9 6.1 10 5 10V9C5 7.9 5.9 7 7 7Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 8.5V15.5"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeDasharray="1.8 1.8"
-      />
-    </svg>
-  );
-}
-
-function TrashIcon({ className = "h-4 w-4" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M5 7H19" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path
-        d="M9 7V5.8C9 5.36 9.36 5 9.8 5H14.2C14.64 5 15 5.36 15 5.8V7"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-      <path d="M8 10V17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M12 10V17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M16 10V17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path
-        d="M6.5 7L7 18.2C7.04 19.19 7.85 20 8.84 20H15.16C16.15 20 16.96 19.19 17 18.2L17.5 7"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-    </svg>
-  );
-}
-
-function ClockIcon({ className = "h-4 w-4" }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.7" />
-      <path
-        d="M12 8.5V12L14.5 13.5"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function getStatusBadgeClass(status) {
-  if (status === "green") {
-    return "border-[#2c4720] bg-[rgba(141,241,38,0.08)] text-[#6ea900] dark:text-[#8df126]";
-  }
-
-  if (status === "red") {
-    return "border-[#4a2729] bg-[rgba(219,143,143,0.08)] text-[#b85d5d] dark:text-[#db8f8f]";
-  }
-
-  if (status === "cashout") {
-    return "border-[#7b6d20] bg-[rgba(234,214,99,0.12)] text-[#8a7410] dark:border-[#3b3a20] dark:bg-[rgba(234,214,99,0.08)] dark:text-[#ead663]";
-  }
-
-  return "border-slate-200 bg-slate-100 text-slate-700 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72";
-}
-
-function StatCard({ label, value, meta, icon, tone = "default" }) {
-  const iconTone =
-    tone === "green"
-      ? "text-[#8df126]"
-      : tone === "red"
-      ? "text-[#db8f8f]"
-      : "text-sky-600 dark:text-[#86a5cf]";
-
-  return (
-    <div className="rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-5 shadow-[0_14px_30px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.09em] text-slate-500 dark:text-white/32">
-            {label}
-          </p>
-          <h3 className="mt-3 text-[30px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-            {value}
-          </h3>
-          <p
-            className={`mt-3 text-[13px] font-medium ${
-              tone === "green"
-                ? "text-[#6ea900] dark:text-[#8df126]"
-                : tone === "red"
-                ? "text-[#b85d5d] dark:text-[#db8f8f]"
-                : "text-slate-500 dark:text-white/52"
-            }`}
-          >
-            {meta}
-          </p>
-        </div>
-
-        <div
-          className={`flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#152131_0%,#111b29_100%)] ${iconTone}`}
-        >
-          {icon}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TopMiniCard({ label, value }) {
-  return (
-    <div className="rounded-[18px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-white/34">
-        {label}
-      </div>
-      <div className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function Input({ label, className = "", ...props }) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-white/42">
-        {label}
-      </span>
-      <input
-        {...props}
-        className={`h-12 w-full rounded-[16px] border border-slate-200 bg-white px-4 text-[14px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#8df126]/50 focus:bg-white dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white dark:placeholder:text-white/20 dark:focus:bg-[rgba(255,255,255,0.04)] ${className}`}
-      />
-    </label>
-  );
-}
-
-function EmptyState({ text }) {
-  return (
-    <div className="px-4 py-10 text-center text-[14px] text-slate-500 dark:text-white/42">
-      {text}
-    </div>
-  );
-}
-
-function PaginationControls({ page, totalPages, onPageChange }) {
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-[13px] text-slate-500 dark:text-white/42">
-        Página <span className="font-semibold text-slate-900 dark:text-white">{page}</span> de{" "}
-        <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
-      </p>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => onPageChange(page - 1)}
-          disabled={page === 1}
-          className="inline-flex h-10 items-center rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/78 dark:hover:bg-white/[0.05]"
-        >
-          Anterior
-        </button>
-
-        {Array.from({ length: totalPages }).map((_, index) => {
-          const pageNumber = index + 1;
-          const active = pageNumber === page;
-
-          return (
-            <button
-              key={pageNumber}
-              type="button"
-              onClick={() => onPageChange(pageNumber)}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-[12px] border text-[13px] font-bold transition ${
-                active
-                  ? "border-[#8df126]/40 bg-[rgba(141,241,38,0.12)] text-[#6ea900] dark:text-[#8df126]"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/72 dark:hover:bg-white/[0.05]"
-              }`}
-            >
-              {pageNumber}
-            </button>
-          );
-        })}
-
-        <button
-          type="button"
-          onClick={() => onPageChange(page + 1)}
-          disabled={page === totalPages}
-          className="inline-flex h-10 items-center rounded-[12px] border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/78 dark:hover:bg-white/[0.05]"
-        >
-          Próxima
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function getSortableTimestamp(entry, fallbackField = "createdAt") {
+function getSortableTimestamp(entry) {
   if (entry?.resolvedAt) {
     const value = new Date(entry.resolvedAt).getTime();
     if (Number.isFinite(value)) return value;
   }
 
-  if (entry?.[fallbackField]) {
-    const value = new Date(entry[fallbackField]).getTime();
+  if (entry?.createdAt) {
+    const value = new Date(entry.createdAt).getTime();
     if (Number.isFinite(value)) return value;
   }
 
@@ -287,238 +68,574 @@ function getSortableTimestamp(entry, fallbackField = "createdAt") {
   return 0;
 }
 
-function EntriesTable({
-  entries,
-  title,
-  subtitle,
-  allowClockAction = false,
-  onStatusChange,
-  onDelete,
-  page,
-  totalPages,
-  onPageChange,
-  sectionKey,
-  activeCashoutSection,
-  cashoutTarget,
+function getToneClass(tone) {
+  if (tone === "positive") {
+    return {
+      text: "text-emerald-700 dark:text-emerald-300",
+      icon: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20",
+      badge: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300",
+    };
+  }
+
+  if (tone === "negative") {
+    return {
+      text: "text-rose-700 dark:text-rose-300",
+      icon: "bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20",
+      badge: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-300",
+    };
+  }
+
+  if (tone === "warning") {
+    return {
+      text: "text-amber-800 dark:text-amber-300",
+      icon: "bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20",
+      badge: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300",
+    };
+  }
+
+  return {
+    text: "text-slate-700 dark:text-slate-300",
+    icon: "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-white/[0.06] dark:text-slate-300 dark:ring-white/[0.08]",
+    badge: "border-slate-200 bg-slate-100 text-slate-700 dark:border-white/[0.08] dark:bg-white/[0.06] dark:text-slate-300",
+  };
+}
+
+function getStatusTone(status) {
+  if (status === "green") return "positive";
+  if (status === "red") return "negative";
+  if (status === "cashout") return "warning";
+  return "neutral";
+}
+
+function getStatusLabel(status) {
+  if (status === "pending") return "Aberta";
+  return getStatusMeta(status).label;
+}
+
+function Panel({ children, className = "", id }) {
+  return (
+    <section
+      id={id}
+      className={`rounded-[20px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900 ${className}`}
+    >
+      {children}
+    </section>
+  );
+}
+
+function Input({ label, className = "", ...props }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[12px] font-medium text-slate-600 dark:text-slate-300">
+        {label}
+      </span>
+      <input
+        {...props}
+        className={`h-11 w-full rounded-[14px] border border-slate-200 bg-white px-3.5 text-[14px] text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-white dark:placeholder:text-slate-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-400/10 ${className}`}
+      />
+    </label>
+  );
+}
+
+function SummaryCard({ label, value, detail, tone = "neutral", icon: Icon }) {
+  const toneClass = getToneClass(tone);
+
+  return (
+    <article className="rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_8px_18px_rgba(15,23,42,0.035)] dark:border-white/[0.08] dark:bg-slate-900">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+            {label}
+          </p>
+          <p className="mt-3 truncate text-[24px] font-semibold tracking-[-0.04em] text-slate-950 dark:text-white">
+            {value}
+          </p>
+          <p className={`mt-2 text-[12px] font-medium ${toneClass.text}`}>{detail}</p>
+        </div>
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] ring-1 ${toneClass.icon}`}
+        >
+          <Icon className="h-4 w-4" strokeWidth={2} />
+        </span>
+      </div>
+    </article>
+  );
+}
+
+function FilterButton({ active, children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex h-9 items-center rounded-[12px] px-3.5 text-[13px] font-semibold ring-1 transition ${
+        active
+          ? "bg-slate-950 text-white ring-slate-950 dark:bg-white/[0.12] dark:text-white dark:ring-white/[0.16]"
+          : "bg-white text-slate-700 ring-slate-200 hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function StatusBadge({ status }) {
+  const toneClass = getToneClass(getStatusTone(status));
+
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2.5 py-1 text-[12px] font-semibold ${toneClass.badge}`}
+    >
+      {getStatusLabel(status)}
+    </span>
+  );
+}
+
+function EmptyState({ statusFilter }) {
+  const text =
+    statusFilter === "pending"
+      ? "Nenhuma aposta aberta no momento."
+      : "Nenhuma aposta encontrada nesse filtro.";
+
+  return (
+    <div className="rounded-[16px] border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-[14px] text-slate-500 dark:border-white/[0.12] dark:bg-white/[0.035] dark:text-slate-400">
+      {text}
+    </div>
+  );
+}
+
+function CashoutInlineForm({
+  entry,
   cashoutValue,
   onCashoutValueChange,
   onApplyCashout,
   onCancelCashout,
 }) {
-  const showCashoutPanel =
-    activeCashoutSection === sectionKey && cashoutTarget !== null;
+  return (
+    <div className="rounded-[16px] border border-amber-200 bg-amber-50 p-4 dark:border-amber-400/20 dark:bg-amber-400/10">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800 dark:text-amber-300">
+            Cashout
+          </p>
+          <h3 className="mt-1 truncate text-[14px] font-semibold text-slate-950 dark:text-white">
+            {entry.event || "Aposta sem título"}
+          </h3>
+          <p className="mt-1 text-[12px] text-slate-600 dark:text-slate-300">
+            Informe o valor recebido para encerrar esta aposta.
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-[180px_auto_auto] sm:items-end">
+          <Input
+            label="Valor do cashout"
+            type="number"
+            step="0.01"
+            value={cashoutValue}
+            onChange={(event) => onCashoutValueChange(event.target.value)}
+          />
+          <button
+            type="button"
+            onClick={onApplyCashout}
+            className="inline-flex h-11 items-center justify-center rounded-[14px] bg-amber-500 px-4 text-[13px] font-semibold text-slate-950 transition hover:bg-amber-400"
+          >
+            Confirmar
+          </button>
+          <button
+            type="button"
+            onClick={onCancelCashout}
+            className="inline-flex h-11 items-center justify-center rounded-[14px] bg-white px-4 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.06] dark:text-slate-200 dark:ring-white/[0.08] dark:hover:bg-white/[0.1]"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BetsTable({
+  entries,
+  statusFilter,
+  page,
+  totalPages,
+  onPageChange,
+  onStatusChange,
+  onDelete,
+  cashoutTarget,
+  cashoutValue,
+  onCashoutValueChange,
+  onApplyCashout,
+  onCancelCashout,
+  correctionMenuId,
+  onToggleCorrectionMenu,
+  mode = "open",
+}) {
+  if (entries.length === 0) {
+    return <EmptyState statusFilter={statusFilter} />;
+  }
 
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
-      <div className="flex flex-col gap-2">
-        <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
-          Planilha
-        </p>
-        <h2 className="text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-          {title}
-        </h2>
-        <p className="text-[13px] text-slate-500 dark:text-white/44">{subtitle}</p>
+    <>
+      <div className="hidden overflow-visible rounded-[16px] border border-slate-200 dark:border-white/[0.08] lg:block">
+        <table className="w-full">
+          <thead className="bg-slate-50 dark:bg-white/[0.035]">
+            <tr className="text-left">
+              {["Data", "Jogo/evento", "Mercado", "Odd", "Stake", "Retorno possível", "Status", "Ações"].map(
+                (heading) => {
+                  const numeric = ["Odd", "Stake", "Retorno possível"].includes(heading);
+                  const actions = heading === "Ações";
+
+                  return (
+                  <th
+                    key={heading}
+                    className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400 ${
+                      numeric ? "text-right" : ""
+                    } ${actions ? (mode === "open" ? "w-[260px] text-left" : "w-[150px] text-right") : ""}`}
+                  >
+                    {heading}
+                  </th>
+                  );
+                }
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
+            {entries.map((entry) => {
+              const showCashout = cashoutTarget?.id === entry.id;
+
+              return (
+                <Fragment key={entry.id}>
+                  <BetRow
+                    entry={entry}
+                    onStatusChange={onStatusChange}
+                    onDelete={onDelete}
+                    correctionMenuId={correctionMenuId}
+                    onToggleCorrectionMenu={onToggleCorrectionMenu}
+                    mode={mode}
+                  />
+                  {showCashout ? (
+                    <tr className="bg-white dark:bg-slate-900">
+                      <td colSpan={8} className="px-4 pb-4">
+                        <CashoutInlineForm
+                          entry={entry}
+                          cashoutValue={cashoutValue}
+                          onCashoutValueChange={onCashoutValueChange}
+                          onApplyCashout={onApplyCashout}
+                          onCancelCashout={onCancelCashout}
+                        />
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
-      {showCashoutPanel ? (
-        <div className="mt-6 rounded-[22px] border border-[#d6c565] bg-[rgba(234,214,99,0.12)] p-4 dark:border-[#3b3a20] dark:bg-[rgba(234,214,99,0.08)]">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#8a7410] dark:text-[#ead663]">
-                Cashout
-              </p>
-              <h3 className="mt-2 truncate text-[18px] font-black text-slate-900 dark:text-white">
-                {cashoutTarget.event}
-              </h3>
-              <p className="mt-1 text-[13px] text-slate-600 dark:text-white/56">
-                Stake {formatCurrency(calculateEntryResult(cashoutTarget).stake)} • Odd{" "}
-                {calculateEntryResult(cashoutTarget).odd.toFixed(2).replace(".", ",")}
-              </p>
-            </div>
+      <div className="grid gap-3 lg:hidden">
+        {entries.map((entry) => (
+          <BetCard
+            key={entry.id}
+            entry={entry}
+            onStatusChange={onStatusChange}
+            onDelete={onDelete}
+            showCashout={cashoutTarget?.id === entry.id}
+            cashoutValue={cashoutValue}
+            onCashoutValueChange={onCashoutValueChange}
+            onApplyCashout={onApplyCashout}
+            onCancelCashout={onCancelCashout}
+            correctionMenuId={correctionMenuId}
+            onToggleCorrectionMenu={onToggleCorrectionMenu}
+            mode={mode}
+          />
+        ))}
+      </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="w-full sm:w-[220px]">
-                <Input
-                  label="Valor do cashout"
-                  type="number"
-                  step="0.01"
-                  value={cashoutValue}
-                  onChange={(e) => onCashoutValueChange(e.target.value)}
-                />
-              </div>
+      {totalPages > 1 ? (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[13px] text-slate-500 dark:text-slate-400">
+            Página <span className="font-semibold text-slate-900 dark:text-white">{page}</span> de{" "}
+            <span className="font-semibold text-slate-900 dark:text-white">{totalPages}</span>
+          </p>
 
-              <button
-                type="button"
-                onClick={onApplyCashout}
-                className="inline-flex h-12 items-center justify-center rounded-[16px] bg-[#ead663] px-5 text-[14px] font-bold text-[#201c08]"
-              >
-                Aplicar cashout
-              </button>
-
-              <button
-                type="button"
-                onClick={onCancelCashout}
-                className="inline-flex h-12 items-center justify-center rounded-[16px] border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white/78 dark:hover:bg-[rgba(255,255,255,0.05)]"
-              >
-                Cancelar
-              </button>
-            </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onPageChange(page - 1)}
+              disabled={page === 1}
+              className="inline-flex h-9 items-center rounded-[12px] bg-white px-3.5 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              onClick={() => onPageChange(page + 1)}
+              disabled={page === totalPages}
+              className="inline-flex h-9 items-center rounded-[12px] bg-white px-3.5 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
+            >
+              Próxima
+            </button>
           </div>
         </div>
       ) : null}
+    </>
+  );
+}
 
-      <div className="mt-6 overflow-hidden rounded-[22px] border border-slate-200 dark:border-white/[0.06]">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[1120px]">
-            <thead className="bg-slate-50 dark:bg-[rgba(255,255,255,0.03)]">
-              <tr className="text-left">
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                  Data
-                </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                  Evento
-                </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                  Stake
-                </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                  Odd
-                </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                  Status
-                </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                  Retorno
-                </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                  Lucro
-                </th>
-                <th className="px-4 py-4 text-[11px] font-black uppercase tracking-[0.09em] text-slate-500 dark:text-white/34">
-                  Ações
-                </th>
-              </tr>
-            </thead>
+function BetRow({
+  entry,
+  onStatusChange,
+  onDelete,
+  correctionMenuId,
+  onToggleCorrectionMenu,
+  mode = "open",
+}) {
+  const result = calculateEntryResult(entry);
+  const possibleReturn = result.stake * result.odd;
 
-            <tbody>
-              {entries.length === 0 ? (
-                <tr>
-                  <td colSpan={8}>
-                    <EmptyState text="Nenhuma aposta nessa seção." />
-                  </td>
-                </tr>
-              ) : (
-                entries.map((entry) => {
-                  const result = calculateEntryResult(entry);
-                  const status = getStatusMeta(entry.status);
+  return (
+    <tr className="bg-white dark:bg-slate-900">
+      <td className="whitespace-nowrap px-4 py-3.5 text-[14px] text-slate-600 dark:text-slate-300">
+        {formatDate(entry.date)}
+      </td>
+      <td className="px-4 py-3.5">
+        <p className="max-w-[260px] truncate text-[14px] font-semibold text-slate-950 dark:text-white">
+          {entry.event || "Aposta sem título"}
+        </p>
+        {entry.notes ? (
+          <p className="mt-1 max-w-[260px] truncate text-[12px] text-slate-500 dark:text-slate-400">
+            {entry.notes}
+          </p>
+        ) : null}
+      </td>
+      <td className="px-4 py-3.5 text-[14px] text-slate-600 dark:text-slate-300">
+        <span className="block max-w-[170px] truncate">{entry.market || "Não informado"}</span>
+      </td>
+      <td className="whitespace-nowrap px-4 py-3.5 text-right text-[14px] font-medium text-slate-900 dark:text-white">
+        {result.odd.toFixed(2).replace(".", ",")}
+      </td>
+      <td className="whitespace-nowrap px-4 py-3.5 text-right text-[14px] font-medium text-slate-900 dark:text-white">
+        {formatCurrency(result.stake)}
+      </td>
+      <td className="whitespace-nowrap px-4 py-3.5 text-right text-[14px] text-slate-600 dark:text-slate-300">
+        {formatCurrency(possibleReturn)}
+      </td>
+      <td className="px-4 py-3.5">
+        <StatusBadge status={entry.status} />
+      </td>
+      <td className="px-4 py-3.5">
+        <BetActions
+          entry={entry}
+          onStatusChange={onStatusChange}
+          onDelete={onDelete}
+          correctionMenuId={correctionMenuId}
+          onToggleCorrectionMenu={onToggleCorrectionMenu}
+          mode={mode}
+        />
+      </td>
+    </tr>
+  );
+}
 
-                  return (
-                    <tr
-                      key={entry.id}
-                      className="border-t border-slate-200 dark:border-white/[0.06]"
-                    >
-                      <td className="px-4 py-4 text-[14px] text-slate-600 dark:text-white/76">
-                        {formatDate(entry.date)}
-                      </td>
+function BetCard({
+  entry,
+  onStatusChange,
+  onDelete,
+  showCashout,
+  cashoutValue,
+  onCashoutValueChange,
+  onApplyCashout,
+  onCancelCashout,
+  correctionMenuId,
+  onToggleCorrectionMenu,
+  mode = "open",
+}) {
+  const result = calculateEntryResult(entry);
+  const possibleReturn = result.stake * result.odd;
 
-                      <td className="px-4 py-4">
-                        <div className="max-w-[250px] truncate text-[14px] font-semibold text-slate-900 dark:text-white">
-                          {entry.event}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-4 text-[14px] font-semibold text-slate-900 dark:text-white">
-                        {formatCurrency(result.stake)}
-                      </td>
-
-                      <td className="px-4 py-4 text-[14px] text-slate-700 dark:text-white/82">
-                        {result.odd.toFixed(2).replace(".", ",")}
-                      </td>
-
-                      <td className="px-4 py-4">
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-bold ${getStatusBadgeClass(
-                            entry.status
-                          )}`}
-                        >
-                          {status.label}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-4 text-[14px] text-slate-700 dark:text-white/82">
-                        {entry.status === "pending" ? "--" : formatCurrency(result.retorno)}
-                      </td>
-
-                      <td
-                        className={`px-4 py-4 text-[14px] font-bold ${
-                          result.lucro > 0
-                            ? "text-[#6ea900] dark:text-[#8df126]"
-                            : result.lucro < 0
-                            ? "text-[#b85d5d] dark:text-[#db8f8f]"
-                            : "text-slate-500 dark:text-white/60"
-                        }`}
-                      >
-                        {entry.status === "pending"
-                          ? "--"
-                          : `${result.lucro > 0 ? "+" : ""}${formatCurrency(result.lucro)}`}
-                      </td>
-
-                      <td className="px-4 py-4">
-                        <div className="flex min-w-[252px] flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => onStatusChange(entry.id, "green", sectionKey)}
-                            className="h-8 rounded-[9px] border border-[#2c4720] bg-[rgba(141,241,38,0.08)] px-3 text-[11px] font-bold text-[#6ea900] dark:text-[#8df126]"
-                          >
-                            Green
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => onStatusChange(entry.id, "red", sectionKey)}
-                            className="h-8 rounded-[9px] border border-[#4a2729] bg-[rgba(219,143,143,0.08)] px-3 text-[11px] font-bold text-[#b85d5d] dark:text-[#db8f8f]"
-                          >
-                            Red
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => onStatusChange(entry.id, "cashout", sectionKey)}
-                            className="h-8 rounded-[9px] border border-[#7b6d20] bg-[rgba(234,214,99,0.12)] px-3 text-[11px] font-bold text-[#8a7410] dark:border-[#3b3a20] dark:bg-[rgba(234,214,99,0.08)] dark:text-[#ead663]"
-                          >
-                            Cashout
-                          </button>
-
-                          {allowClockAction ? (
-                            <button
-                              type="button"
-                              title="Voltar para pendente"
-                              onClick={() => onStatusChange(entry.id, "pending", sectionKey)}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/70 dark:hover:bg-white/[0.05]"
-                            >
-                              <ClockIcon className="h-4 w-4" />
-                            </button>
-                          ) : null}
-
-                          <button
-                            type="button"
-                            title="Excluir aposta"
-                            onClick={() => onDelete(entry.id)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-white/60 dark:hover:bg-white/[0.05]"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+  return (
+    <article className="rounded-[16px] border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.035)] dark:border-white/[0.08] dark:bg-slate-900">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[12px] text-slate-500 dark:text-slate-400">{formatDate(entry.date)}</p>
+          <h3 className="mt-1 truncate text-[15px] font-semibold text-slate-950 dark:text-white">
+            {entry.event || "Aposta sem título"}
+          </h3>
+          <p className="mt-1 truncate text-[13px] text-slate-500 dark:text-slate-400">
+            {entry.market || "Mercado não informado"}
+          </p>
         </div>
+        <StatusBadge status={entry.status} />
       </div>
 
-      <PaginationControls page={page} totalPages={totalPages} onPageChange={onPageChange} />
+      <div className="mt-4 grid grid-cols-3 gap-2 rounded-[14px] border border-slate-200 bg-slate-50 p-3 dark:border-white/[0.08] dark:bg-white/[0.035]">
+        <SmallValue label="Odd" value={result.odd.toFixed(2).replace(".", ",")} />
+        <SmallValue label="Stake" value={formatCurrency(result.stake)} />
+        <SmallValue label="Retorno" value={formatCurrency(possibleReturn)} />
+      </div>
+
+      <div className="mt-4">
+        <BetActions
+          entry={entry}
+          onStatusChange={onStatusChange}
+          onDelete={onDelete}
+          compact
+          correctionMenuId={correctionMenuId}
+          onToggleCorrectionMenu={onToggleCorrectionMenu}
+          mode={mode}
+        />
+      </div>
+
+      {showCashout ? (
+        <div className="mt-4">
+          <CashoutInlineForm
+            entry={entry}
+            cashoutValue={cashoutValue}
+            onCashoutValueChange={onCashoutValueChange}
+            onApplyCashout={onApplyCashout}
+            onCancelCashout={onCancelCashout}
+          />
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function SmallValue({ label, value }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[11px] text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-1 truncate text-[13px] font-semibold text-slate-950 dark:text-white">{value}</p>
+    </div>
+  );
+}
+
+function BetActions({
+  entry,
+  onStatusChange,
+  onDelete,
+  compact = false,
+  correctionMenuId,
+  onToggleCorrectionMenu,
+  mode = "open",
+}) {
+  const actionBase =
+    "inline-flex h-8 items-center justify-center rounded-[10px] px-2.5 text-[12px] font-semibold ring-1 transition whitespace-nowrap";
+  const iconBase =
+    "inline-flex h-8 w-8 items-center justify-center rounded-[10px] ring-1 transition";
+
+  if (mode === "history") {
+    const menuOpen = correctionMenuId === entry.id;
+    const correctionOptions = [
+      { label: "Alterar para Green", value: "green", tone: "positive", disabled: entry.status === "green" },
+      { label: "Alterar para Red", value: "red", tone: "negative", disabled: entry.status === "red" },
+      { label: "Alterar para Cashout", value: "cashout", tone: "warning", disabled: entry.status === "cashout" },
+      { label: "Reabrir aposta", value: "pending", tone: "neutral" },
+    ];
+
+    return (
+      <div className="relative flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => onToggleCorrectionMenu(entry.id)}
+          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-[10px] bg-slate-50 px-3 text-[12px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.08] dark:focus:ring-emerald-400/10"
+        >
+          Corrigir
+          <ChevronDown className={`h-3.5 w-3.5 transition ${menuOpen ? "rotate-180" : ""}`} />
+        </button>
+
+        {menuOpen ? (
+          <div className="absolute right-10 top-[calc(100%+8px)] z-30 w-[218px] overflow-hidden rounded-[14px] border border-slate-200 bg-white p-1.5 shadow-[0_18px_44px_rgba(15,23,42,0.16)] dark:border-white/[0.1] dark:bg-slate-900 dark:shadow-[0_18px_44px_rgba(0,0,0,0.42)]">
+            <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              Corrigir resultado
+            </p>
+            {correctionOptions.map((option) => {
+              const dotClass =
+                option.tone === "positive"
+                  ? "bg-emerald-500"
+                  : option.tone === "negative"
+                  ? "bg-rose-500"
+                  : option.tone === "warning"
+                  ? "bg-amber-500"
+                  : "bg-slate-400";
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  disabled={option.disabled}
+                  onClick={() => {
+                    onToggleCorrectionMenu(null);
+                    onStatusChange(entry.id, option.value);
+                  }}
+                  className="flex w-full items-center justify-between rounded-[10px] px-3 py-2 text-left text-[13px] font-semibold text-slate-700 transition hover:bg-slate-100 focus:bg-slate-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-200 dark:hover:bg-white/[0.08] dark:focus:bg-white/[0.08]"
+                >
+                  <span>{option.label}</span>
+                  <span className={`h-2 w-2 rounded-full ${dotClass}`} />
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => onDelete(entry.id)}
+          className={`${iconBase} bg-white text-slate-500 ring-slate-200 hover:bg-rose-50 hover:text-rose-700 dark:bg-white/[0.04] dark:text-slate-400 dark:ring-white/[0.08] dark:hover:bg-rose-400/10 dark:hover:text-rose-300`}
+          title="Excluir aposta"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`flex items-center gap-2.5 ${
+        compact ? "min-w-0" : "min-w-[238px]"
+      }`}
+    >
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onStatusChange(entry.id, "green")}
+            className={`${compact ? actionBase : actionBase} bg-emerald-50 text-emerald-700 ring-emerald-200 hover:bg-emerald-100 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20 dark:hover:bg-emerald-400/15`}
+          >
+            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+            Green
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onStatusChange(entry.id, "red")}
+            className={`${compact ? actionBase : actionBase} bg-rose-50 text-rose-700 ring-rose-200 hover:bg-rose-100 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20 dark:hover:bg-rose-400/15`}
+          >
+            <XCircle className="mr-1.5 h-3.5 w-3.5" />
+            Red
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onStatusChange(entry.id, "cashout")}
+          className={`${compact ? actionBase : actionBase} w-fit bg-amber-50 text-amber-800 ring-amber-200 hover:bg-amber-100 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20 dark:hover:bg-amber-400/15`}
+        >
+          <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+          Cashout
+        </button>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onDelete(entry.id)}
+        className={`${iconBase} bg-white text-slate-500 ring-slate-200 hover:bg-rose-50 hover:text-rose-700 dark:bg-white/[0.04] dark:text-slate-400 dark:ring-white/[0.08] dark:hover:bg-rose-400/10 dark:hover:text-rose-300`}
+        title="Excluir aposta"
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
     </div>
   );
 }
@@ -529,22 +646,21 @@ export default function BancaPage() {
   const [form, setForm] = useState({ ...INITIAL_FORM, date: getTodayInputValue() });
   const [cashoutTarget, setCashoutTarget] = useState(null);
   const [cashoutValue, setCashoutValue] = useState("");
-  const [activeCashoutSection, setActiveCashoutSection] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [correctionMenuId, setCorrectionMenuId] = useState(null);
+  const [page, setPage] = useState(1);
   const [message, setMessage] = useState("");
-  const [pendingPage, setPendingPage] = useState(1);
-  const [settledPage, setSettledPage] = useState(1);
   const messageTimeoutRef = useRef(null);
 
   useEffect(() => {
-    const loadedEntries = loadBankrollEntries();
-    const loadedSettings = loadBankrollSettings();
-
-    setEntries(loadedEntries);
-    setSettings(loadedSettings);
-    setForm((current) => ({
-      ...current,
-      date: current.date || getTodayInputValue(),
-    }));
+    window.queueMicrotask(() => {
+      setEntries(loadBankrollEntries());
+      setSettings(loadBankrollSettings());
+      setForm((current) => ({
+        ...current,
+        date: current.date || getTodayInputValue(),
+      }));
+    });
   }, []);
 
   useEffect(() => {
@@ -555,49 +671,104 @@ export default function BancaPage() {
     };
   }, []);
 
+  const betEntries = useMemo(() => {
+    return entries.filter((entry) => !entry.movementType);
+  }, [entries]);
+
   const stats = useMemo(() => {
-    return calculateStats(entries, settings.initialBankroll);
-  }, [entries, settings.initialBankroll]);
+    return calculateStats(betEntries, settings.initialBankroll);
+  }, [betEntries, settings.initialBankroll]);
 
-  const pendingEntries = useMemo(() => {
-    return [...entries]
-      .filter((entry) => entry.status === "pending")
-      .sort((a, b) => getSortableTimestamp(b) - getSortableTimestamp(a));
-  }, [entries]);
+  const monthStats = useMemo(() => {
+    const month = MONTH_REFERENCE.getMonth();
+    const year = MONTH_REFERENCE.getFullYear();
+    const settledThisMonth = betEntries.filter((entry) => {
+      if (entry.status === "pending") return false;
+      const timestamp = getSortableTimestamp(entry);
+      if (!timestamp) return false;
+      const date = new Date(timestamp);
+      return date.getMonth() === month && date.getFullYear() === year;
+    });
 
-  const recentSettledEntries = useMemo(() => {
-    return [...entries]
+    const result = settledThisMonth.reduce((sum, entry) => {
+      return sum + calculateEntryResult(entry).lucro;
+    }, 0);
+
+    return {
+      result,
+      settled: settledThisMonth.length,
+    };
+  }, [betEntries]);
+
+  const orderedEntries = useMemo(() => {
+    return [...betEntries].sort((a, b) => getSortableTimestamp(b) - getSortableTimestamp(a));
+  }, [betEntries]);
+
+  const openEntries = useMemo(() => {
+    return orderedEntries.filter((entry) => entry.status === "pending");
+  }, [orderedEntries]);
+
+  const settledEntries = useMemo(() => {
+    return orderedEntries.filter((entry) => entry.status !== "pending");
+  }, [orderedEntries]);
+
+  const filteredSettledEntries = useMemo(() => {
+    if (statusFilter === "all") return settledEntries;
+    return settledEntries.filter((entry) => entry.status === statusFilter);
+  }, [settledEntries, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredSettledEntries.length / PAGE_SIZE));
+  const effectivePage = Math.min(page, totalPages);
+
+  const paginatedSettledEntries = useMemo(() => {
+    const start = (effectivePage - 1) * PAGE_SIZE;
+    return filteredSettledEntries.slice(start, start + PAGE_SIZE);
+  }, [effectivePage, filteredSettledEntries]);
+
+  const recentSettledProfit = useMemo(() => {
+    return orderedEntries
       .filter((entry) => entry.status !== "pending")
-      .sort((a, b) => getSortableTimestamp(b, "resolvedAt") - getSortableTimestamp(a, "resolvedAt"))
-      .slice(0, MAX_RECENT_SETTLED);
-  }, [entries]);
+      .slice(0, 5)
+      .reduce((sum, entry) => sum + calculateEntryResult(entry).lucro, 0);
+  }, [orderedEntries]);
 
-  const totalPendingPages = Math.max(1, Math.ceil(pendingEntries.length / PENDING_PAGE_SIZE));
-  const totalSettledPages = Math.max(1, Math.ceil(recentSettledEntries.length / SETTLED_PAGE_SIZE));
-
-  useEffect(() => {
-    if (pendingPage > totalPendingPages) {
-      setPendingPage(totalPendingPages);
-    }
-  }, [pendingPage, totalPendingPages]);
-
-  useEffect(() => {
-    if (settledPage > totalSettledPages) {
-      setSettledPage(totalSettledPages);
-    }
-  }, [settledPage, totalSettledPages]);
-
-  const paginatedPendingEntries = useMemo(() => {
-    const start = (pendingPage - 1) * PENDING_PAGE_SIZE;
-    const end = start + PENDING_PAGE_SIZE;
-    return pendingEntries.slice(start, end);
-  }, [pendingEntries, pendingPage]);
-
-  const paginatedRecentSettledEntries = useMemo(() => {
-    const start = (settledPage - 1) * SETTLED_PAGE_SIZE;
-    const end = start + SETTLED_PAGE_SIZE;
-    return recentSettledEntries.slice(start, end);
-  }, [recentSettledEntries, settledPage]);
+  const cards = [
+    {
+      label: "Banca atual",
+      value: formatCurrency(stats.currentBankroll),
+      detail:
+        settings.initialBankroll === ""
+          ? "Defina sua banca inicial"
+          : `Base ${formatCurrency(stats.initialBankroll)}`,
+      tone: stats.netProfit >= 0 ? "positive" : "negative",
+      icon: Wallet,
+    },
+    {
+      label: "Resultado do mês",
+      value: `${monthStats.result >= 0 ? "+" : ""}${formatCurrency(monthStats.result)}`,
+      detail: `${monthStats.settled} apostas encerradas`,
+      tone: monthStats.result >= 0 ? "positive" : "negative",
+      icon: monthStats.result >= 0 ? TrendingUp : TrendingDown,
+    },
+    {
+      label: "Apostas abertas",
+      value: String(stats.pendingEntries),
+      detail: `${formatCurrency(
+        betEntries
+          .filter((entry) => entry.status === "pending")
+          .reduce((sum, entry) => sum + calculateEntryResult(entry).stake, 0)
+      )} em stake`,
+      tone: "neutral",
+      icon: Clock3,
+    },
+    {
+      label: "Lucro/prejuízo recente",
+      value: `${recentSettledProfit >= 0 ? "+" : ""}${formatCurrency(recentSettledProfit)}`,
+      detail: "Últimas 5 encerradas",
+      tone: recentSettledProfit >= 0 ? "positive" : "negative",
+      icon: DollarSign,
+    },
+  ];
 
   function updateForm(field, value) {
     setForm((current) => ({
@@ -618,15 +789,17 @@ export default function BancaPage() {
     }, 2400);
   }
 
+  function toggleCorrectionMenu(id) {
+    setCorrectionMenuId((current) => (current === id ? null : id));
+  }
+
   function handleSaveInitialBankroll() {
     if (settings.initialBankroll === "" || settings.initialBankroll === null) {
       showMessage("Informe um valor para a banca inicial.");
       return;
     }
 
-    const safeValue = toNumber(settings.initialBankroll);
-    const updatedSettings = { initialBankroll: safeValue };
-
+    const updatedSettings = { initialBankroll: toNumber(settings.initialBankroll) };
     setSettings(updatedSettings);
     saveBankrollSettings(updatedSettings);
     showMessage("Banca inicial salva com sucesso.");
@@ -636,7 +809,7 @@ export default function BancaPage() {
     event.preventDefault();
 
     if (toNumber(form.stake) <= 0) {
-      showMessage("Informe um valor apostado maior que zero.");
+      showMessage("Informe um stake maior que zero.");
       return;
     }
 
@@ -652,11 +825,11 @@ export default function BancaPage() {
           : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       date: form.date || getTodayInputValue(),
       event: form.event.trim() || "Aposta sem título",
-      market: "",
+      market: form.market.trim(),
       stake: toNumber(form.stake),
       odd: toNumber(form.odd),
       bookmaker: "",
-      notes: "",
+      notes: form.notes.trim(),
       status: "pending",
       cashoutAmount: 0,
       createdAt: new Date().toISOString(),
@@ -666,20 +839,16 @@ export default function BancaPage() {
     const updatedEntries = [newEntry, ...entries];
     setEntries(updatedEntries);
     saveBankrollEntries(updatedEntries);
-
-    setForm({
-      ...INITIAL_FORM,
-      date: getTodayInputValue(),
-    });
-
-    showMessage("Aposta salva com sucesso.");
+    setForm({ ...INITIAL_FORM, date: getTodayInputValue() });
+    showMessage("Aposta registrada.");
   }
 
-  function updateEntryStatus(id, status, sectionKey = null) {
+  function updateEntryStatus(id, status) {
+    setCorrectionMenuId(null);
+
     if (status === "cashout") {
       const target = entries.find((entry) => entry.id === id);
       setCashoutTarget(target || null);
-      setActiveCashoutSection(sectionKey);
       setCashoutValue(
         target?.cashoutAmount ? String(target.cashoutAmount) : String(target?.stake || "")
       );
@@ -689,36 +858,19 @@ export default function BancaPage() {
     const updatedEntries = entries.map((entry) => {
       if (entry.id !== id) return entry;
 
-      const wasPending = entry.status === "pending";
-      const goingToPending = status === "pending";
-
       return {
         ...entry,
         status,
-        cashoutAmount: goingToPending ? 0 : status === "cashout" ? entry.cashoutAmount || 0 : 0,
-        resolvedAt: goingToPending
-          ? null
-          : wasPending
-          ? new Date().toISOString()
-          : entry.resolvedAt || new Date().toISOString(),
+        cashoutAmount: 0,
+        resolvedAt: status === "pending" ? null : entry.resolvedAt || new Date().toISOString(),
       };
     });
 
     setEntries(updatedEntries);
     saveBankrollEntries(updatedEntries);
-    setCashoutTarget(null);
-    setCashoutValue("");
-    setActiveCashoutSection(null);
-
     showMessage(
       `Aposta marcada como ${
-        status === "green"
-          ? "green"
-          : status === "red"
-          ? "red"
-          : status === "cashout"
-          ? "cashout"
-          : "pendente"
+        status === "green" ? "Green" : status === "red" ? "Red" : "Aberta"
       }.`
     );
   }
@@ -736,15 +888,11 @@ export default function BancaPage() {
     const updatedEntries = entries.map((entry) => {
       if (entry.id !== cashoutTarget.id) return entry;
 
-      const wasPending = entry.status === "pending";
-
       return {
         ...entry,
         status: "cashout",
         cashoutAmount: value,
-        resolvedAt: wasPending
-          ? new Date().toISOString()
-          : entry.resolvedAt || new Date().toISOString(),
+        resolvedAt: entry.resolvedAt || new Date().toISOString(),
       };
     });
 
@@ -752,17 +900,12 @@ export default function BancaPage() {
     saveBankrollEntries(updatedEntries);
     setCashoutTarget(null);
     setCashoutValue("");
-    setActiveCashoutSection(null);
-    showMessage("Cashout aplicado com sucesso.");
-  }
-
-  function cancelCashout() {
-    setCashoutTarget(null);
-    setCashoutValue("");
-    setActiveCashoutSection(null);
+    showMessage("Cashout aplicado.");
   }
 
   function deleteEntry(id) {
+    setCorrectionMenuId(null);
+
     const updatedEntries = entries.filter((entry) => entry.id !== id);
     setEntries(updatedEntries);
     saveBankrollEntries(updatedEntries);
@@ -770,266 +913,259 @@ export default function BancaPage() {
     if (cashoutTarget?.id === id) {
       setCashoutTarget(null);
       setCashoutValue("");
-      setActiveCashoutSection(null);
     }
 
-    showMessage("Aposta removida.");
+    showMessage("Aposta excluída.");
   }
 
   return (
-    <main className="relative flex h-full min-h-0 flex-col overflow-hidden bg-transparent text-slate-900 dark:text-white">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(59,130,246,0.10),transparent_24%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.08),transparent_20%),linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] dark:bg-[radial-gradient(circle_at_12%_8%,rgba(92,126,176,0.16),transparent_22%),radial-gradient(circle_at_92%_10%,rgba(141,241,38,0.06),transparent_18%),linear-gradient(180deg,#08111b_0%,#0a1320_100%)]" />
-      </div>
-
-      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
-        <section className="mx-auto max-w-[1550px] px-5 py-6 md:px-8">
-          <div className="flex flex-col gap-4 rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.92)_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] lg:flex-row lg:items-center lg:justify-between dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,rgba(16,25,37,0.92)_0%,rgba(13,21,32,0.92)_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.20)]">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.11em] text-[#6ea900] dark:text-[#8df126]">
-                Gestão de banca
-              </p>
-
-              <h1 className="mt-1 text-[30px] font-black tracking-[-0.06em] text-slate-900 dark:text-white">
-                Planilha da banca
-              </h1>
-
-              <p className="mt-2 text-[14px] text-slate-500 dark:text-white/48">
-                Salve apostas rápido e depois marque como green, red ou cashout.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/area-membros/estatisticas"
-                className="inline-flex h-12 items-center gap-2 rounded-[16px] border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white/84 dark:hover:bg-[rgba(255,255,255,0.05)]"
-              >
-                <ChartIcon className="h-4 w-4" />
-                Estatísticas
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const formElement = document.getElementById("nova-aposta-card");
-                  formElement?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-                className="inline-flex h-12 items-center gap-2 rounded-[16px] bg-[#8df126] px-5 text-[14px] font-bold text-[#071000] shadow-[0_10px_24px_rgba(141,241,38,0.18)] transition hover:brightness-105"
-              >
-                <PlusIcon className="h-4 w-4" />
-                Nova aposta
-              </button>
-            </div>
+    <main className="min-h-full bg-[#f5f7f9] text-slate-950 dark:bg-slate-950 dark:text-white">
+      <div className="mx-auto flex max-w-[1480px] flex-col gap-6 px-5 py-6 md:px-8">
+        <header className="flex flex-col gap-4 rounded-[20px] border border-slate-200 bg-white px-5 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400">
+              Gestão de banca
+            </p>
+            <h1 className="mt-1 text-[30px] font-semibold tracking-[-0.04em] text-slate-950 dark:text-white">
+              Banca
+            </h1>
+            <p className="mt-2 max-w-[720px] text-[14px] leading-6 text-slate-600 dark:text-slate-300">
+              Registre apostas, acompanhe abertas e encerre resultados como Green, Red ou Cashout.
+            </p>
           </div>
 
-          {message ? (
-            <div className="mt-4 rounded-[18px] border border-[#2c4720] bg-[rgba(141,241,38,0.08)] px-4 py-3 text-[14px] font-medium text-[#6ea900] dark:text-[#8df126]">
-              {message}
-            </div>
-          ) : null}
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="Banca atual"
-              value={formatCurrency(stats.currentBankroll)}
-              meta={`Banca inicial ${
-                settings.initialBankroll === ""
-                  ? "não definida"
-                  : formatCurrency(stats.initialBankroll)
-              }`}
-              tone={stats.netProfit >= 0 ? "green" : "red"}
-              icon={<WalletIcon />}
-            />
-
-            <StatCard
-              label="Lucro líquido"
-              value={`${stats.netProfit >= 0 ? "+" : ""}${formatCurrency(stats.netProfit)}`}
-              meta={`${stats.greenEntries} greens / ${stats.redEntries} reds / ${stats.cashoutEntries} cashouts`}
-              tone={stats.netProfit >= 0 ? "green" : "red"}
-              icon={<ChartIcon />}
-            />
-
-            <StatCard
-              label="Entradas"
-              value={String(stats.totalEntries)}
-              meta={`${pendingEntries.length} pendentes no momento`}
-              tone="default"
-              icon={<TicketIcon />}
-            />
-
-            <StatCard
-              label="ROI"
-              value={`${stats.roi.toFixed(1).replace(".", ",")}%`}
-              meta={`Total apostado ${formatCurrency(stats.totalStaked)}`}
-              tone={stats.roi >= 0 ? "green" : "red"}
-              icon={<ChartIcon />}
-            />
-          </div>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <TopMiniCard
-              label="Taxa de green"
-              value={`${stats.hitRate.toFixed(1).replace(".", ",")}%`}
-            />
-            <TopMiniCard label="Stake média" value={formatCurrency(stats.averageStake)} />
-            <TopMiniCard
-              label="Odd média"
-              value={stats.averageOdd.toFixed(2).replace(".", ",")}
-            />
-          </div>
-
-          <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-            <div
-              id="nova-aposta-card"
-              className="self-start rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]"
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Link
+              href="/area-membros/estatisticas"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] bg-white px-4 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07] sm:w-auto"
             >
-              <div className="mb-6">
-                <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
+              <BarChart3 className="h-4 w-4" />
+              Ver estatísticas
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                const formElement = document.getElementById("registrar-aposta");
+                formElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] bg-emerald-600 px-4 text-[13px] font-semibold text-white shadow-[0_10px_22px_rgba(5,150,105,0.18)] transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400 sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              Registrar aposta
+            </button>
+          </div>
+        </header>
+
+        {message ? (
+          <div className="rounded-[16px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-[14px] font-medium text-emerald-800 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+            {message}
+          </div>
+        ) : null}
+
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {cards.map((card) => (
+            <SummaryCard key={card.label} {...card} />
+          ))}
+        </section>
+
+        <section className="grid items-start gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
+          <div className="grid gap-6">
+            <Panel id="registrar-aposta" className="p-6">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                   Nova aposta
                 </p>
-                <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-                  Registrar entrada
+                <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-slate-950 dark:text-white">
+                  Registrar aposta
                 </h2>
-                <p className="mt-2 text-[14px] text-slate-500 dark:text-white/46">
-                  Preencha apenas o essencial para salvar rápido.
-                </p>
               </div>
 
-              <form onSubmit={handleSaveEntry}>
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                  <Input
-                    label="Valor apostado"
-                    type="number"
-                    step="0.01"
-                    placeholder="Ex: 50"
-                    value={form.stake}
-                    onChange={(e) => updateForm("stake", e.target.value)}
-                  />
-
+              <form onSubmit={handleSaveEntry} className="mt-5 grid gap-4">
+                <Input
+                  label="Evento"
+                  type="text"
+                  placeholder="Ex: Flamengo x Palmeiras"
+                  value={form.event}
+                  onChange={(event) => updateForm("event", event.target.value)}
+                />
+                <Input
+                  label="Mercado"
+                  type="text"
+                  placeholder="Ex: Over 2.5 gols"
+                  value={form.market}
+                  onChange={(event) => updateForm("market", event.target.value)}
+                />
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                   <Input
                     label="Odd"
                     type="number"
                     step="0.01"
                     placeholder="Ex: 1.85"
                     value={form.odd}
-                    onChange={(e) => updateForm("odd", e.target.value)}
+                    onChange={(event) => updateForm("odd", event.target.value)}
                   />
-
                   <Input
-                    label="Evento"
-                    type="text"
-                    placeholder="Ex: Flamengo x Palmeiras"
-                    value={form.event}
-                    onChange={(e) => updateForm("event", e.target.value)}
-                  />
-
-                  <Input
-                    label="Data"
-                    type="date"
-                    value={form.date}
-                    onChange={(e) => updateForm("date", e.target.value)}
+                    label="Stake"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 50"
+                    value={form.stake}
+                    onChange={(event) => updateForm("stake", event.target.value)}
                   />
                 </div>
+                <Input
+                  label="Data"
+                  type="date"
+                  value={form.date}
+                  onChange={(event) => updateForm("date", event.target.value)}
+                />
+                <Input
+                  label="Observação"
+                  type="text"
+                  placeholder="Opcional"
+                  value={form.notes}
+                  onChange={(event) => updateForm("notes", event.target.value)}
+                />
 
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <button
-                    type="submit"
-                    className="inline-flex h-12 items-center gap-2 rounded-[16px] bg-[#8df126] px-5 text-[14px] font-bold text-[#071000] shadow-[0_10px_24px_rgba(141,241,38,0.18)] transition hover:brightness-105"
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                    Salvar aposta
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setForm({
-                        ...INITIAL_FORM,
-                        date: getTodayInputValue(),
-                      })
-                    }
-                    className="inline-flex h-12 items-center rounded-[16px] border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white/76 dark:hover:bg-[rgba(255,255,255,0.05)]"
-                  >
-                    Limpar
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] bg-emerald-600 px-4 text-[13px] font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
+                >
+                  <Plus className="h-4 w-4" />
+                  Salvar aposta
+                </button>
               </form>
-            </div>
+            </Panel>
 
-            <aside className="self-start rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.08)] dark:border-white/[0.06] dark:bg-[linear-gradient(180deg,#101925_0%,#0d1520_100%)] dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
-              <p className="text-[11px] font-black uppercase tracking-[0.10em] text-[#6ea900] dark:text-[#8df126]">
-                Configuração
-              </p>
-
-              <h2 className="mt-2 text-[24px] font-black tracking-[-0.05em] text-slate-900 dark:text-white">
-                Banca inicial
-              </h2>
+            <Panel className="p-6">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  Configuração
+                </p>
+                <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-slate-950 dark:text-white">
+                  Banca inicial
+                </h2>
+              </div>
 
               <div className="mt-5">
                 <Input
-                  label="Valor da banca"
+                  label="Valor"
                   type="number"
                   step="0.01"
                   placeholder="Ex: 1000"
                   value={settings.initialBankroll}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setSettings((current) => ({
                       ...current,
-                      initialBankroll: e.target.value,
+                      initialBankroll: event.target.value,
                     }))
                   }
                 />
+                <button
+                  type="button"
+                  onClick={handleSaveInitialBankroll}
+                  className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-[12px] bg-white px-3.5 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-100 dark:bg-white/[0.06] dark:text-slate-200 dark:ring-white/[0.08] dark:hover:bg-white/[0.1]"
+                >
+                  Salvar banca inicial
+                </button>
+              </div>
+            </Panel>
+          </div>
+
+          <div className="grid gap-6">
+            <Panel className="p-6 ring-1 ring-emerald-500/5">
+              <div className="flex flex-col gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  Apostas em aberto
+                </p>
+                <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-slate-950 dark:text-white">
+                  Pendentes de resultado
+                </h2>
+                <p className="text-[13px] text-slate-600 dark:text-slate-300">
+                  Essas apostas ainda exigem ação: Green, Red, Cashout ou exclusão.
+                </p>
               </div>
 
-              <button
-                type="button"
-                onClick={handleSaveInitialBankroll}
-                className="mt-5 inline-flex h-12 items-center rounded-[16px] border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/[0.06] dark:bg-[rgba(255,255,255,0.03)] dark:text-white/82 dark:hover:bg-[rgba(255,255,255,0.05)]"
-              >
-                Salvar banca inicial
-              </button>
-            </aside>
-          </div>
+              <div className="mt-5">
+                <BetsTable
+                  entries={openEntries}
+                  statusFilter="pending"
+                  page={1}
+                  totalPages={1}
+                  onPageChange={setPage}
+                  onStatusChange={updateEntryStatus}
+                  onDelete={deleteEntry}
+                  cashoutTarget={cashoutTarget}
+                  cashoutValue={cashoutValue}
+                  onCashoutValueChange={setCashoutValue}
+                  onApplyCashout={applyCashout}
+                  onCancelCashout={() => {
+                    setCashoutTarget(null);
+                    setCashoutValue("");
+                  }}
+                  correctionMenuId={correctionMenuId}
+                  onToggleCorrectionMenu={toggleCorrectionMenu}
+                  mode="open"
+                />
+              </div>
+            </Panel>
 
-          <div className="mt-6 space-y-6">
-            <EntriesTable
-              entries={paginatedPendingEntries}
-              title="Apostas pendentes"
-              subtitle={`Mostrando até ${PENDING_PAGE_SIZE} apostas por página.`}
-              onStatusChange={updateEntryStatus}
-              onDelete={deleteEntry}
-              page={pendingPage}
-              totalPages={totalPendingPages}
-              onPageChange={setPendingPage}
-              sectionKey="pending"
-              activeCashoutSection={activeCashoutSection}
-              cashoutTarget={cashoutTarget}
-              cashoutValue={cashoutValue}
-              onCashoutValueChange={setCashoutValue}
-              onApplyCashout={applyCashout}
-              onCancelCashout={cancelCashout}
-            />
+          <Panel className="p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  Histórico de apostas
+                </p>
+                <h2 className="mt-1 text-[18px] font-semibold tracking-[-0.02em] text-slate-950 dark:text-white">
+                  Finalizadas
+                </h2>
+                <p className="mt-1 text-[13px] text-slate-600 dark:text-slate-300">
+                  Consulte apostas encerradas e corrija resultados quando necessário.
+                </p>
+              </div>
 
-            <EntriesTable
-              entries={paginatedRecentSettledEntries}
-              title="Finalizadas recentes"
-              subtitle={`Mostrando até ${SETTLED_PAGE_SIZE} apostas por página entre as últimas ${MAX_RECENT_SETTLED} finalizadas.`}
-              allowClockAction
-              onStatusChange={updateEntryStatus}
-              onDelete={deleteEntry}
-              page={settledPage}
-              totalPages={totalSettledPages}
-              onPageChange={setSettledPage}
-              sectionKey="recent-settled"
-              activeCashoutSection={activeCashoutSection}
-              cashoutTarget={cashoutTarget}
-              cashoutValue={cashoutValue}
-              onCashoutValueChange={setCashoutValue}
-              onApplyCashout={applyCashout}
-              onCancelCashout={cancelCashout}
-            />
+              <div className="flex flex-wrap gap-2">
+                {historyStatusFilters.map((option) => (
+                  <FilterButton
+                    key={option.value}
+                    active={statusFilter === option.value}
+                    onClick={() => {
+                      setStatusFilter(option.value);
+                      setPage(1);
+                    }}
+                  >
+                    {option.label}
+                  </FilterButton>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5">
+                <BetsTable
+                  entries={paginatedSettledEntries}
+                  statusFilter={statusFilter}
+                  page={effectivePage}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                  onStatusChange={updateEntryStatus}
+                  onDelete={deleteEntry}
+                  cashoutTarget={cashoutTarget}
+                  cashoutValue={cashoutValue}
+                  onCashoutValueChange={setCashoutValue}
+                  onApplyCashout={applyCashout}
+                  onCancelCashout={() => {
+                    setCashoutTarget(null);
+                    setCashoutValue("");
+                  }}
+                  correctionMenuId={correctionMenuId}
+                  onToggleCorrectionMenu={toggleCorrectionMenu}
+                  mode="history"
+                />
+            </div>
+          </Panel>
           </div>
         </section>
+
       </div>
     </main>
   );

@@ -1,734 +1,733 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  BarChart3,
+  Calculator,
+  CalendarCheck,
+  Check,
+  ChevronRight,
+  CircleDollarSign,
+  ClipboardList,
+  Gauge,
+  LineChart,
+  LockKeyhole,
+  PieChart,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Target,
+  Trophy,
+  WalletCards,
+} from "lucide-react";
 
-export default function Home() {
-  const menuItems = [
-    "Início",
-    "Casas de Apostas",
-    "Como Funciona",
-    "Estratégias",
-    "Depoimentos",
-    "FAQ",
-  ];
+const menuItems = [
+  { label: "Início", href: "#" },
+  { label: "Ferramentas", href: "#ferramentas" },
+  { label: "Gestão de Banca", href: "#gestao" },
+  { label: "Métodos", href: "#metodos" },
+  { label: "Resultados", href: "#resultados" },
+  { label: "FAQ", href: "#faq" },
+];
 
-  const topCards = [
-    {
-      title: "Rodadas Grátis",
-      desc: "Aprenda a pegar em\nvárias casas",
-      icon: "gift",
-    },
-    {
-      title: "Estratégias Testadas",
-      desc: "Métodos que realmente\nfuncionam",
-      icon: "coins",
-    },
-    {
-      title: "Dinheiro Real",
-      desc: "Transforme centavos\nem lucro",
-      icon: "money",
-    },
-  ];
+const quickBenefits = [
+  {
+    title: "Gestão de Banca",
+    desc: "Controle entradas, lucros e prejuízos",
+    icon: WalletCards,
+  },
+  {
+    title: "Ferramentas Exclusivas",
+    desc: "Calculadoras, métodos e análises práticas",
+    icon: Calculator,
+  },
+  {
+    title: "Mais Controle",
+    desc: "Decisões menos emocionais e mais estratégicas",
+    icon: Gauge,
+  },
+];
 
-  const learnCards = [
-    {
-      title: "Melhores Casas",
-      desc: "Descubra quais casas dão rodadas grátis e como pegá-las diariamente",
-      icon: "🏆",
-    },
-    {
-      title: "Como Resgatar",
-      desc: "Passo a passo para conseguir suas rodadas grátis todos os dias",
-      icon: "🎁",
-    },
-    {
-      title: "Estratégias de Múltiplas",
-      desc: "Técnicas profissionais para maximizar seus ganhos",
-      icon: "🎯",
-    },
-    {
-      title: "Gestão de Banca",
-      desc: "Como administrar seu dinheiro para lucrar mais",
-      icon: "💲",
-    },
-  ];
+const panelTools = [
+  {
+    title: "Gestão de Banca",
+    desc: "Registre sua banca, entradas, stakes, lucro e prejuízo em um só lugar.",
+    icon: WalletCards,
+  },
+  {
+    title: "Calculadora de Stake",
+    desc: "Defina valores de entrada com base na sua banca e no seu perfil de risco.",
+    icon: Calculator,
+  },
+  {
+    title: "Histórico de Apostas",
+    desc: "Acompanhe suas entradas, mercados, odds e desempenho ao longo do tempo.",
+    icon: ClipboardList,
+  },
+  {
+    title: "Métodos Exclusivos",
+    desc: "Acesse estratégias e modelos práticos para diferentes tipos de apostas.",
+    icon: Target,
+  },
+];
 
-  const testimonials = [
-    {
-      initials: "MR",
-      name: "Matheus R.",
-      city: "São Paulo, SP",
-      text: "Comecei com R$ 2,00 em rodadas grátis e faturei R$ 340 na primeira semana!",
-    },
-    {
-      initials: "CA",
-      name: "Camila A.",
-      city: "Rio de Janeiro, RJ",
-      text: "As estratégias de múltiplas realmente funcionam. Já lucrei mais de R$ 1.200!",
-    },
-    {
-      initials: "LS",
-      name: "Lucas S.",
-      city: "Belo Horizonte, MG",
-      text: "Método simples e eficaz. Mudou minha forma de apostar!",
-    },
-    {
-      initials: "JP",
-      name: "João P.",
-      city: "Curitiba, PR",
-      text: "Eu achava que bônus não dava em nada. Depois do método, comecei a ver retorno de verdade.",
-    },
-    {
-      initials: "AF",
-      name: "Amanda F.",
-      city: "Fortaleza, CE",
-      text: "Gostei porque é direto ao ponto. Aplicando certo, dá para transformar pouco em algo real.",
-    },
-    {
-      initials: "RN",
-      name: "Rafael N.",
-      city: "Recife, PE",
-      text: "A parte de múltiplas foi o que mais abriu minha mente. Hoje eu entro nas promos com outro olhar.",
-    },
-    {
-      initials: "TB",
-      name: "Thiago B.",
-      city: "Goiânia, GO",
-      text: "Já testei muita coisa aleatória. Esse foi o primeiro método que realmente fez sentido para mim.",
-    },
-    {
-      initials: "EC",
-      name: "Eduarda C.",
-      city: "Porto Alegre, RS",
-      text: "Mesmo começando com valor baixo, consegui organizar melhor minhas entradas e aproveitar mais as ofertas.",
-    },
-  ];
+const withoutPanel = [
+  "Apostas desorganizadas",
+  "Sem controle da banca",
+  "Decisões por emoção",
+  "Não sabe onde está errando",
+  "Dificuldade para medir resultados",
+];
 
-  const totalTestimonials = testimonials.length;
-  const visibleCount = Math.min(3, totalTestimonials);
+const withPanel = [
+  "Controle total da banca",
+  "Entradas registradas",
+  "Métodos organizados",
+  "Análise de lucro/prejuízo",
+  "Evolução acompanhada",
+];
 
-  const [testimonialIndex, setTestimonialIndex] = useState(0);
+const extraResources = [
+  {
+    title: "Controle Diário",
+    desc: "Registre suas apostas e acompanhe sua evolução dia após dia.",
+    icon: CalendarCheck,
+  },
+  {
+    title: "Análise de Desempenho",
+    desc: "Veja onde você está lucrando, perdendo e quais mercados performam melhor.",
+    icon: BarChart3,
+  },
+  {
+    title: "Biblioteca de Métodos",
+    desc: "Acesse métodos exclusivos organizados para consulta rápida.",
+    icon: Trophy,
+  },
+  {
+    title: "Área de Planejamento",
+    desc: "Monte sua rotina, defina metas e acompanhe sua disciplina.",
+    icon: PieChart,
+  },
+];
 
-  const nextTestimonials = () => {
-    setTestimonialIndex((prev) => (prev + 1) % totalTestimonials);
-  };
+const testimonials = [
+  {
+    initials: "MR",
+    name: "Matheus R.",
+    city: "São Paulo, SP",
+    text: "Antes eu apostava sem controle. Agora consigo ver minha banca, minhas entradas e onde estou errando.",
+  },
+  {
+    initials: "CA",
+    name: "Camila A.",
+    city: "Rio de Janeiro, RJ",
+    text: "O painel me ajudou a organizar minha rotina e parar de apostar no impulso.",
+  },
+  {
+    initials: "LS",
+    name: "Lucas S.",
+    city: "Belo Horizonte, MG",
+    text: "A calculadora de stake e o histórico de apostas fizeram muita diferença na minha gestão.",
+  },
+];
 
-  const prevTestimonials = () => {
-    setTestimonialIndex(
-      (prev) => (prev - 1 + totalTestimonials) % totalTestimonials
-    );
-  };
-
-  useEffect(() => {
-    if (totalTestimonials <= 3) return;
-
-    const interval = setInterval(() => {
-      setTestimonialIndex((prev) => (prev + 1) % totalTestimonials);
-    }, 3500);
-
-    return () => clearInterval(interval);
-  }, [totalTestimonials]);
-
-  const visibleTestimonials = Array.from({ length: visibleCount }, (_, i) => {
-    return testimonials[(testimonialIndex + i) % totalTestimonials];
-  });
-
-  function SmallIcon({ type }) {
-    const wrapper =
-      "flex h-[46px] w-[46px] items-center justify-center rounded-[12px] bg-[#112313]";
-
-    if (type === "gift") {
-      return (
-        <div className={wrapper}>
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <g
-              stroke="#8df126"
-              strokeWidth="1.55"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="5" y="10" width="14" height="9" rx="1.6" />
-              <path d="M12 10V19" />
-              <path d="M4 7.5H20V10H4V7.5Z" />
-              <path d="M12 7.5C12 5.9 11.2 4.8 9.9 4.8C8.7 4.8 7.9 5.5 7.9 6.6C7.9 7 8 7.2 8.2 7.5H12Z" />
-              <path d="M12 7.5C12 5.9 12.8 4.8 14.1 4.8C15.3 4.8 16.1 5.5 16.1 6.6C16.1 7 16 7.2 15.8 7.5H12Z" />
-            </g>
-          </svg>
-        </div>
-      );
-    }
-
-    if (type === "coins") {
-      return (
-        <div className={wrapper}>
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <g
-              stroke="#8df126"
-              strokeWidth="1.55"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <ellipse cx="12" cy="6.4" rx="6.2" ry="2.1" />
-              <path d="M5.8 6.4V9.4C5.8 10.6 8.6 11.5 12 11.5C15.4 11.5 18.2 10.6 18.2 9.4V6.4" />
-              <path d="M5.8 9.4V12.4C5.8 13.6 8.6 14.5 12 14.5C15.4 14.5 18.2 13.6 18.2 12.4V9.4" />
-              <path d="M5.8 12.4V15.4C5.8 16.6 8.6 17.5 12 17.5C15.4 17.5 18.2 16.6 18.2 15.4V12.4" />
-            </g>
-          </svg>
-        </div>
-      );
-    }
-
-    return (
-      <div className={wrapper}>
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <g
-            stroke="#8df126"
-            strokeWidth="1.55"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="4.5" y="7" width="15" height="10" rx="1.8" />
-            <circle cx="9" cy="12" r="1.05" fill="#8df126" stroke="none" />
-            <path d="M13.2 10H18" />
-            <path d="M13.2 14H18" />
-          </g>
-        </svg>
-      </div>
-    );
-  }
-
-  const primaryButtonClass =
-    "rounded-[12px] border border-[#c8ff8a]/20 !bg-[#8cdf1e] font-black tracking-[0.01em] !text-[#081200] shadow-[0_10px_26px_rgba(140,223,30,0.24)] transition hover:!bg-[#9df52d] hover:shadow-[0_12px_30px_rgba(140,223,30,0.30)] [text-shadow:none]";
-
+function Logo() {
   return (
-    <main className="bg-[#050910] text-white">
-      <header className="border-b border-white/8 bg-[#040910]">
-        <div className="mx-auto flex h-[78px] max-w-[1600px] items-center justify-between px-8">
-          <div className="flex items-center gap-3">
-            <div className="text-[44px] font-black leading-none text-[#97f21f]">
-              α
+    <Link href="/" className="flex items-center gap-3" aria-label="KRST Tips">
+      <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-[14px] border border-lime-300/30 bg-[#a8ff2f] text-[24px] font-black italic text-[#061006] shadow-[0_12px_26px_rgba(0,0,0,0.28)]">
+        <span className="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.72),transparent_28%)]" />
+        <span className="relative">A</span>
+      </span>
+      <span className="text-[20px] font-black tracking-[-0.04em] text-white">
+        KRST <span className="text-lime-300">TIPS</span>
+      </span>
+    </Link>
+  );
+}
+
+function Badge({ children }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-lime-300/22 bg-lime-300/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-lime-300">
+      <span className="h-2 w-2 rounded-full bg-lime-300" />
+      {children}
+    </div>
+  );
+}
+
+function PrimaryButton({ children, className = "" }) {
+  return (
+    <Link
+      href="/login"
+      style={{ color: "#061006", WebkitTextFillColor: "#061006" }}
+      className={`inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] border border-lime-100/40 bg-lime-300 px-8 py-4 text-[14px] font-black uppercase tracking-[0.025em] !text-[#061006] shadow-[0_16px_34px_rgba(0,0,0,0.36),0_0_0_1px_rgba(163,230,53,0.12)] transition duration-300 [text-shadow:none] hover:-translate-y-0.5 hover:bg-[#bef264] hover:shadow-[0_20px_44px_rgba(0,0,0,0.42),0_0_28px_rgba(163,230,53,0.18)] [&_*]:!text-[#061006] ${className}`}
+    >
+      {children}
+      <ArrowRight size={18} strokeWidth={3} />
+    </Link>
+  );
+}
+
+function StatCard({ label, value, accent = "text-white" }) {
+  return (
+    <div className="rounded-[16px] border border-white/8 bg-white/[0.035] p-4 backdrop-blur sm:rounded-[18px] sm:p-5">
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 sm:text-[11px]">
+        {label}
+      </p>
+      <p
+        className={`mt-2 text-[21px] font-black tracking-[-0.04em] sm:text-[27px] ${accent}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function DashboardMockup() {
+  return (
+    <div className="relative mx-auto min-h-[920px] w-full max-w-[720px] sm:min-h-[720px] lg:ml-auto lg:min-h-[625px]">
+      <div className="absolute inset-0 rounded-[42px] bg-[#0b1623]/65 blur-[54px]" />
+      <div className="absolute left-[8%] top-[8%] h-24 w-24 rounded-full border-[7px] border-white/65 bg-[radial-gradient(circle_at_35%_32%,#f7fff1,#bac7b6_55%,#0d120e_56%)] opacity-30 shadow-[0_22px_62px_rgba(0,0,0,0.44)]" />
+      <div className="absolute bottom-[16%] right-[2%] h-20 w-20 rounded-full bg-[#d87824] opacity-35 shadow-[inset_-16px_-12px_0_rgba(0,0,0,0.24),0_24px_58px_rgba(0,0,0,0.42)]">
+        <span className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-black/30" />
+        <span className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2 bg-black/30" />
+      </div>
+
+      <div className="absolute inset-x-0 top-6 overflow-hidden rounded-[30px] border border-white/12 bg-[linear-gradient(145deg,rgba(17,28,41,0.99),rgba(5,10,17,0.98))] p-5 shadow-[0_36px_90px_rgba(0,0,0,0.46)] sm:p-6">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),transparent_36%)]" />
+
+        <div className="relative z-10 flex items-center justify-between gap-5 border-b border-white/8 pb-5">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-lime-300">
+              KRST Dashboard
+            </p>
+            <h3 className="mt-1 text-[23px] font-black tracking-[-0.04em] text-white">
+              Área do Apostador
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-lime-300/24 bg-lime-300/10 px-3 py-1.5 text-[11px] font-black text-lime-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-lime-300" />
+            Online
+          </div>
+        </div>
+
+        <div className="relative z-10 mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <StatCard label="Banca atual" value="R$ 1.840" accent="text-lime-300" />
+          <StatCard label="Resultado do mês" value="+12,8%" accent="text-lime-300" />
+          <StatCard label="Taxa de acerto" value="64%" />
+        </div>
+
+        <div className="relative z-10 mt-5 grid gap-4 lg:grid-cols-[1fr_210px]">
+          <div className="rounded-[24px] border border-white/8 bg-black/20 p-5 sm:p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+                  Últimos 30 dias
+                </p>
+                <h4 className="mt-1 text-[20px] font-black text-white">
+                  Evolução da banca
+                </h4>
+              </div>
+              <LineChart size={24} className="text-lime-300" />
             </div>
-            <div className="text-[24px] font-extrabold tracking-[-0.02em]">
-              ALPHA <span className="text-[#79db21]">TIPS</span>
+
+            <div className="relative h-[255px] overflow-hidden rounded-[20px] border border-white/8 bg-[#06110d]">
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:44px_34px]" />
+              <svg
+                className="absolute inset-0 h-full w-full"
+                viewBox="0 0 420 150"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M0 116 C42 108 48 86 88 92 C128 98 130 58 172 66 C214 74 212 38 258 44 C304 50 304 23 348 28 C382 32 394 20 420 17"
+                  fill="none"
+                  stroke="#a8ff2f"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M0 116 C42 108 48 86 88 92 C128 98 130 58 172 66 C214 74 212 38 258 44 C304 50 304 23 348 28 C382 32 394 20 420 17 L420 150 L0 150 Z"
+                  fill="url(#chartFill)"
+                />
+                <defs>
+                  <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="#a8ff2f" stopOpacity="0.28" />
+                    <stop offset="100%" stopColor="#a8ff2f" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-x-4 bottom-3 flex items-center justify-between text-[11px] font-semibold text-slate-500">
+                <span>Dia 1</span>
+                <span>Dia 15</span>
+                <span>Dia 30</span>
+              </div>
             </div>
+
           </div>
 
-          <nav className="hidden items-center gap-10 text-[13px] font-semibold text-white/84 xl:flex">
+          <div className="grid gap-2.5 sm:grid-cols-3 lg:grid-cols-1">
+            {[
+              ["Stake média", "R$ 18,40", Calculator],
+              ["Entradas registradas", "32", ClipboardList],
+              ["Métodos ativos", "8", Target],
+            ].map(([label, value, Icon]) => (
+              <div
+                key={label}
+                className="flex items-center gap-3 rounded-[16px] border border-white/8 bg-white/[0.035] px-3.5 py-3"
+              >
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-lime-300/10 text-lime-300">
+                  <Icon size={18} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold text-slate-400">{label}</p>
+                  <p className="mt-0.5 text-[15px] font-black text-white">{value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeatureCard({ title, desc, icon: Icon }) {
+  return (
+    <article className="group rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,28,40,0.86),rgba(7,12,19,0.97))] p-6 text-left shadow-[0_22px_62px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-1.5 hover:border-lime-300/35">
+      <div className="grid h-16 w-16 place-items-center rounded-[18px] border border-lime-300/20 bg-lime-300/10 text-lime-300 transition group-hover:bg-lime-300 group-hover:text-[#061006]">
+        <Icon size={31} strokeWidth={2.2} />
+      </div>
+      <h3 className="mt-7 text-[21px] font-black text-white">{title}</h3>
+      <p className="mt-3 text-[14px] leading-[1.7] text-slate-400">{desc}</p>
+    </article>
+  );
+}
+
+function ComparisonCard({ title, items, badge, positive = false }) {
+  return (
+    <div
+      className={`rounded-[26px] border p-6 shadow-[0_22px_65px_rgba(0,0,0,0.24)] ${
+        positive
+          ? "border-lime-300/48 bg-[linear-gradient(180deg,rgba(19,39,20,0.84),rgba(6,17,13,0.96))]"
+          : "border-red-400/20 bg-[linear-gradient(180deg,rgba(32,20,22,0.72),rgba(12,16,23,0.96))]"
+      }`}
+    >
+      <div
+        className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.08em] ${
+          positive
+            ? "bg-lime-300/14 text-lime-300"
+            : "bg-red-500/12 text-red-300"
+        }`}
+      >
+        {title}
+      </div>
+      <ul className="mt-6 space-y-4">
+        {items.map((item) => (
+          <li key={item} className="flex items-start gap-3 text-slate-300">
+            <span
+              className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full ${
+                positive
+                  ? "bg-lime-300 text-[#061006]"
+                  : "bg-red-500/14 text-red-300"
+              }`}
+            >
+              <Check size={15} strokeWidth={3.2} />
+            </span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+      <div
+        className={`mt-7 rounded-full px-4 py-2 text-center text-[12px] font-black ${
+          positive
+            ? "bg-lime-300 text-[#061006]"
+            : "bg-red-500/14 text-red-300"
+        }`}
+      >
+        {badge}
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <main className="min-h-screen overflow-hidden bg-[#03070d] text-white">
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_16%_6%,rgba(168,255,47,0.055),transparent_30%),radial-gradient(circle_at_88%_14%,rgba(47,144,255,0.055),transparent_28%),linear-gradient(180deg,#06101b_0%,#03070d_44%,#04080e_100%)]" />
+
+      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#050b12]/88 backdrop-blur-xl">
+        <div className="mx-auto flex h-[78px] max-w-[1220px] items-center justify-between gap-5 px-5 lg:px-8">
+          <Logo />
+
+          <nav className="hidden items-center gap-7 text-[13px] font-bold text-white/70 lg:flex">
             {menuItems.map((item) => (
-              <a key={item} href="#" className="transition hover:text-white">
-                {item}
+              <a key={item.label} href={item.href} className="transition hover:text-lime-300">
+                {item.label}
               </a>
             ))}
           </nav>
 
-          <Link
-            href="/area-membros"
-            className={`${primaryButtonClass} px-7 py-3 text-[13px]`}
-            style={{ color: "#081200", WebkitTextFillColor: "#081200" }}
-          >
-            QUERO COMEÇAR AGORA!
-          </Link>
+          <PrimaryButton className="hidden min-h-12 px-5 text-[12px] md:inline-flex">
+            Acessar painel
+          </PrimaryButton>
         </div>
       </header>
 
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#040910_0%,#050b12_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_14%,rgba(120,255,0,0.10),transparent_18%),radial-gradient(circle_at_91%_20%,rgba(255,255,255,0.08),transparent_8%)]" />
+      <section className="relative z-10 border-b border-white/8">
+        <div className="mx-auto grid max-w-[1300px] items-center gap-12 px-5 py-14 md:py-18 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14 lg:px-8 lg:py-18 xl:gap-18">
+          <div className="max-w-[590px]">
+            <Badge>Painel completo para apostadores</Badge>
 
-        <div className="mx-auto grid max-w-[1600px] gap-4 px-8 pb-4 pt-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div className="relative z-20 -mt-15">
-            <div className="mb-5 inline-flex items-center rounded-full border border-[#7cd81d]/25 bg-[#0d1d10] px-5 py-2 text-[12px] font-extrabold text-[#95ef24]">
-              <span className="mr-3 h-2.5 w-2.5 rounded-full bg-[#95ef24]" />
-              GUIA COMPLETO E ATUALIZADO
-            </div>
-
-            <h1 className="max-w-[620px] text-[54px] font-black uppercase italic leading-[0.9] tracking-[-0.05em] xl:text-[66px]">
-              FATURE COM
-              <br />
-              <span className="text-[#8df126]">APOSTAS ESPORTIVAS</span>
+            <h1 className="mt-6 text-[40px] font-black uppercase italic leading-[0.98] tracking-[-0.05em] text-white sm:text-[58px] lg:text-[66px] xl:text-[72px]">
+              Aposte com{" "}
+              <span className="block text-lime-300">mais controle</span>
             </h1>
 
-            <p className="mt-5 max-w-[620px] text-[16px] leading-[1.4] text-white/84">
-              Aprenda como transformar rodadas grátis em dinheiro real usando
-              estratégias profissionais de múltiplas
+            <p className="mt-5 max-w-[540px] text-[16px] leading-[1.7] text-slate-300 sm:text-[17px]">
+              Ferramentas, gestão de banca, métodos exclusivos e histórico de
+              apostas em um só lugar para você tomar decisões melhores.
             </p>
 
-            <div className="mt-7 grid max-w-[760px] gap-0 md:grid-cols-3">
-              {topCards.map((card, index) => (
+            <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:gap-3 xl:gap-4">
+              {quickBenefits.map(({ title, desc, icon: Icon }) => (
                 <div
-                  key={card.title}
-                  className={`px-4 py-2 ${
-                    index !== 0 ? "border-l border-white/8" : ""
-                  }`}
+                  key={title}
+                  className="group rounded-[18px] border border-white/10 bg-white/[0.05] p-5 shadow-[0_16px_34px_rgba(0,0,0,0.20)] transition duration-300 hover:-translate-y-1 hover:border-lime-300/28 hover:bg-white/[0.07] lg:p-4 xl:p-5"
                 >
-                  <SmallIcon type={card.icon} />
-                  <h3 className="mt-4 text-[17px] font-bold leading-[1.08] tracking-[-0.03em]">
-                    {card.title}
+                  <div className="mb-5 grid h-12 w-12 place-items-center rounded-[14px] border border-lime-300/16 bg-lime-300/10 text-lime-300 transition group-hover:bg-lime-300 group-hover:text-[#061006]">
+                    <Icon size={23} strokeWidth={2.4} />
+                  </div>
+                  <h3 className="text-[16px] font-black leading-tight text-white">
+                    {title}
                   </h3>
-                  <p className="mt-2 whitespace-pre-line text-[14px] leading-[1.36] text-white/68">
-                    {card.desc}
+                  <p className="mt-2 text-[13px] leading-[1.5] text-slate-400">
+                    {desc}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-7">
-              <Link
-                href="/area-membros"
-                className={`${primaryButtonClass} flex h-[54px] w-full max-w-[560px] items-center justify-center text-[17px]`}
-                style={{ color: "#081200", WebkitTextFillColor: "#081200" }}
-              >
-                QUERO APRENDER AGORA!
-              </Link>
-
-              <div className="mt-4 flex items-center gap-3 text-[13px] text-white/70">
-                <span className="text-[#ffc63b]">🔒</span>
-                <span>Acesso imediato e 100% seguro</span>
-              </div>
+            <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <PrimaryButton className="w-full px-8 sm:w-auto">
+                Quero acessar o painel
+              </PrimaryButton>
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-slate-400">
+                <LockKeyhole size={17} className="text-lime-300" />
+                Acesso imediato • Painel online • Atualizações constantes
+              </p>
             </div>
           </div>
 
-          <div className="relative z-10 hidden h-[610px] lg:block">
-            <div className="absolute inset-y-0 right-[-60px] w-[1120px]">
-              <img
-                src="/hero-layout.png"
-                alt="Hero Alpha Tips"
-                className="absolute right-0 top-[42%] z-10 w-full max-w-none -translate-y-1/2 pointer-events-none select-none"
-              />
-
-              <div className="absolute inset-y-0 left-[-760px] right-0 top-[-80px] bottom-[-70px] z-20 pointer-events-none bg-[linear-gradient(90deg,rgba(4,9,16,1)_0%,rgba(4,9,16,1)_20%,rgba(4,9,16,0.96)_34%,rgba(4,9,16,0.82)_48%,rgba(4,9,16,0.50)_62%,rgba(4,9,16,0.16)_76%,rgba(4,9,16,0)_88%)]" />
-            </div>
-          </div>
+          <DashboardMockup />
         </div>
       </section>
 
-      <section className="border-t border-white/5 bg-[linear-gradient(180deg,#050b12_0%,#07111a_100%)] py-16">
-        <div className="mx-auto max-w-[1600px] px-8">
-          <div className="text-center">
-            <div className="inline-flex items-center rounded-full border border-[#7cd81d]/18 bg-[#0d1d10] px-5 py-2 text-[13px] font-extrabold uppercase tracking-[0.02em] text-[#95ef24]">
-              <span className="mr-3 h-2.5 w-2.5 rounded-full bg-[#95ef24]" />
-              O QUE VOCÊ VAI APRENDER
-            </div>
+      <section id="ferramentas" className="relative z-10 py-20">
+        <div className="mx-auto max-w-[1220px] px-5 text-center lg:px-8">
+          <Badge>Ferramentas do painel</Badge>
+          <h2 className="mx-auto mt-5 max-w-[840px] text-[34px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[48px]">
+            Tudo que Você Precisa para Apostar com{" "}
+            <span className="text-lime-300">Mais Controle</span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-[650px] text-[16px] leading-[1.65] text-slate-400">
+            Recursos práticos para organizar sua rotina, analisar suas apostas e
+            melhorar sua gestão.
+          </p>
 
-            <h2 className="mt-6 text-[34px] font-bold tracking-[-0.04em] text-white md:text-[52px]">
-              Do Zero ao Lucro com{" "}
-              <span className="text-[#7ee02a]">Estratégias Comprovadas</span>
-            </h2>
-
-            <p className="mt-3 text-[18px] text-white/72">
-              Um método passo a passo para você começar a faturar hoje mesmo
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {learnCards.map((card) => (
-              <div
-                key={card.title}
-                className="group rounded-[24px] border border-white/7 bg-[linear-gradient(180deg,rgba(13,18,28,0.92)_0%,rgba(7,12,20,0.96)_100%)] px-7 py-8 text-center shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition duration-300 hover:-translate-y-1 hover:border-[#7ee02a]/18 hover:shadow-[0_14px_40px_rgba(0,0,0,0.32)]"
-              >
-                <div className="text-[52px] leading-none">{card.icon}</div>
-
-                <h3 className="mt-6 text-[22px] font-extrabold leading-[1.12] tracking-[-0.03em] text-white md:text-[24px]">
-                  {card.title}
-                </h3>
-
-                <p className="mt-4 text-[16px] leading-[1.55] text-white/64">
-                  {card.desc}
-                </p>
-              </div>
+          <div className="mt-11 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {panelTools.map((tool) => (
+              <FeatureCard key={tool.title} {...tool} />
             ))}
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-y border-white/[0.04] bg-[#040a12] py-8">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/potential-bg.png"
-            alt="Background seção potencial"
-            className="h-full w-full object-cover object-[91%_50%] opacity-[0.18] pointer-events-none select-none"
-          />
-        </div>
-
-        <div className="absolute inset-0 z-[1] bg-[linear-gradient(90deg,rgba(4,10,18,1)_0%,rgba(4,10,18,0.99)_18%,rgba(4,10,18,0.965)_36%,rgba(4,10,18,0.89)_54%,rgba(4,10,18,0.58)_76%,rgba(4,10,18,0.16)_100%)]" />
-
-        <div className="absolute inset-0 z-[2] bg-[radial-gradient(circle_at_96%_10%,rgba(255,255,255,0.08),transparent_10%),radial-gradient(circle_at_84%_78%,rgba(126,224,42,0.04),transparent_18%)]" />
-
-        <div className="relative z-10 mx-auto grid max-w-[1280px] gap-10 px-8 lg:grid-cols-[540px_520px] lg:items-center lg:justify-between">
-          <div>
-            <div className="inline-flex items-center rounded-full border border-[#7cd81d]/18 bg-[#0b1810]/90 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.05em] text-[#95ef24]">
-              <span className="mr-2.5 h-2 w-2 rounded-full bg-[#95ef24]" />
-              VEJA O POTENCIAL
-            </div>
-
-            <h2 className="mt-5 max-w-[430px] text-[28px] font-black leading-[1.05] tracking-[-0.045em] text-white md:text-[33px]">
-              Transforme Centavos em Dinheiro Real
+      <section id="gestao" className="relative z-10 overflow-hidden border-y border-white/8 bg-[#050b12] py-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(168,255,47,0.08),transparent_26%),radial-gradient(circle_at_82%_38%,rgba(168,255,47,0.06),transparent_24%)]" />
+        <div className="relative mx-auto max-w-[1120px] px-5 lg:px-8">
+          <div className="mx-auto max-w-[720px] text-center">
+            <Badge>Gestão e clareza</Badge>
+            <h2 className="mt-5 text-[35px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[50px]">
+              Pare de Apostar no <span className="text-lime-300">Escuro</span>
             </h2>
-
-            <div className="mt-7 grid gap-4 md:grid-cols-[210px_82px_250px] md:items-center">
-              <div className="relative overflow-hidden rounded-[20px] border border-white/8 bg-[linear-gradient(180deg,rgba(10,16,24,0.96)_0%,rgba(6,11,18,0.98)_100%)] px-5 py-5 shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
-                <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
-
-                <h3 className="mb-5 text-center text-[14px] font-extrabold text-white">
-                  SEM ESTRATÉGIA
-                </h3>
-
-                <div className="space-y-4 text-[14px] text-white/72">
-                  <div className="flex items-center justify-between border-b border-white/6 pb-3">
-                    <span>Rodada grátis</span>
-                    <span>R$ 0,50</span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-b border-white/6 pb-3">
-                    <span>Aposta única</span>
-                    <span>R$ 0,50</span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span>Retorno</span>
-                    <span>R$ 0,00</span>
-                  </div>
-                </div>
-
-                <div className="mt-5 text-center">
-                  <span className="inline-flex rounded-full bg-red-500/14 px-4 py-1.5 text-[12px] font-bold text-red-400">
-                    Perde na maioria
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center">
-                <svg
-                  width="96"
-                  height="58"
-                  viewBox="0 0 96 58"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-[82px]"
-                >
-                  <path
-                    d="M8 23C22 38 39 42 63 37"
-                    stroke="#7ee02a"
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M59 25L82 37L61 50"
-                    stroke="#7ee02a"
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-
-              <div className="relative overflow-hidden rounded-[20px] border border-[#7ee02a]/22 bg-[linear-gradient(180deg,rgba(20,60,18,0.42)_0%,rgba(7,20,14,0.97)_100%)] px-5 py-5 shadow-[0_14px_28px_rgba(40,120,32,0.12)]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(126,224,42,0.14),transparent_46%)]" />
-                <div className="absolute inset-x-0 top-0 h-px bg-[#7ee02a]/28" />
-
-                <div className="relative z-10">
-                  <h3 className="mb-5 text-center text-[14px] font-extrabold text-[#95ef24]">
-                    COM ESTRATÉGIA
-                  </h3>
-
-                  <div className="space-y-4 text-[14px] text-white/86">
-                    <div className="flex items-center justify-between border-b border-[#7ee02a]/10 pb-3">
-                      <span>Rodada grátis</span>
-                      <span className="font-bold text-[#95ef24]">R$ 0,50</span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-b border-[#7ee02a]/10 pb-3">
-                      <span>Múltipla otimizada</span>
-                      <span className="font-bold text-[#95ef24]">R$ 0,50</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span>Retorno potencial</span>
-                      <span className="font-bold text-[#95ef24]">R$ 50,00+</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 text-center">
-                    <span className="inline-flex rounded-full bg-[#7ee02a]/14 px-4 py-1.5 text-[12px] font-bold text-[#95ef24]">
-                      Lucro de 10.000%+
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
-          <div className="justify-self-end w-full max-w-[520px]">
-            <div className="relative overflow-hidden rounded-[26px] border border-white/8 bg-[linear-gradient(180deg,rgba(8,14,22,0.80)_0%,rgba(5,10,18,0.90)_100%)] px-6 py-6 shadow-[0_12px_28px_rgba(0,0,0,0.14)] backdrop-blur-[3px]">
-              <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(126,224,42,0.05),transparent_28%)]" />
+          <div className="mt-11 grid items-stretch gap-5 lg:grid-cols-[1fr_auto_1fr]">
+            <ComparisonCard
+              title="Sem painel"
+              items={withoutPanel}
+              badge="Pouco controle"
+            />
 
-              <div className="relative z-10">
-                <div className="inline-flex items-center rounded-full border border-[#7cd81d]/18 bg-[#0b1810]/90 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.05em] text-[#95ef24]">
-                  <span className="mr-2.5 h-2 w-2 rounded-full bg-[#95ef24]" />
-                  POR QUE FUNCIONA?
-                </div>
-
-                <h2 className="mt-5 max-w-[410px] text-[27px] font-black leading-[1.06] tracking-[-0.045em] text-white md:text-[32px]">
-                  O Método que as Casas Não Querem que Você Saiba
-                </h2>
-
-                <ul className="mt-7 space-y-4 text-[15px] text-white/86">
-                  <li className="flex items-start gap-3">
-                    <span className="mt-[2px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7ee02a]/14 text-[11px] font-black text-[#95ef24]">
-                      ✓
-                    </span>
-                    <span>Aproveite promoções que já existem</span>
-                  </li>
-
-                  <li className="flex items-start gap-3">
-                    <span className="mt-[2px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7ee02a]/14 text-[11px] font-black text-[#95ef24]">
-                      ✓
-                    </span>
-                    <span>Use estratégias matemáticas comprovadas</span>
-                  </li>
-
-                  <li className="flex items-start gap-3">
-                    <span className="mt-[2px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7ee02a]/14 text-[11px] font-black text-[#95ef24]">
-                      ✓
-                    </span>
-                    <span>Multiplique seus ganhos com múltiplas</span>
-                  </li>
-
-                  <li className="flex items-start gap-3">
-                    <span className="mt-[2px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7ee02a]/14 text-[11px] font-black text-[#95ef24]">
-                      ✓
-                    </span>
-                    <span>Transforme bônus em dinheiro real</span>
-                  </li>
-
-                  <li className="flex items-start gap-3">
-                    <span className="mt-[2px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#7ee02a]/14 text-[11px] font-black text-[#95ef24]">
-                      ✓
-                    </span>
-                    <span>Métodos testados e validados</span>
-                  </li>
-                </ul>
+            <div className="hidden place-items-center lg:grid">
+              <div className="grid h-14 w-14 place-items-center rounded-full border border-lime-300/32 bg-lime-300/12 text-lime-300 shadow-[0_0_34px_rgba(168,255,47,0.18)]">
+                <ChevronRight size={34} strokeWidth={3} />
               </div>
             </div>
+
+            <ComparisonCard
+              title="Com painel"
+              items={withPanel}
+              badge="Mais clareza e estratégia"
+              positive
+            />
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[linear-gradient(180deg,#08111b_0%,#09111a_100%)] py-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_88%_18%,rgba(255,255,255,0.04),transparent_10%),radial-gradient(circle_at_84%_72%,rgba(126,224,42,0.04),transparent_18%)]" />
+      <section id="metodos" className="relative z-10 overflow-hidden py-20">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,11,18,0)_0%,rgba(8,15,23,0.50)_48%,rgba(5,11,18,0)_100%)]" />
 
-        <div className="relative z-10 mx-auto max-w-[1280px] px-8">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center rounded-full border border-[#7cd81d]/18 bg-[#0d1d10]/90 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.05em] text-[#95ef24]">
-                <span className="mr-2.5 h-2 w-2 rounded-full bg-[#95ef24]" />
-                ALUNOS SATISFEITOS
-              </div>
+        <div className="relative mx-auto max-w-[1220px] px-5 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
+            <div className="pt-2">
+              <Badge>Rotina organizada</Badge>
 
-              <h2 className="mt-5 text-[27px] font-bold tracking-[-0.04em] md:text-[34px]">
-                <span className="italic text-[#7ee02a]">Resultados Reais</span>{" "}
-                <span className="italic text-white/92">
-                  de Quem Aplicou o Método
-                </span>
+              <h2 className="mt-5 max-w-[470px] text-[35px] font-black italic leading-[1.04] tracking-[-0.05em] text-white sm:text-[48px]">
+                Organize sua operação com mais critério
               </h2>
+
+              <p className="mt-5 max-w-[440px] text-[16px] leading-[1.75] text-slate-400">
+                Centralize as informações da sua rotina de apostas em um
+                ambiente mais fácil de acompanhar, revisar e ajustar.
+              </p>
+
+              <div className="mt-8 space-y-4 border-l border-white/10 pl-5">
+                {[
+                  "Banca, entradas e desempenho no mesmo contexto.",
+                  "Métodos e critérios disponíveis antes de cada decisão.",
+                  "Histórico para revisar padrões sem depender de memória.",
+                ].map((item) => (
+                  <p key={item} className="text-[14px] leading-[1.6] text-slate-300">
+                    {item}
+                  </p>
+                ))}
+              </div>
             </div>
 
-            {totalTestimonials > 3 && (
-              <div className="hidden items-center gap-3 md:flex">
-                <button
-                  type="button"
-                  onClick={prevTestimonials}
-                  aria-label="Depoimento anterior"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/14 bg-[#101722] text-[20px] text-white/90 transition hover:border-[#86e11f]/40 hover:text-white"
-                >
-                  ←
-                </button>
+            <div className="relative overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(145deg,rgba(13,22,34,0.92),rgba(4,8,14,0.98))] shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
+              <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(163,230,53,0.38),transparent)]" />
+              <div className="absolute right-[-120px] top-[-120px] h-[280px] w-[280px] rounded-full bg-lime-300/7 blur-3xl" />
 
-                <button
-                  type="button"
-                  onClick={nextTestimonials}
-                  aria-label="Próximo depoimento"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/14 bg-[#101722] text-[20px] text-white/90 transition hover:border-[#86e11f]/40 hover:text-white"
-                >
-                  →
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 grid gap-4 xl:grid-cols-3">
-            {visibleTestimonials.map((item, idx) => (
-              <div
-                key={`${item.name}-${testimonialIndex}-${idx}`}
-                className="rounded-[18px] border border-white/8 bg-[linear-gradient(180deg,rgba(14,20,30,0.90)_0%,rgba(10,15,23,0.94)_100%)] px-5 py-4 shadow-[0_8px_18px_rgba(0,0,0,0.14)]"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#53c84f] text-[18px] font-extrabold text-white">
-                    {item.initials}
+              <div className="relative z-10 border-b border-white/8 px-6 py-5 lg:px-7">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-lime-300">
+                      Resumo da operação
+                    </p>
+                    <h3 className="mt-2 text-[24px] font-black tracking-[-0.04em] text-white">
+                      Painel do apostador
+                    </h3>
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-[17px] font-extrabold leading-none text-white">
-                          {item.name}
-                        </h3>
-                        <p className="mt-1 text-[12px] font-medium text-white/58">
-                          {item.city}
+                  <div className="flex gap-2 text-[11px] font-bold text-slate-400">
+                    <span className="rounded-full bg-white/[0.055] px-3 py-1.5">
+                      Hoje
+                    </span>
+                    <span className="rounded-full bg-lime-300 px-3 py-1.5 text-[#061006]">
+                      Em controle
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative z-10 grid lg:grid-cols-[1fr_260px]">
+                <div className="px-6 py-6 lg:px-7">
+                  <div className="grid gap-6 md:grid-cols-3">
+                    {[
+                      ["Banca", "R$ 1.840", "saldo atualizado"],
+                      ["Entradas", "32", "registradas"],
+                      ["Métodos", "6", "em uso"],
+                    ].map(([label, value, note]) => (
+                      <div key={label}>
+                        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
+                          {label}
+                        </p>
+                        <p className="mt-2 text-[26px] font-black tracking-[-0.05em] text-white">
+                          {value}
+                        </p>
+                        <p className="mt-1 text-[12px] text-lime-300">{note}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-7 overflow-hidden rounded-[22px] border border-white/8 bg-black/20">
+                    {[
+                      [
+                        "Gestão de banca centralizada",
+                        "Saldo, movimentações e resultado ficam conectados.",
+                      ],
+                      [
+                        "Histórico com contexto",
+                        "Mercado, odd, stake, método e observações no registro.",
+                      ],
+                      [
+                        "Decisão mais consistente",
+                        "Critérios e desempenho ficam visíveis antes da próxima entrada.",
+                      ],
+                    ].map(([title, desc], index) => (
+                      <div
+                        key={title}
+                        className={`flex gap-4 px-5 py-4 ${
+                          index !== 0 ? "border-t border-white/8" : ""
+                        }`}
+                      >
+                        <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-lime-300" />
+                        <div>
+                          <h4 className="text-[15px] font-black text-white">
+                            {title}
+                          </h4>
+                          <p className="mt-1.5 text-[13px] leading-[1.6] text-slate-400">
+                            {desc}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-white/8 bg-white/[0.025] px-6 py-6 lg:border-l lg:border-t-0">
+                  <p className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Próxima revisão
+                  </p>
+
+                  <div className="mt-5 space-y-4">
+                    {[
+                      ["Stake média", "1,2%"],
+                      ["Mercado foco", "Over/BTTS"],
+                      ["Última análise", "Hoje"],
+                    ].map(([label, value]) => (
+                      <div key={label}>
+                        <p className="text-[12px] text-slate-500">{label}</p>
+                        <p className="mt-1 text-[17px] font-black text-white">
+                          {value}
                         </p>
                       </div>
+                    ))}
+                  </div>
 
-                      <div className="pt-0.5 text-[15px] leading-none tracking-[0.08em] text-[#ffbf3f]">
-                        ★★★★★
-                      </div>
-                    </div>
-
-                    <p className="mt-4 max-w-[300px] text-[14px] leading-[1.45] text-white/72">
-                      “{item.text}”
+                  <div className="mt-7 rounded-[18px] bg-lime-300/[0.08] p-4">
+                    <p className="text-[13px] font-bold leading-[1.6] text-slate-200">
+                      A ideia não é apostar mais. É acompanhar melhor o que já
+                      faz parte da sua rotina.
                     </p>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-10 border-y border-white/8 bg-[#050b12] py-20">
+        <div className="mx-auto max-w-[1220px] px-5 lg:px-8">
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div>
+              <Badge>Rotina do apostador</Badge>
+              <h2 className="mt-5 max-w-[780px] text-[34px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[48px]">
+                Recursos que Ajudam na{" "}
+                <span className="text-lime-300">Rotina do Apostador</span>
+              </h2>
+            </div>
+            <p className="max-w-[390px] text-[15px] leading-[1.65] text-slate-400">
+              Organização, histórico e análise para transformar informação em
+              decisões mais planejadas.
+            </p>
+          </div>
+
+          <div className="mt-11 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {extraResources.map((resource) => (
+              <FeatureCard key={resource.title} {...resource} />
             ))}
           </div>
-
-          {totalTestimonials > 3 && (
-            <div className="mt-5 flex items-center justify-center gap-2">
-              {Array.from({ length: totalTestimonials }).map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setTestimonialIndex(index)}
-                  aria-label={`Ir para depoimento ${index + 1}`}
-                  className={`h-2.5 rounded-full transition-all ${
-                    index === testimonialIndex
-                      ? "w-7 bg-[#86e11f]"
-                      : "w-2.5 bg-white/24 hover:bg-white/36"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
-      <section id="cta" className="bg-[#050b12] py-5">
-        <div className="mx-auto max-w-[1180px] px-8">
-          <div className="rounded-[22px] border border-[#7ee02a]/45 bg-[linear-gradient(180deg,#07120c_0%,#071019_100%)] px-10 py-6 lg:flex lg:items-center lg:justify-between lg:gap-8">
-            <div className="max-w-[640px]">
-              <h2 className="text-[26px] font-black italic leading-[1.02] tracking-[-0.04em] text-white md:text-[38px]">
-                Pronto para{" "}
-                <span className="text-[#7ee02a]">Começar a Faturar?</span>
-              </h2>
+      <section id="resultados" className="relative z-10 py-20">
+        <div className="mx-auto max-w-[1220px] px-5 text-center lg:px-8">
+          <Badge>Resultados com clareza</Badge>
+          <h2 className="mx-auto mt-5 max-w-[820px] text-[34px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[48px]">
+            Quem Usa o Painel Tem{" "}
+            <span className="text-lime-300">Mais Clareza nas Apostas</span>
+          </h2>
 
-              <p className="mt-3 text-[14px] text-white/72 md:text-[15px]">
-                Junte-se a milhares de pessoas que já transformaram rodadas
-                grátis em dinheiro real
-              </p>
-
-              <Link
-                href="/area-membros"
-                className={`${primaryButtonClass} mt-5 inline-flex h-[50px] min-w-[290px] items-center justify-center px-8 text-[15px]`}
-                style={{ color: "#081200", WebkitTextFillColor: "#081200" }}
+          <div className="mt-11 grid gap-4 lg:grid-cols-3">
+            {testimonials.map((item) => (
+              <article
+                key={item.name}
+                className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,27,39,0.86),rgba(8,13,20,0.96))] p-6 text-left shadow-[0_22px_60px_rgba(0,0,0,0.22)] transition duration-300 hover:-translate-y-1 hover:border-lime-300/28"
               >
-                QUERO COMEÇAR AGORA!
-              </Link>
-
-              <div className="mt-3 text-[12px] text-white/62">
-                🔒 Acesso imediato • Garantia de 7 dias • Suporte incluso
-              </div>
-            </div>
-
-            <div className="mt-5 lg:mt-0 lg:w-[300px] lg:shrink-0">
-              <div className="relative overflow-hidden rounded-[18px] border border-white/10 bg-[linear-gradient(180deg,rgba(17,24,35,0.96)_0%,rgba(10,15,24,0.98)_100%)] px-5 py-5 shadow-[0_12px_26px_rgba(0,0,0,0.14)]">
-                <div className="absolute left-0 top-0 h-full w-[2px] bg-[linear-gradient(180deg,rgba(134,225,31,0.00)_0%,rgba(134,225,31,0.95)_50%,rgba(134,225,31,0.00)_100%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_50%,rgba(134,225,31,0.08),transparent_30%)]" />
-
-                <div className="relative z-10">
-                  <div className="inline-flex items-center rounded-full border border-[#86e11f]/20 bg-[#102013] px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.08em] text-[#a8ff4a]">
-                    Liberação Imediata
+                <div className="flex items-center gap-4">
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-lime-200/25 bg-lime-300 text-[17px] font-black text-[#061006]">
+                    {item.initials}
                   </div>
-
-                  <div className="mt-4 flex items-start gap-3">
-                    <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full bg-[#86e11f]/16 text-[#a8ff4a]">
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M8 12L10.5 14.5L16 9"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <circle
-                          cx="12"
-                          cy="12"
-                          r="8"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                        />
-                      </svg>
-                    </div>
-
-                    <div>
-                      <h3 className="text-[19px] font-extrabold leading-none text-white">
-                        Acesso Imediato
-                      </h3>
-                      <p className="mt-2 text-[13px] leading-[1.45] text-white/68">
-                        Entre agora e comece a aplicar o método sem espera.
-                      </p>
-                    </div>
+                  <div>
+                    <h3 className="text-[18px] font-black text-white">
+                      {item.name}
+                    </h3>
+                    <p className="text-[13px] text-slate-500">{item.city}</p>
                   </div>
                 </div>
-              </div>
+                <div className="mt-5 flex gap-1 text-amber-400">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Star key={index} size={17} fill="currentColor" />
+                  ))}
+                </div>
+                <p className="mt-5 text-[15px] leading-[1.75] text-slate-300">
+                  “{item.text}”
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" className="relative z-10 px-5 pb-16 lg:px-8">
+        <div className="mx-auto grid max-w-[1160px] gap-8 overflow-hidden rounded-[30px] border border-lime-300/38 bg-[linear-gradient(135deg,rgba(14,34,17,0.86),rgba(5,11,18,0.98)_50%,rgba(11,21,31,0.96))] p-7 shadow-[0_0_86px_rgba(168,255,47,0.11)] lg:grid-cols-[1fr_320px] lg:p-10">
+          <div>
+            <Badge>Área do apostador</Badge>
+            <h2 className="mt-5 text-[34px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[50px]">
+              Pronto para Apostar com{" "}
+              <span className="text-lime-300">Mais Controle?</span>
+            </h2>
+            <p className="mt-4 max-w-[670px] text-[16px] leading-[1.7] text-slate-300">
+              Tenha acesso ao painel completo e organize sua banca, métodos e
+              resultados em um só lugar.
+            </p>
+            <PrimaryButton className="mt-7 w-full sm:w-auto">
+              Acessar painel agora
+            </PrimaryButton>
+            <p className="mt-4 text-[13px] font-semibold text-slate-400">
+              Acesso imediato • Painel online • Atualizações constantes
+            </p>
+          </div>
+
+          <div className="rounded-[24px] border border-white/10 bg-black/24 p-6">
+            <div className="grid h-14 w-14 place-items-center rounded-[18px] bg-lime-300/12 text-lime-300">
+              <ShieldCheck size={31} strokeWidth={2.2} />
+            </div>
+            <h3 className="mt-6 text-[24px] font-black text-white">
+              Acesso ao Painel
+            </h3>
+            <p className="mt-3 text-[15px] leading-[1.65] text-slate-400">
+              Comece a organizar suas apostas hoje mesmo
+            </p>
+            <div className="mt-7 flex items-center gap-2 rounded-[16px] border border-lime-300/18 bg-lime-300/8 px-4 py-3 text-[13px] font-bold text-lime-200">
+              <Sparkles size={17} />
+              Dashboard liberado na hora
             </div>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-white/8 bg-[#04080e] py-4">
-        <div className="mx-auto flex max-w-[1180px] flex-col items-center justify-between gap-4 px-8 text-[12px] text-white/52 lg:flex-row">
-          <div className="flex items-center gap-3">
-            <div className="text-[32px] font-black leading-none text-[#97f21f]">
-              α
-            </div>
-            <div className="text-[16px] font-extrabold tracking-[-0.02em] text-white">
-              ALPHA <span className="text-[#79db21]">TIPS</span>
-            </div>
-          </div>
-
-          <div>© 2024 Alpha Tips. Todos os direitos reservados.</div>
-
+      <footer className="relative z-10 border-t border-white/8 bg-[#03070d] py-7">
+        <div className="mx-auto flex max-w-[1220px] flex-col items-center justify-between gap-5 px-5 text-[13px] text-slate-500 lg:flex-row lg:px-8">
+          <Logo />
+          <p>© 2024 KRST Tips. Todos os direitos reservados.</p>
           <div className="flex gap-6">
-            <a href="#" className="transition hover:text-white">
+            <a href="#" className="transition hover:text-lime-300">
               Termos de Uso
             </a>
-            <a href="#" className="transition hover:text-white">
+            <a href="#" className="transition hover:text-lime-300">
               Política de Privacidade
             </a>
           </div>
