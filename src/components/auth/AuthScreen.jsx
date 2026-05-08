@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import {
   ArrowRight,
   Check,
@@ -10,10 +9,9 @@ import {
   EyeOff,
   LockKeyhole,
   Mail,
-  Moon,
-  Sun,
   UserRound,
 } from "lucide-react";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const MODES = {
   login: {
@@ -42,53 +40,35 @@ const initialValues = {
   remember: true,
 };
 
-function Brand({ compact = false }) {
-  return (
-    <Link href="/" className="inline-flex items-center gap-3" aria-label="Alpha Tips">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-slate-950 text-[17px] font-black text-emerald-300 ring-1 ring-slate-900/10 dark:bg-white dark:text-slate-950 dark:ring-white/10">
-        A
-      </span>
-      <span className="min-w-0">
-        <span className="block text-[15px] font-semibold tracking-[-0.02em] text-slate-950 dark:text-white">
-          Alpha Tips
-        </span>
-        {!compact ? (
-          <span className="block text-[11px] font-medium text-slate-500 dark:text-slate-400">
-            Gestão profissional
-          </span>
-        ) : null}
-      </span>
-    </Link>
-  );
+function getInitialMode() {
+  if (typeof window === "undefined") return "login";
+
+  const params = new URLSearchParams(window.location.search);
+  const requestedMode = params.get("mode") || params.get("modo");
+
+  return ["register", "registro", "cadastro"].includes(requestedMode)
+    ? "register"
+    : "login";
 }
 
-function ThemeButton() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => setMounted(true));
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <span className="h-9 w-9 rounded-[10px] border border-slate-200 bg-white dark:border-white/[0.08] dark:bg-white/[0.035]" />
-    );
-  }
-
-  const isDark = resolvedTheme === "dark";
-
+function Brand({ compact = false }) {
   return (
-    <button
-      type="button"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-slate-400 dark:hover:border-white/[0.14] dark:hover:bg-white/[0.065] dark:hover:text-white"
-      aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
-      title={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
-    >
-      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-    </button>
+    <Link href="/" className="inline-flex items-center gap-3" aria-label="Filtto">
+      <span className="relative h-8 w-7 shrink-0 text-emerald-700 dark:text-emerald-400">
+        <span className="absolute left-0 top-0 h-2.5 w-7 skew-x-[-24deg] rounded-[2px] bg-current" />
+        <span className="absolute left-0 top-3 h-2.5 w-5 skew-x-[-24deg] rounded-[2px] bg-current" />
+        <span className="absolute left-0 top-6 h-2.5 w-3 skew-x-[-24deg] rounded-[2px] bg-current" />
+      </span>
+      <span className="min-w-0">
+        <span
+          className={`block font-black tracking-[-0.04em] text-slate-950 dark:text-white ${
+            compact ? "text-[24px]" : "text-[30px]"
+          }`}
+        >
+          Filtto
+        </span>
+      </span>
+    </Link>
   );
 }
 
@@ -240,7 +220,7 @@ function GoogleIcon() {
 }
 
 export default function AuthScreen() {
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState(getInitialMode);
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -304,16 +284,18 @@ export default function AuthScreen() {
   return (
     <main className="min-h-screen bg-[#f5f7f9] text-slate-950 transition-colors dark:bg-[#070d16] dark:text-white">
       <div className="min-h-screen bg-[linear-gradient(180deg,rgba(255,255,255,0.78),rgba(245,247,249,0)_260px)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(7,13,22,0)_320px)]">
+        <div className="fixed right-5 top-5 z-50">
+          <LanguageSwitcher light />
+        </div>
         <div className="mx-auto grid min-h-screen w-full max-w-[1080px] items-center gap-10 px-5 py-6 sm:px-8 lg:grid-cols-[minmax(0,440px)_minmax(440px,480px)] lg:gap-12 lg:px-8 xl:gap-14">
           <InstitutionalPanel />
 
           <section className="flex w-full justify-center">
             <div className="w-full max-w-[480px]">
-              <div className="mb-3 flex items-center justify-between gap-4 lg:justify-end">
+              <div className="mb-3 flex items-center justify-between gap-4 lg:hidden">
                 <div className="lg:hidden">
                   <Brand compact />
                 </div>
-                <ThemeButton />
               </div>
 
               <div className="rounded-[22px] border border-slate-200 bg-white p-6 shadow-[0_18px_42px_rgba(15,23,42,0.07)] dark:border-white/[0.08] dark:bg-[#0b111d] dark:shadow-[0_24px_70px_rgba(0,0,0,0.34)] sm:p-7">

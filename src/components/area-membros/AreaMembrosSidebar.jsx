@@ -4,9 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BookOpenCheck,
+  CalendarDays,
   ChartNoAxesCombined,
-  ChevronsLeft,
-  ChevronsRight,
   CreditCard,
   LayoutDashboard,
   MessagesSquare,
@@ -16,9 +15,11 @@ import {
   X,
 } from "lucide-react";
 import { NAV_SECTIONS, isPathActive } from "@/components/area-membros/areaNavigation";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 const ICONS = {
   BookOpenCheck,
+  CalendarDays,
   ChartNoAxesCombined,
   CreditCard,
   LayoutDashboard,
@@ -28,167 +29,113 @@ const ICONS = {
   Wallet,
 };
 
-function Brand({ collapsed = false }) {
+function Brand() {
   return (
-    <Link
-      href="/area-membros"
-      className={`flex min-h-12 items-center gap-3 rounded-[14px] px-2 transition hover:bg-slate-100 dark:hover:bg-white/[0.04] ${
-        collapsed ? "justify-center" : ""
-      }`}
-      title={collapsed ? "Alpha Tips" : undefined}
-    >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-slate-950 text-[18px] font-black text-lime-300 ring-1 ring-slate-900/10 dark:bg-white dark:text-slate-950 dark:ring-white/10">
-        A
+    <Link href="/area-membros" className="flex items-center gap-3" aria-label="Filtto">
+      <span className="relative h-7 w-6 shrink-0 text-emerald-500">
+        <span className="absolute left-0 top-0 h-2 w-6 skew-x-[-24deg] rounded-[2px] bg-current" />
+        <span className="absolute left-0 top-2.5 h-2 w-[18px] skew-x-[-24deg] rounded-[2px] bg-current" />
+        <span className="absolute left-0 top-5 h-2 w-[11px] skew-x-[-24deg] rounded-[2px] bg-current" />
       </span>
-      {!collapsed ? (
-        <span className="min-w-0">
-          <span className="block text-[15px] font-semibold tracking-[-0.02em] text-slate-950 dark:text-white">
-            Alpha Tips
-          </span>
-          <span className="block text-[11px] font-medium text-slate-500 dark:text-slate-400">
-            Gestão profissional
-          </span>
+      <span className="min-w-0">
+        <span className="block truncate text-[24px] font-black leading-none tracking-[-0.04em] text-[var(--gp-text)]">
+          Filtto
         </span>
-      ) : null}
+      </span>
     </Link>
   );
 }
 
-function NavItem({ item, collapsed, onNavigate }) {
+function NavItem({ item, onNavigate }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const Icon = ICONS[item.icon] || LayoutDashboard;
   const active = isPathActive(pathname, item.href);
 
   return (
     <Link
       href={item.href}
-      title={collapsed ? item.label : undefined}
       onClick={onNavigate}
-      className={`group relative flex min-h-11 items-center rounded-[12px] text-[14px] font-medium transition ${
-        collapsed ? "justify-center px-2" : "gap-3 px-3"
-      } ${
+      className={`group relative grid min-h-10 grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2 text-[13px] transition ${
         active
-          ? "bg-white text-slate-950 shadow-[0_1px_2px_rgba(15,23,42,0.06)] ring-1 ring-slate-200 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.1]"
-          : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/[0.055] dark:hover:text-white"
+          ? "font-semibold text-[var(--gp-text)]"
+          : "font-medium text-[var(--gp-text-secondary)] hover:text-[var(--gp-text)]"
       }`}
     >
-      {!collapsed ? (
-        <span
-          className={`absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full transition ${
-            active ? "bg-lime-500 dark:bg-lime-300" : "bg-transparent"
-          }`}
-        />
-      ) : null}
-
       <span
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] ${
-          active
-            ? "bg-slate-50 text-slate-950 ring-1 ring-slate-200 dark:bg-lime-300/12 dark:text-lime-200 dark:ring-0"
-            : "text-slate-500 group-hover:text-slate-800 dark:text-slate-500 dark:group-hover:text-white"
+        className={`absolute left-0 top-2 bottom-2 w-[2px] rounded-full transition ${
+          active ? "bg-emerald-500" : "bg-transparent"
         }`}
-      >
-        <Icon className="h-[17px] w-[17px]" strokeWidth={1.9} />
-      </span>
-
-      {!collapsed ? (
-        <>
-          <span
-            className={`min-w-0 flex-1 truncate ${
-              active ? "text-slate-950 dark:text-white" : ""
-            }`}
-          >
-            {item.label}
-          </span>
-          {item.badge ? (
-            <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                active
-                  ? "bg-lime-300 text-slate-950"
-                  : "bg-lime-100 text-lime-800 dark:bg-lime-300/10 dark:text-lime-200"
-              }`}
-            >
-              {item.badge}
-            </span>
-          ) : null}
-        </>
+      />
+      <Icon
+        className={`h-[15px] w-[15px] transition ${
+          active ? "text-emerald-500" : "text-[var(--gp-text-muted)] group-hover:text-[var(--gp-text-secondary)]"
+        }`}
+        strokeWidth={1.85}
+      />
+      <span className="truncate">{t(item.labelKey)}</span>
+      {item.badge ? (
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--gp-text-muted)]">
+          {item.badge}
+        </span>
       ) : null}
     </Link>
   );
 }
 
-function SidebarContent({ collapsed = false, onNavigate, onToggleCollapsed, mobile = false }) {
+function SidebarContent({ onNavigate, mobile = false }) {
+  const { t } = useLanguage();
+
   return (
-    <div className="flex h-full min-h-0 flex-col bg-white dark:bg-[#0b111d]">
-      <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-slate-200 px-4 dark:border-white/[0.07]">
-        <Brand collapsed={collapsed && !mobile} />
+    <div className="gp-sidebar flex h-full min-h-0 flex-col">
+      <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-[var(--gp-border)] px-6">
+        <Brand />
         {mobile ? (
           <button
             type="button"
             onClick={onNavigate}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
-            aria-label="Fechar menu"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-[8px] text-[var(--gp-text-secondary)] transition hover:bg-[var(--gp-hover)] hover:text-[var(--gp-text)]"
+            aria-label={t("sidebar.closeMenu")}
           >
             <X className="h-5 w-5" />
           </button>
         ) : null}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
-        <nav className="space-y-6" aria-label="Navegacao principal">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
+        <nav className="space-y-7" aria-label={t("sidebar.ariaMain")}>
           {NAV_SECTIONS.map((section) => (
-            <div key={section.label}>
-              {!collapsed || mobile ? (
-                <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
-                  {section.label}
-                </p>
-              ) : null}
-              <div className="space-y-1">
+            <section key={section.labelKey}>
+              <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--gp-text-muted)]">
+                {t(section.labelKey)}
+              </p>
+              <div className="space-y-0.5">
                 {section.items.map((item) => (
-                  <NavItem
-                    key={item.href}
-                    item={item}
-                    collapsed={collapsed && !mobile}
-                    onNavigate={onNavigate}
-                  />
+                  <NavItem key={item.href} item={item} onNavigate={onNavigate} />
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </nav>
-
       </div>
 
-      {!mobile ? (
-        <div className="border-t border-slate-200 p-3 dark:border-white/[0.07]">
-          <button
-            type="button"
-            onClick={onToggleCollapsed}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-[11px] text-[13px] font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/[0.055] dark:hover:text-white"
-            title={collapsed ? "Expandir sidebar" : "Recolher sidebar"}
-          >
-            {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
-            {!collapsed ? <span>Recolher</span> : null}
-          </button>
+      <div className="shrink-0 border-t border-[var(--gp-border)] px-6 py-4">
+        <div className="flex items-center justify-between text-[12px]">
+          <span className="font-medium text-[var(--gp-text-secondary)]">{t("sidebar.proPlan")}</span>
+          <span className="font-semibold text-emerald-500">{t("common.active")}</span>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }
 
-export default function AreaMembrosSidebar({
-  collapsed = false,
-  mobileOpen = false,
-  onCloseMobile,
-  onToggleCollapsed,
-}) {
+export default function AreaMembrosSidebar({ mobileOpen = false, onCloseMobile }) {
+  const { t } = useLanguage();
+
   return (
     <>
-      <aside
-        className={`hidden shrink-0 border-r border-slate-200 transition-[width] duration-200 ease-out dark:border-white/[0.07] lg:block ${
-          collapsed ? "w-[84px]" : "w-[280px]"
-        }`}
-      >
-        <SidebarContent collapsed={collapsed} onToggleCollapsed={onToggleCollapsed} />
+      <aside className="gp-sidebar hidden w-[286px] shrink-0 border-r lg:block">
+        <SidebarContent />
       </aside>
 
       <div
@@ -199,14 +146,14 @@ export default function AreaMembrosSidebar({
       >
         <button
           type="button"
-          aria-label="Fechar menu"
+          aria-label={t("sidebar.closeMenu")}
           onClick={onCloseMobile}
-          className={`absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] transition-opacity dark:bg-black/60 ${
+          className={`absolute inset-0 bg-black/55 backdrop-blur-[2px] transition-opacity ${
             mobileOpen ? "opacity-100" : "opacity-0"
           }`}
         />
         <aside
-          className={`absolute inset-y-0 left-0 w-[min(88vw,320px)] border-r border-slate-200 bg-white shadow-2xl transition-transform duration-200 dark:border-white/[0.08] dark:bg-[#0b111d] ${
+          className={`gp-sidebar absolute inset-y-0 left-0 w-[min(88vw,300px)] border-r shadow-2xl transition-transform duration-200 ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >

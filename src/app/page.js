@@ -1,735 +1,815 @@
 import Link from "next/link";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import {
   ArrowRight,
   BarChart3,
-  Calculator,
-  CalendarCheck,
+  BookOpenCheck,
+  CalendarDays,
   Check,
-  ChevronRight,
-  CircleDollarSign,
+  ChevronDown,
   ClipboardList,
-  Gauge,
+  CreditCard,
+  Gem,
+  Home as HomeIcon,
   LineChart,
-  LockKeyhole,
+  Mail,
   PieChart,
+  Play,
   ShieldCheck,
-  Sparkles,
-  Star,
-  Target,
-  Trophy,
+  TrendingUp,
+  Users,
   WalletCards,
 } from "lucide-react";
 
-const menuItems = [
-  { label: "Início", href: "#" },
-  { label: "Ferramentas", href: "#ferramentas" },
-  { label: "Gestão de Banca", href: "#gestao" },
-  { label: "Métodos", href: "#metodos" },
-  { label: "Resultados", href: "#resultados" },
-  { label: "FAQ", href: "#faq" },
-];
+const navItems = ["Produto", "Recursos", "Comunidade", "Planos", "FAQ"];
 
-const quickBenefits = [
+const modules = [
   {
-    title: "Gestão de Banca",
-    desc: "Controle entradas, lucros e prejuízos",
+    title: "Dashboard",
+    desc: "Visão geral do desempenho e da sua jornada.",
+    icon: HomeIcon,
+    featured: true,
+  },
+  {
+    title: "Banca",
+    desc: "Controle e evolução da sua banca.",
     icon: WalletCards,
   },
   {
-    title: "Ferramentas Exclusivas",
-    desc: "Calculadoras, métodos e análises práticas",
-    icon: Calculator,
-  },
-  {
-    title: "Mais Controle",
-    desc: "Decisões menos emocionais e mais estratégicas",
-    icon: Gauge,
-  },
-];
-
-const panelTools = [
-  {
-    title: "Gestão de Banca",
-    desc: "Registre sua banca, entradas, stakes, lucro e prejuízo em um só lugar.",
-    icon: WalletCards,
-  },
-  {
-    title: "Calculadora de Stake",
-    desc: "Defina valores de entrada com base na sua banca e no seu perfil de risco.",
-    icon: Calculator,
-  },
-  {
-    title: "Histórico de Apostas",
-    desc: "Acompanhe suas entradas, mercados, odds e desempenho ao longo do tempo.",
-    icon: ClipboardList,
-  },
-  {
-    title: "Métodos Exclusivos",
-    desc: "Acesse estratégias e modelos práticos para diferentes tipos de apostas.",
-    icon: Target,
-  },
-];
-
-const withoutPanel = [
-  "Apostas desorganizadas",
-  "Sem controle da banca",
-  "Decisões por emoção",
-  "Não sabe onde está errando",
-  "Dificuldade para medir resultados",
-];
-
-const withPanel = [
-  "Controle total da banca",
-  "Entradas registradas",
-  "Métodos organizados",
-  "Análise de lucro/prejuízo",
-  "Evolução acompanhada",
-];
-
-const extraResources = [
-  {
-    title: "Controle Diário",
-    desc: "Registre suas apostas e acompanhe sua evolução dia após dia.",
-    icon: CalendarCheck,
-  },
-  {
-    title: "Análise de Desempenho",
-    desc: "Veja onde você está lucrando, perdendo e quais mercados performam melhor.",
+    title: "Estatísticas",
+    desc: "Métricas que importam para suas decisões.",
     icon: BarChart3,
   },
   {
-    title: "Biblioteca de Métodos",
-    desc: "Acesse métodos exclusivos organizados para consulta rápida.",
-    icon: Trophy,
+    title: "Próximos Jogos",
+    desc: "Acompanhe jogos e oportunidades.",
+    icon: CalendarDays,
   },
   {
-    title: "Área de Planejamento",
-    desc: "Monte sua rotina, defina metas e acompanhe sua disciplina.",
-    icon: PieChart,
+    title: "Progressão",
+    desc: "Simule cenários e planeje sua evolução.",
+    icon: TrendingUp,
   },
 ];
 
-const testimonials = [
+const plans = [
   {
-    initials: "MR",
-    name: "Matheus R.",
-    city: "São Paulo, SP",
-    text: "Antes eu apostava sem controle. Agora consigo ver minha banca, minhas entradas e onde estou errando.",
+    title: "Grátis",
+    note: "Para testar a plataforma.",
+    price: "R$ 0,00",
+    period: "",
+    sub: "Sem custo inicial",
+    button: "Começar grátis",
   },
   {
-    initials: "CA",
-    name: "Camila A.",
-    city: "Rio de Janeiro, RJ",
-    text: "O painel me ajudou a organizar minha rotina e parar de apostar no impulso.",
+    title: "Mensal",
+    note: "Acesso completo, sem fidelidade.",
+    price: "R$ 9,99",
+    period: "/mês",
+    button: "Escolher plano",
   },
   {
-    initials: "LS",
-    name: "Lucas S.",
-    city: "Belo Horizonte, MG",
-    text: "A calculadora de stake e o histórico de apostas fizeram muita diferença na minha gestão.",
+    title: "Anual",
+    note: "Melhor custo-benefício.",
+    price: "R$ 89,99",
+    period: "/ano",
+    sub: "R$ 7,50 /mês",
+    button: "Escolher plano",
+    featured: true,
   },
 ];
 
-function Logo() {
+const faqs = [
+  {
+    question: "O que é o Filtto?",
+    answer:
+      "O Filtto é uma plataforma de gestão para apostadores esportivos. Ele ajuda você a controlar sua banca, registrar entradas, acompanhar métricas e organizar sua evolução em um só lugar.",
+  },
+  {
+    question: "Meus dados e resultados são seguros?",
+    answer:
+      "Sim. Seus registros ficam dentro da sua conta e são usados para organizar seu próprio painel. Você decide o que acompanha e o que deseja compartilhar publicamente.",
+  },
+  {
+    question: "Posso cancelar minha assinatura quando quiser?",
+    answer:
+      "Sim. Os planos não têm fidelidade. Você pode cancelar quando quiser e continuar usando os recursos disponíveis conforme as regras do plano ativo.",
+  },
+  {
+    question: "Como funciona o resultado público?",
+    answer:
+      "O resultado público é uma página visual para apresentar seu desempenho de forma mais profissional, com lucro, banca inicial, banca final, ROI, odd média e evolução do período.",
+  },
+];
+
+function Logo({ compact = false }) {
   return (
-    <Link href="/" className="flex items-center gap-3" aria-label="KRST Tips">
-      <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-[14px] border border-lime-300/30 bg-[#a8ff2f] text-[24px] font-black italic text-[#061006] shadow-[0_12px_26px_rgba(0,0,0,0.28)]">
-        <span className="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.72),transparent_28%)]" />
-        <span className="relative">A</span>
-      </span>
-      <span className="text-[20px] font-black tracking-[-0.04em] text-white">
-        KRST <span className="text-lime-300">TIPS</span>
+    <Link href="/" className="flex items-center gap-3">
+      <div className="relative h-8 w-7 text-[#087f32]">
+        <span className="absolute left-0 top-0 h-2.5 w-7 skew-x-[-24deg] rounded-[2px] bg-current" />
+        <span className="absolute left-0 top-3 h-2.5 w-5 skew-x-[-24deg] rounded-[2px] bg-current" />
+        <span className="absolute left-0 top-6 h-2.5 w-3 skew-x-[-24deg] rounded-[2px] bg-current" />
+      </div>
+      <span
+        className={`font-black tracking-[-0.04em] text-[#171a17] ${
+          compact ? "text-[23px]" : "text-[35px]"
+        }`}
+      >
+        Filtto
       </span>
     </Link>
   );
 }
 
-function Badge({ children }) {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-lime-300/22 bg-lime-300/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-lime-300">
-      <span className="h-2 w-2 rounded-full bg-lime-300" />
-      {children}
-    </div>
-  );
-}
-
-function PrimaryButton({ children, className = "" }) {
+function PrimaryButton({ children, className = "", href = "/login?mode=register" }) {
   return (
     <Link
-      href="/login"
-      style={{ color: "#061006", WebkitTextFillColor: "#061006" }}
-      className={`inline-flex min-h-14 items-center justify-center gap-2 rounded-[14px] border border-lime-100/40 bg-lime-300 px-8 py-4 text-[14px] font-black uppercase tracking-[0.025em] !text-[#061006] shadow-[0_16px_34px_rgba(0,0,0,0.36),0_0_0_1px_rgba(163,230,53,0.12)] transition duration-300 [text-shadow:none] hover:-translate-y-0.5 hover:bg-[#bef264] hover:shadow-[0_20px_44px_rgba(0,0,0,0.42),0_0_28px_rgba(163,230,53,0.18)] [&_*]:!text-[#061006] ${className}`}
+      href={href}
+      className={`inline-flex items-center justify-center gap-3 rounded-[8px] bg-[#007f2f] px-7 py-4 text-[15px] font-black tracking-[-0.01em] !text-white shadow-[0_14px_26px_rgba(0,127,47,0.18)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#006d29] hover:shadow-[0_18px_30px_rgba(0,127,47,0.22)] ${className}`}
     >
       {children}
-      <ArrowRight size={18} strokeWidth={3} />
+      <ArrowRight size={18} strokeWidth={2.2} />
     </Link>
   );
 }
 
-function StatCard({ label, value, accent = "text-white" }) {
+function SecondaryButton({ children, className = "" }) {
   return (
-    <div className="rounded-[16px] border border-white/8 bg-white/[0.035] p-4 backdrop-blur sm:rounded-[18px] sm:p-5">
-      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 sm:text-[11px]">
-        {label}
-      </p>
-      <p
-        className={`mt-2 text-[21px] font-black tracking-[-0.04em] sm:text-[27px] ${accent}`}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function DashboardMockup() {
-  return (
-    <div className="relative mx-auto min-h-[920px] w-full max-w-[720px] sm:min-h-[720px] lg:ml-auto lg:min-h-[625px]">
-      <div className="absolute inset-0 rounded-[42px] bg-[#0b1623]/65 blur-[54px]" />
-      <div className="absolute left-[8%] top-[8%] h-24 w-24 rounded-full border-[7px] border-white/65 bg-[radial-gradient(circle_at_35%_32%,#f7fff1,#bac7b6_55%,#0d120e_56%)] opacity-30 shadow-[0_22px_62px_rgba(0,0,0,0.44)]" />
-      <div className="absolute bottom-[16%] right-[2%] h-20 w-20 rounded-full bg-[#d87824] opacity-35 shadow-[inset_-16px_-12px_0_rgba(0,0,0,0.24),0_24px_58px_rgba(0,0,0,0.42)]">
-        <span className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-black/30" />
-        <span className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2 bg-black/30" />
-      </div>
-
-      <div className="absolute inset-x-0 top-6 overflow-hidden rounded-[30px] border border-white/12 bg-[linear-gradient(145deg,rgba(17,28,41,0.99),rgba(5,10,17,0.98))] p-5 shadow-[0_36px_90px_rgba(0,0,0,0.46)] sm:p-6">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),transparent_36%)]" />
-
-        <div className="relative z-10 flex items-center justify-between gap-5 border-b border-white/8 pb-5">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-lime-300">
-              KRST Dashboard
-            </p>
-            <h3 className="mt-1 text-[23px] font-black tracking-[-0.04em] text-white">
-              Área do Apostador
-            </h3>
-          </div>
-          <div className="flex items-center gap-2 rounded-full border border-lime-300/24 bg-lime-300/10 px-3 py-1.5 text-[11px] font-black text-lime-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-lime-300" />
-            Online
-          </div>
-        </div>
-
-        <div className="relative z-10 mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <StatCard label="Banca atual" value="R$ 1.840" accent="text-lime-300" />
-          <StatCard label="Resultado do mês" value="+12,8%" accent="text-lime-300" />
-          <StatCard label="Taxa de acerto" value="64%" />
-        </div>
-
-        <div className="relative z-10 mt-5 grid gap-4 lg:grid-cols-[1fr_210px]">
-          <div className="rounded-[24px] border border-white/8 bg-black/20 p-5 sm:p-6">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
-                  Últimos 30 dias
-                </p>
-                <h4 className="mt-1 text-[20px] font-black text-white">
-                  Evolução da banca
-                </h4>
-              </div>
-              <LineChart size={24} className="text-lime-300" />
-            </div>
-
-            <div className="relative h-[255px] overflow-hidden rounded-[20px] border border-white/8 bg-[#06110d]">
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:44px_34px]" />
-              <svg
-                className="absolute inset-0 h-full w-full"
-                viewBox="0 0 420 150"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M0 116 C42 108 48 86 88 92 C128 98 130 58 172 66 C214 74 212 38 258 44 C304 50 304 23 348 28 C382 32 394 20 420 17"
-                  fill="none"
-                  stroke="#a8ff2f"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M0 116 C42 108 48 86 88 92 C128 98 130 58 172 66 C214 74 212 38 258 44 C304 50 304 23 348 28 C382 32 394 20 420 17 L420 150 L0 150 Z"
-                  fill="url(#chartFill)"
-                />
-                <defs>
-                  <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#a8ff2f" stopOpacity="0.28" />
-                    <stop offset="100%" stopColor="#a8ff2f" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute inset-x-4 bottom-3 flex items-center justify-between text-[11px] font-semibold text-slate-500">
-                <span>Dia 1</span>
-                <span>Dia 15</span>
-                <span>Dia 30</span>
-              </div>
-            </div>
-
-          </div>
-
-          <div className="grid gap-2.5 sm:grid-cols-3 lg:grid-cols-1">
-            {[
-              ["Stake média", "R$ 18,40", Calculator],
-              ["Entradas registradas", "32", ClipboardList],
-              ["Métodos ativos", "8", Target],
-            ].map(([label, value, Icon]) => (
-              <div
-                key={label}
-                className="flex items-center gap-3 rounded-[16px] border border-white/8 bg-white/[0.035] px-3.5 py-3"
-              >
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-lime-300/10 text-lime-300">
-                  <Icon size={18} />
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold text-slate-400">{label}</p>
-                  <p className="mt-0.5 text-[15px] font-black text-white">{value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FeatureCard({ title, desc, icon: Icon }) {
-  return (
-    <article className="group rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,28,40,0.86),rgba(7,12,19,0.97))] p-6 text-left shadow-[0_22px_62px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-1.5 hover:border-lime-300/35">
-      <div className="grid h-16 w-16 place-items-center rounded-[18px] border border-lime-300/20 bg-lime-300/10 text-lime-300 transition group-hover:bg-lime-300 group-hover:text-[#061006]">
-        <Icon size={31} strokeWidth={2.2} />
-      </div>
-      <h3 className="mt-7 text-[21px] font-black text-white">{title}</h3>
-      <p className="mt-3 text-[14px] leading-[1.7] text-slate-400">{desc}</p>
-    </article>
-  );
-}
-
-function ComparisonCard({ title, items, badge, positive = false }) {
-  return (
-    <div
-      className={`rounded-[26px] border p-6 shadow-[0_22px_65px_rgba(0,0,0,0.24)] ${
-        positive
-          ? "border-lime-300/48 bg-[linear-gradient(180deg,rgba(19,39,20,0.84),rgba(6,17,13,0.96))]"
-          : "border-red-400/20 bg-[linear-gradient(180deg,rgba(32,20,22,0.72),rgba(12,16,23,0.96))]"
-      }`}
+    <Link
+      href="#produto"
+      className={`inline-flex items-center justify-center gap-3 rounded-[8px] border border-[#087f32]/70 bg-[#ffffff]/70 px-7 py-4 text-[15px] font-bold tracking-[-0.01em] !text-[#1d3524] shadow-[0_10px_24px_rgba(22,28,20,0.05)] transition duration-200 hover:-translate-y-0.5 hover:border-[#087f32] hover:bg-[#ffffff] ${className}`}
     >
-      <div
-        className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.08em] ${
-          positive
-            ? "bg-lime-300/14 text-lime-300"
-            : "bg-red-500/12 text-red-300"
-        }`}
-      >
-        {title}
+      <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#087f32]">
+        <Play size={10} fill="currentColor" strokeWidth={0} />
+      </span>
+      {children}
+    </Link>
+  );
+}
+
+function SectionLabel({ children }) {
+  return (
+    <p className="text-[12px] font-black uppercase tracking-[0.08em] text-[#087f32]">
+      {children}
+    </p>
+  );
+}
+
+function SerifTitle({ children, className = "" }) {
+  return (
+    <h2
+      className={`font-normal tracking-[-0.055em] text-[#161916] ${className}`}
+      style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function TinyLineChart({ className = "", stroke = "#087f32" }) {
+  return (
+    <svg
+      viewBox="0 0 260 90"
+      className={`h-full w-full overflow-visible ${className}`}
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 72C25 66 33 52 51 57C68 62 73 32 91 43C107 53 116 28 133 34C151 41 158 18 178 24C197 29 198 49 218 36C237 24 238 16 256 12"
+        stroke={stroke}
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M4 72C25 66 33 52 51 57C68 62 73 32 91 43C107 53 116 28 133 34C151 41 158 18 178 24C197 29 198 49 218 36C237 24 238 16 256 12V90H4V72Z"
+        fill="url(#lineFill)"
+      />
+      <defs>
+        <linearGradient id="lineFill" x1="130" x2="130" y1="12" y2="90">
+          <stop stopColor={stroke} stopOpacity="0.22" />
+          <stop offset="1" stopColor={stroke} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function DonutChart() {
+  return (
+    <div className="relative mx-auto h-[114px] w-[114px]">
+      <div className="absolute inset-0 rounded-full bg-[conic-gradient(#087f32_0_68%,#e3e5df_68%_100%)]" />
+      <div className="absolute inset-[15px] rounded-full bg-[#ffffff]" />
+      <div className="absolute inset-0 flex items-center justify-center text-[21px] font-black text-[#087f32]">
+        68%
       </div>
-      <ul className="mt-6 space-y-4">
-        {items.map((item) => (
-          <li key={item} className="flex items-start gap-3 text-slate-300">
-            <span
-              className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full ${
-                positive
-                  ? "bg-lime-300 text-[#061006]"
-                  : "bg-red-500/14 text-red-300"
+    </div>
+  );
+}
+
+function HeroMockup() {
+  const menu = [
+    ["Dashboard", HomeIcon, true],
+    ["Banca", CreditCard],
+    ["Estatísticas", LineChart],
+    ["Próximos Jogos", CalendarDays],
+    ["Progressão", TrendingUp],
+    ["Comunidade", Users],
+  ];
+
+  return (
+    <div className="relative mx-auto h-[620px] w-full max-w-[720px] lg:max-w-none">
+      <div className="absolute left-[8%] top-[86px] h-[424px] w-[370px] rounded-[22px] border border-[#dfddd5] bg-[#ffffff] p-7 shadow-[0_26px_70px_rgba(38,39,34,0.12)]">
+        <Logo compact />
+        <nav className="mt-8 space-y-1.5 text-[13px] font-bold text-[#4f5650]">
+          {menu.map(([label, Icon, active]) => (
+            <div
+              key={label}
+              className={`flex items-center gap-3 rounded-[8px] px-4 py-3 ${
+                active ? "bg-[#eaf3e9] !text-[#087f32]" : ""
               }`}
             >
-              <Check size={15} strokeWidth={3.2} />
-            </span>
-            <span>{item}</span>
-          </li>
+              <Icon size={16} strokeWidth={2} />
+              <span>{label}</span>
+            </div>
+          ))}
+        </nav>
+      </div>
+
+      <div className="absolute right-[3%] top-[24px] w-[450px] rounded-[18px] border border-[#e3ded4] bg-[#ffffff] p-7 shadow-[0_24px_68px_rgba(35,37,32,0.12)]">
+        <div className="flex items-start justify-between">
+          <h3 className="text-[14px] font-black tracking-[-0.02em] text-[#171a17]">
+            Resumo da banca
+          </h3>
+          <button className="inline-flex items-center gap-1 rounded-[6px] border border-[#e6e2d9] px-3 py-1.5 text-[10px] font-bold text-[#747a73]">
+            Este mês <ChevronDown size={12} />
+          </button>
+        </div>
+
+        <div className="mt-8 grid grid-cols-[150px_1fr] gap-8">
+          <div>
+            <p className="text-[12px] font-bold text-[#7e857e]">Lucro</p>
+            <p className="mt-3 text-[27px] font-black tracking-[-0.04em] text-[#087f32]">
+              R$ 1.942,50
+            </p>
+            <p className="mt-3 inline-flex rounded-full bg-[#e8f4e8] px-2.5 py-1 text-[10px] font-black text-[#087f32]">
+              + 10,6%
+            </p>
+            <p className="mt-2 text-[11px] font-medium text-[#858a84]">
+              vs. período anterior
+            </p>
+          </div>
+          <div className="border-l border-[#e9e5dd] pl-8">
+            <p className="text-[12px] font-black text-[#555d56]">
+              Evolução da banca
+            </p>
+            <div className="mt-4 h-[112px]">
+              <TinyLineChart />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute left-[33%] top-[318px] w-[320px] rounded-[16px] border border-[#e5e0d7] bg-[#ffffff] p-6 shadow-[0_22px_56px_rgba(35,37,32,0.12)]">
+        <h3 className="text-[15px] font-black tracking-[-0.02em] text-[#171a17]">
+          Próximos jogos
+        </h3>
+        <div className="mt-5 space-y-4 text-[12px]">
+          {[
+            ["Hoje", "19:00", "Manchester City", "Arsenal", "1.72"],
+            ["Hoje", "21:30", "Real Madrid", "Villarreal", "1.65"],
+            ["Amanhã", "16:00", "Inter", "Milan", "1.90"],
+          ].map(([day, time, home, away, odd]) => (
+            <div
+              key={`${home}-${away}`}
+              className="grid grid-cols-[62px_1fr_38px] items-center gap-3 border-b border-[#ece8e0] pb-3 last:border-0 last:pb-0"
+            >
+              <div className="text-[#8a9088]">
+                <p>{day}</p>
+                <p>{time}</p>
+              </div>
+              <div className="truncate font-bold text-[#303630]">
+                {home} <span className="text-[#a4aaa3]">x</span> {away}
+              </div>
+              <div className="text-right font-black text-[#202620]">{odd}</div>
+            </div>
+          ))}
+        </div>
+        <Link
+          href="#"
+          className="mt-5 flex items-center justify-between text-[12px] font-black !text-[#087f32]"
+        >
+          Ver todos os jogos <ArrowRight size={15} />
+        </Link>
+      </div>
+
+      <div className="absolute right-[6%] top-[350px] w-[160px] rounded-[16px] border border-[#e5e0d7] bg-[#ffffff] px-5 py-7 text-center shadow-[0_22px_54px_rgba(35,37,32,0.11)]">
+        <h3 className="text-[13px] font-black text-[#363b36]">Performance</h3>
+        <div className="mt-5">
+          <DonutChart />
+        </div>
+        <p className="mt-5 text-[12px] font-bold text-[#6d746d]">ROI</p>
+        <p className="mt-1 text-[19px] font-black tracking-[-0.04em] text-[#171a17]">
+          12,7%
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function BenefitStrip() {
+  const items = [
+    {
+      icon: WalletCards,
+      title: "Controle de banca",
+      desc: "Gerencie sua banca com disciplina e total visibilidade.",
+    },
+    {
+      icon: BarChart3,
+      title: "Análise de resultados",
+      desc: "Dados que revelam padrões e orientam melhores decisões.",
+    },
+    {
+      icon: Gem,
+      title: "Recursos premium",
+      desc: "Ferramentas e conteúdos exclusivos para acelerar sua evolução.",
+    },
+  ];
+
+  return (
+    <div className="mx-auto -mt-4 max-w-[1620px] px-8 pb-9">
+      <div className="grid overflow-hidden rounded-[16px] border border-[#e2ded5] bg-[#ffffff]/82 shadow-[0_18px_44px_rgba(31,32,28,0.06)] backdrop-blur md:grid-cols-3">
+        {items.map(({ icon: Icon, title, desc }, index) => (
+          <div
+            key={title}
+            className={`flex items-center gap-7 px-12 py-8 ${
+              index ? "border-t border-[#e8e3db] md:border-l md:border-t-0" : ""
+            }`}
+          >
+            <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-[#e7f3e7] text-[#087f32]">
+              <Icon size={30} strokeWidth={1.8} />
+            </div>
+            <div>
+              <h3 className="text-[18px] font-black tracking-[-0.03em] text-[#171a17]">
+                {title}
+              </h3>
+              <p className="mt-2 max-w-[260px] text-[14px] leading-[1.55] text-[#697069]">
+                {desc}
+              </p>
+            </div>
+          </div>
         ))}
-      </ul>
-      <div
-        className={`mt-7 rounded-full px-4 py-2 text-center text-[12px] font-black ${
-          positive
-            ? "bg-lime-300 text-[#061006]"
-            : "bg-red-500/14 text-red-300"
+      </div>
+    </div>
+  );
+}
+
+function ModuleCard({ module }) {
+  const Icon = module.icon;
+
+  return (
+    <div
+      className={`rounded-[14px] border border-[#e2ded5] bg-[#ffffff] p-6 shadow-[0_16px_36px_rgba(33,34,30,0.05)] ${
+        module.featured ? "row-span-2 min-h-[290px]" : "min-h-[142px]"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-[17px] font-black tracking-[-0.03em] text-[#171a17]">
+            {module.title}
+          </h3>
+          <p className="mt-2 max-w-[220px] text-[13px] leading-[1.45] text-[#727970]">
+            {module.desc}
+          </p>
+        </div>
+        <Icon size={20} className="text-[#087f32]" strokeWidth={1.9} />
+      </div>
+
+      {module.title === "Dashboard" && (
+        <div className="mt-6 rounded-[10px] border border-[#e8e4dc] p-4">
+          <div className="grid grid-cols-2 border-b border-[#e8e4dc] pb-3 text-[12px]">
+            <div>
+              <p className="text-[#8a9088]">Lucro</p>
+              <p className="mt-1 font-black text-[#087f32]">R$ 1.942,50</p>
+            </div>
+            <div>
+              <p className="text-[#8a9088]">ROI</p>
+              <p className="mt-1 font-black text-[#171a17]">12,7%</p>
+            </div>
+          </div>
+          <div className="mt-4 h-[92px]">
+            <TinyLineChart />
+          </div>
+        </div>
+      )}
+
+      {module.title === "Banca" && (
+        <div className="mt-6 h-[48px]">
+          <TinyLineChart />
+        </div>
+      )}
+
+      {module.title === "Estatísticas" && (
+        <div className="mt-5 flex h-[58px] items-end gap-3">
+          {[28, 48, 36, 70].map((height, index) => (
+            <span
+              key={height}
+              className={`w-5 rounded-t-[4px] ${
+                index === 2 ? "bg-[#087f32]" : "bg-[#e0e6dd]"
+              }`}
+              style={{ height }}
+            />
+          ))}
+        </div>
+      )}
+
+      {module.title === "Próximos Jogos" && (
+        <div className="mt-6 flex items-center gap-2">
+          {["M", "R", "I", "A"].map((team, index) => (
+            <span
+              key={team}
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-[#d9d5cd] bg-[#f8f6f0] text-[10px] font-black text-[#4b534c]"
+              style={{ marginLeft: index ? -6 : 0 }}
+            >
+              {team}
+            </span>
+          ))}
+          <span className="ml-1 text-[12px] font-black text-[#838a82]">
+            +12
+          </span>
+        </div>
+      )}
+
+      {module.title === "Progressão" && (
+        <div className="mt-7 flex items-center gap-2">
+          {[1, 2, 3, 4].map((step, index) => (
+            <div key={step} className="flex flex-1 items-center">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#087f32] text-[11px] font-black text-[#087f32]">
+                {step}
+              </span>
+              {index < 3 && <span className="h-px flex-1 bg-[#a5cda8]" />}
+            </div>
+          ))}
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+function PublicResultCard() {
+  const metrics = [
+    ["Lucro", "R$ 3.258,40", true],
+    ["Banca inicial", "R$ 5.000,00"],
+    ["Banca final", "R$ 8.258,40"],
+    ["ROI", "65,17%", true],
+    ["Odd média", "1,78"],
+  ];
+
+  return (
+    <div className="rounded-[16px] border border-[#e1ddd4] bg-[#ffffff] p-7 shadow-[0_20px_50px_rgba(31,32,28,0.06)]">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h3 className="text-[17px] font-black tracking-[-0.03em] text-[#171a17]">
+            Resultado público
+          </h3>
+          <span className="rounded-full bg-[#e8f4e8] px-3 py-1 text-[10px] font-black text-[#087f32]">
+            ● Público
+          </span>
+        </div>
+        <button className="hidden items-center gap-1 rounded-[8px] border border-[#e6e2d9] px-3 py-2 text-[11px] font-bold text-[#70766f] sm:inline-flex">
+          Últimos 12 meses <ChevronDown size={13} />
+        </button>
+      </div>
+
+      <div className="mt-7 grid gap-4 border-b border-[#e8e4dc] pb-6 sm:grid-cols-5">
+        {metrics.map(([label, value, green]) => (
+          <div
+            key={label}
+            className="border-[#e8e4dc] sm:border-r sm:last:border-r-0"
+          >
+            <p className="text-[12px] font-bold text-[#868c84]">{label}</p>
+            <p
+              className={`mt-2 text-[19px] font-black tracking-[-0.04em] ${
+                green ? "text-[#087f32]" : "text-[#171a17]"
+              }`}
+            >
+              {value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 rounded-[12px] border border-[#e8e4dc] bg-[#fdfcf9] px-4 py-5">
+        <div className="h-[176px]">
+          <TinyLineChart />
+        </div>
+        <div className="mt-3 grid grid-cols-12 text-center text-[11px] font-bold text-[#8a9088]">
+          {["Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez", "Jan", "Fev", "Mar", "Abr"].map(
+            (month) => (
+              <span key={month}>{month}</span>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PricingCard({ plan }) {
+  return (
+    <div
+      className={`relative flex h-full min-h-[440px] flex-col rounded-[14px] border bg-[#ffffff] p-7 shadow-[0_16px_38px_rgba(31,32,28,0.05)] ${
+        plan.featured ? "border-[#087f32]" : "border-[#e1ddd4]"
+      }`}
+    >
+      {plan.featured && (
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-b-[7px] rounded-t-[7px] bg-[#087f32] px-7 py-2 text-[11px] font-black !text-white">
+          Mais escolhido
+        </div>
+      )}
+
+      <div className="min-h-[64px]">
+        <h3 className="text-[18px] font-black tracking-[-0.03em] text-[#171a17]">
+          {plan.title}
+        </h3>
+        <p className="mt-2 text-[13px] font-medium leading-[1.45] text-[#737971]">
+          {plan.note}
+        </p>
+      </div>
+
+      <div className="mt-7 flex min-h-[44px] items-end gap-2">
+        <span className="text-[32px] font-black tracking-[-0.06em] text-[#171a17]">
+          {plan.price}
+        </span>
+        {plan.period ? (
+          <span className="pb-1 text-[13px] font-black text-[#3c443c]">
+            {plan.period}
+          </span>
+        ) : null}
+      </div>
+
+      <p
+        className={`mt-2 min-h-[18px] text-[12px] font-black ${
+          plan.sub ? "text-[#087f32]" : "text-transparent"
         }`}
       >
-        {badge}
-      </div>
+        {plan.sub || "Sem informação"}
+      </p>
+
+      <Link
+        href="/login?mode=register"
+        className={`mt-8 flex h-12 items-center justify-center rounded-[7px] border text-[13px] font-black transition ${
+          plan.featured
+            ? "border-[#087f32] bg-[#087f32] !text-white hover:bg-[#006e2a]"
+            : "border-[#087f32] bg-[#ffffff] !text-[#087f32] hover:bg-[#edf7ed]"
+        }`}
+      >
+        {plan.button}
+      </Link>
+
+      <ul className="mt-7 space-y-3 text-[13px] font-medium text-[#4d554d]">
+        {["Acesso completo à plataforma", "Comunidade Filtto", "Suporte prioritário"].map(
+          (item) => (
+            <li key={item} className="flex items-center gap-3">
+              <Check size={15} className="text-[#087f32]" strokeWidth={2.3} />
+              {item}
+            </li>
+          )
+        )}
+      </ul>
     </div>
   );
 }
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#03070d] text-white">
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_16%_6%,rgba(168,255,47,0.055),transparent_30%),radial-gradient(circle_at_88%_14%,rgba(47,144,255,0.055),transparent_28%),linear-gradient(180deg,#06101b_0%,#03070d_44%,#04080e_100%)]" />
-
-      <header className="sticky top-0 z-50 border-b border-white/8 bg-[#050b12]/88 backdrop-blur-xl">
-        <div className="mx-auto flex h-[78px] max-w-[1220px] items-center justify-between gap-5 px-5 lg:px-8">
+    <main className="min-h-screen bg-[#fbfaf7] text-[#171a17]">
+      <header className="sticky top-0 z-50 border-b border-[#e8e3da] bg-[#fbfaf7]/92 backdrop-blur-xl">
+        <div className="mx-auto flex h-[88px] max-w-[1620px] items-center justify-between px-8">
           <Logo />
 
-          <nav className="hidden items-center gap-7 text-[13px] font-bold text-white/70 lg:flex">
-            {menuItems.map((item) => (
-              <a key={item.label} href={item.href} className="transition hover:text-lime-300">
-                {item.label}
+          <nav className="hidden items-center gap-14 text-[14px] font-bold text-[#232923] lg:flex">
+            {navItems.map((item) => (
+              <a key={item} href="#" className="transition hover:text-[#087f32]">
+                {item}
               </a>
             ))}
           </nav>
 
-          <PrimaryButton className="hidden min-h-12 px-5 text-[12px] md:inline-flex">
-            Acessar painel
-          </PrimaryButton>
+          <div className="flex items-center gap-5">
+            <LanguageSwitcher light />
+            <Link
+              href="/login"
+              className="hidden text-[14px] font-bold !text-[#171a17] transition hover:!text-[#087f32] sm:inline"
+            >
+              Entrar
+            </Link>
+            <PrimaryButton className="px-6 py-3.5 text-[14px]">
+              Começar agora
+            </PrimaryButton>
+          </div>
         </div>
       </header>
 
-      <section className="relative z-10 border-b border-white/8">
-        <div className="mx-auto grid max-w-[1300px] items-center gap-12 px-5 py-14 md:py-18 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14 lg:px-8 lg:py-18 xl:gap-18">
-          <div className="max-w-[590px]">
-            <Badge>Painel completo para apostadores</Badge>
+      <section className="relative overflow-hidden border-b border-[#e8e3da]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_24%,rgba(8,127,50,0.08),transparent_30%),linear-gradient(115deg,rgba(255,255,255,0)_0%,rgba(8,127,50,0.045)_100%)]" />
+        <div className="absolute right-[-120px] top-[-180px] h-[780px] w-[780px] rounded-full border border-[#087f32]/10" />
+        <div className="absolute right-[150px] top-[160px] h-[620px] w-[620px] rounded-full border border-[#087f32]/8" />
 
-            <h1 className="mt-6 text-[40px] font-black uppercase italic leading-[0.98] tracking-[-0.05em] text-white sm:text-[58px] lg:text-[66px] xl:text-[72px]">
-              Aposte com{" "}
-              <span className="block text-lime-300">mais controle</span>
+        <div className="relative mx-auto grid max-w-[1620px] gap-10 px-8 pb-16 pt-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div className="max-w-[720px]">
+            <h1
+              className="text-[56px] font-normal leading-[0.98] tracking-[-0.06em] text-[#111411] md:text-[78px] xl:text-[88px]"
+              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+            >
+              A plataforma para apostar com{" "}
+              <span className="italic text-[#087f32]">
+                gestão, clareza e inteligência.
+              </span>
             </h1>
 
-            <p className="mt-5 max-w-[540px] text-[16px] leading-[1.7] text-slate-300 sm:text-[17px]">
-              Ferramentas, gestão de banca, métodos exclusivos e histórico de
-              apostas em um só lugar para você tomar decisões melhores.
+            <p className="mt-9 max-w-[610px] text-[18px] leading-[1.65] text-[#5d655e]">
+              Controle sua banca, registre entradas, acompanhe resultados e
+              acesse recursos premium para evoluir com mais consistência.
             </p>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:gap-3 xl:gap-4">
-              {quickBenefits.map(({ title, desc, icon: Icon }) => (
-                <div
-                  key={title}
-                  className="group rounded-[18px] border border-white/10 bg-white/[0.05] p-5 shadow-[0_16px_34px_rgba(0,0,0,0.20)] transition duration-300 hover:-translate-y-1 hover:border-lime-300/28 hover:bg-white/[0.07] lg:p-4 xl:p-5"
-                >
-                  <div className="mb-5 grid h-12 w-12 place-items-center rounded-[14px] border border-lime-300/16 bg-lime-300/10 text-lime-300 transition group-hover:bg-lime-300 group-hover:text-[#061006]">
-                    <Icon size={23} strokeWidth={2.4} />
-                  </div>
-                  <h3 className="text-[16px] font-black leading-tight text-white">
-                    {title}
-                  </h3>
-                  <p className="mt-2 text-[13px] leading-[1.5] text-slate-400">
-                    {desc}
-                  </p>
-                </div>
-              ))}
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+              <PrimaryButton>Começar agora</PrimaryButton>
+              <SecondaryButton>Ver demonstração</SecondaryButton>
             </div>
 
-            <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-              <PrimaryButton className="w-full px-8 sm:w-auto">
-                Quero acessar o painel
-              </PrimaryButton>
-              <p className="flex items-center gap-2 text-[13px] font-semibold text-slate-400">
-                <LockKeyhole size={17} className="text-lime-300" />
-                Acesso imediato • Painel online • Atualizações constantes
-              </p>
-            </div>
-          </div>
-
-          <DashboardMockup />
-        </div>
-      </section>
-
-      <section id="ferramentas" className="relative z-10 py-20">
-        <div className="mx-auto max-w-[1220px] px-5 text-center lg:px-8">
-          <Badge>Ferramentas do painel</Badge>
-          <h2 className="mx-auto mt-5 max-w-[840px] text-[34px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[48px]">
-            Tudo que Você Precisa para Apostar com{" "}
-            <span className="text-lime-300">Mais Controle</span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-[650px] text-[16px] leading-[1.65] text-slate-400">
-            Recursos práticos para organizar sua rotina, analisar suas apostas e
-            melhorar sua gestão.
-          </p>
-
-          <div className="mt-11 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {panelTools.map((tool) => (
-              <FeatureCard key={tool.title} {...tool} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="gestao" className="relative z-10 overflow-hidden border-y border-white/8 bg-[#050b12] py-20">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(168,255,47,0.08),transparent_26%),radial-gradient(circle_at_82%_38%,rgba(168,255,47,0.06),transparent_24%)]" />
-        <div className="relative mx-auto max-w-[1120px] px-5 lg:px-8">
-          <div className="mx-auto max-w-[720px] text-center">
-            <Badge>Gestão e clareza</Badge>
-            <h2 className="mt-5 text-[35px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[50px]">
-              Pare de Apostar no <span className="text-lime-300">Escuro</span>
-            </h2>
-          </div>
-
-          <div className="mt-11 grid items-stretch gap-5 lg:grid-cols-[1fr_auto_1fr]">
-            <ComparisonCard
-              title="Sem painel"
-              items={withoutPanel}
-              badge="Pouco controle"
-            />
-
-            <div className="hidden place-items-center lg:grid">
-              <div className="grid h-14 w-14 place-items-center rounded-full border border-lime-300/32 bg-lime-300/12 text-lime-300 shadow-[0_0_34px_rgba(168,255,47,0.18)]">
-                <ChevronRight size={34} strokeWidth={3} />
-              </div>
-            </div>
-
-            <ComparisonCard
-              title="Com painel"
-              items={withPanel}
-              badge="Mais clareza e estratégia"
-              positive
-            />
-          </div>
-        </div>
-      </section>
-
-      <section id="metodos" className="relative z-10 overflow-hidden py-20">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,11,18,0)_0%,rgba(8,15,23,0.50)_48%,rgba(5,11,18,0)_100%)]" />
-
-        <div className="relative mx-auto max-w-[1220px] px-5 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
-            <div className="pt-2">
-              <Badge>Rotina organizada</Badge>
-
-              <h2 className="mt-5 max-w-[470px] text-[35px] font-black italic leading-[1.04] tracking-[-0.05em] text-white sm:text-[48px]">
-                Organize sua operação com mais critério
-              </h2>
-
-              <p className="mt-5 max-w-[440px] text-[16px] leading-[1.75] text-slate-400">
-                Centralize as informações da sua rotina de apostas em um
-                ambiente mais fácil de acompanhar, revisar e ajustar.
-              </p>
-
-              <div className="mt-8 space-y-4 border-l border-white/10 pl-5">
-                {[
-                  "Banca, entradas e desempenho no mesmo contexto.",
-                  "Métodos e critérios disponíveis antes de cada decisão.",
-                  "Histórico para revisar padrões sem depender de memória.",
-                ].map((item) => (
-                  <p key={item} className="text-[14px] leading-[1.6] text-slate-300">
-                    {item}
-                  </p>
+            <div className="mt-10 flex flex-wrap items-center gap-4 text-[14px] font-bold text-[#5f665f]">
+              <div className="flex -space-x-2">
+                {["M", "C", "L", "R"].map((avatar, index) => (
+                  <span
+                    key={avatar}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#fbfaf7] bg-[#d9e3d8] text-[12px] font-black text-[#334035]"
+                    style={{ zIndex: 4 - index }}
+                  >
+                    {avatar}
+                  </span>
                 ))}
+                <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#fbfaf7] bg-[#087f32] text-white">
+                  <Check size={17} strokeWidth={3} />
+                </span>
               </div>
-            </div>
-
-            <div className="relative overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(145deg,rgba(13,22,34,0.92),rgba(4,8,14,0.98))] shadow-[0_28px_80px_rgba(0,0,0,0.32)]">
-              <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(163,230,53,0.38),transparent)]" />
-              <div className="absolute right-[-120px] top-[-120px] h-[280px] w-[280px] rounded-full bg-lime-300/7 blur-3xl" />
-
-              <div className="relative z-10 border-b border-white/8 px-6 py-5 lg:px-7">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-lime-300">
-                      Resumo da operação
-                    </p>
-                    <h3 className="mt-2 text-[24px] font-black tracking-[-0.04em] text-white">
-                      Painel do apostador
-                    </h3>
-                  </div>
-
-                  <div className="flex gap-2 text-[11px] font-bold text-slate-400">
-                    <span className="rounded-full bg-white/[0.055] px-3 py-1.5">
-                      Hoje
-                    </span>
-                    <span className="rounded-full bg-lime-300 px-3 py-1.5 text-[#061006]">
-                      Em controle
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative z-10 grid lg:grid-cols-[1fr_260px]">
-                <div className="px-6 py-6 lg:px-7">
-                  <div className="grid gap-6 md:grid-cols-3">
-                    {[
-                      ["Banca", "R$ 1.840", "saldo atualizado"],
-                      ["Entradas", "32", "registradas"],
-                      ["Métodos", "6", "em uso"],
-                    ].map(([label, value, note]) => (
-                      <div key={label}>
-                        <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
-                          {label}
-                        </p>
-                        <p className="mt-2 text-[26px] font-black tracking-[-0.05em] text-white">
-                          {value}
-                        </p>
-                        <p className="mt-1 text-[12px] text-lime-300">{note}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-7 overflow-hidden rounded-[22px] border border-white/8 bg-black/20">
-                    {[
-                      [
-                        "Gestão de banca centralizada",
-                        "Saldo, movimentações e resultado ficam conectados.",
-                      ],
-                      [
-                        "Histórico com contexto",
-                        "Mercado, odd, stake, método e observações no registro.",
-                      ],
-                      [
-                        "Decisão mais consistente",
-                        "Critérios e desempenho ficam visíveis antes da próxima entrada.",
-                      ],
-                    ].map(([title, desc], index) => (
-                      <div
-                        key={title}
-                        className={`flex gap-4 px-5 py-4 ${
-                          index !== 0 ? "border-t border-white/8" : ""
-                        }`}
-                      >
-                        <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-lime-300" />
-                        <div>
-                          <h4 className="text-[15px] font-black text-white">
-                            {title}
-                          </h4>
-                          <p className="mt-1.5 text-[13px] leading-[1.6] text-slate-400">
-                            {desc}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border-t border-white/8 bg-white/[0.025] px-6 py-6 lg:border-l lg:border-t-0">
-                  <p className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-500">
-                    Próxima revisão
-                  </p>
-
-                  <div className="mt-5 space-y-4">
-                    {[
-                      ["Stake média", "1,2%"],
-                      ["Mercado foco", "Over/BTTS"],
-                      ["Última análise", "Hoje"],
-                    ].map(([label, value]) => (
-                      <div key={label}>
-                        <p className="text-[12px] text-slate-500">{label}</p>
-                        <p className="mt-1 text-[17px] font-black text-white">
-                          {value}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-7 rounded-[18px] bg-lime-300/[0.08] p-4">
-                    <p className="text-[13px] font-bold leading-[1.6] text-slate-200">
-                      A ideia não é apostar mais. É acompanhar melhor o que já
-                      faz parte da sua rotina.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <span>Gestão, dados e comunidade em um só lugar.</span>
             </div>
           </div>
+
+          <HeroMockup />
         </div>
       </section>
 
-      <section className="relative z-10 border-y border-white/8 bg-[#050b12] py-20">
-        <div className="mx-auto max-w-[1220px] px-5 lg:px-8">
-          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
-            <div>
-              <Badge>Rotina do apostador</Badge>
-              <h2 className="mt-5 max-w-[780px] text-[34px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[48px]">
-                Recursos que Ajudam na{" "}
-                <span className="text-lime-300">Rotina do Apostador</span>
-              </h2>
-            </div>
-            <p className="max-w-[390px] text-[15px] leading-[1.65] text-slate-400">
-              Organização, histórico e análise para transformar informação em
-              decisões mais planejadas.
-            </p>
+      <BenefitStrip />
+
+      <section id="produto" className="bg-[#f5f1e9] py-24">
+        <div className="mx-auto grid max-w-[1620px] gap-14 px-8 lg:grid-cols-[390px_1fr] lg:items-center">
+          <div>
+            <SectionLabel>Módulos principais</SectionLabel>
+            <SerifTitle className="mt-5 text-[43px] leading-[1.02] md:text-[50px]">
+              Tudo o que você precisa, organizado para performar.
+            </SerifTitle>
+            <div className="mt-9 h-[3px] w-16 bg-[#087f32]" />
           </div>
 
-          <div className="mt-11 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {extraResources.map((resource) => (
-              <FeatureCard key={resource.title} {...resource} />
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {modules.map((module) => (
+              <ModuleCard key={module.title} module={module} />
             ))}
           </div>
         </div>
       </section>
 
-      <section id="resultados" className="relative z-10 py-20">
-        <div className="mx-auto max-w-[1220px] px-5 text-center lg:px-8">
-          <Badge>Resultados com clareza</Badge>
-          <h2 className="mx-auto mt-5 max-w-[820px] text-[34px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[48px]">
-            Quem Usa o Painel Tem{" "}
-            <span className="text-lime-300">Mais Clareza nas Apostas</span>
-          </h2>
+      <section className="bg-[#fbfaf7] py-24">
+        <div className="mx-auto grid max-w-[1620px] gap-14 px-8 lg:grid-cols-[330px_1fr] lg:items-center">
+          <div>
+            <SectionLabel>Transparência</SectionLabel>
+            <SerifTitle className="mt-5 text-[43px] leading-[1.02] md:text-[52px]">
+              Resultado público, confiança que se vê.
+            </SerifTitle>
+            <p className="mt-7 max-w-[280px] text-[15px] leading-[1.65] text-[#697069]">
+              Compartilhe seu desempenho com o público. Mais credibilidade,
+              mais disciplina.
+            </p>
+            <Link
+              href="#"
+              className="mt-10 inline-flex items-center gap-3 text-[13px] font-black !text-[#087f32]"
+            >
+              Ver exemplo completo <ArrowRight size={16} />
+            </Link>
+          </div>
 
-          <div className="mt-11 grid gap-4 lg:grid-cols-3">
-            {testimonials.map((item) => (
-              <article
-                key={item.name}
-                className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(18,27,39,0.86),rgba(8,13,20,0.96))] p-6 text-left shadow-[0_22px_60px_rgba(0,0,0,0.22)] transition duration-300 hover:-translate-y-1 hover:border-lime-300/28"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-lime-200/25 bg-lime-300 text-[17px] font-black text-[#061006]">
-                    {item.initials}
-                  </div>
-                  <div>
-                    <h3 className="text-[18px] font-black text-white">
-                      {item.name}
-                    </h3>
-                    <p className="text-[13px] text-slate-500">{item.city}</p>
-                  </div>
-                </div>
-                <div className="mt-5 flex gap-1 text-amber-400">
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <Star key={index} size={17} fill="currentColor" />
+          <PublicResultCard />
+        </div>
+      </section>
+
+      <section id="planos" className="bg-[#fbfaf7] pb-24">
+        <div className="mx-auto grid max-w-[1620px] gap-14 px-8 lg:grid-cols-[330px_1fr] lg:items-center">
+          <div>
+            <SectionLabel>Planos</SectionLabel>
+            <SerifTitle className="mt-5 text-[43px] leading-[1.02] md:text-[52px]">
+              Escolha o plano ideal para você.
+            </SerifTitle>
+            <div className="mt-12 flex items-start gap-4">
+              <ShieldCheck size={35} className="text-[#087f32]" strokeWidth={1.7} />
+              <p className="text-[14px] leading-[1.55] text-[#697069]">
+                <strong className="text-[#374038]">Cancele quando quiser.</strong>
+                <br />
+                Sem fidelidade.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {plans.map((plan) => (
+              <PricingCard key={plan.title} plan={plan} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#e8e3da] bg-[#fbfaf7] py-16">
+        <div className="mx-auto grid max-w-[1620px] gap-12 px-8 lg:grid-cols-[330px_1fr]">
+          <div>
+            <SectionLabel>Dúvidas frequentes</SectionLabel>
+            <SerifTitle className="mt-5 text-[43px] leading-[1.02] md:text-[52px]">
+              Perguntas frequentes.
+            </SerifTitle>
+          </div>
+
+          <div className="divide-y divide-[#ded9cf]">
+            {faqs.map((item) => (
+              <details key={item.question} className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left text-[16px] font-bold text-[#202620] marker:hidden">
+                  <span>{item.question}</span>
+                  <ChevronDown
+                    size={18}
+                    className="shrink-0 text-[#2d342d] transition group-open:rotate-180"
+                  />
+                </summary>
+                <p className="max-w-[760px] pb-6 text-[15px] leading-[1.7] text-[#687068]">
+                  {item.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="bg-[#fbfaf7] py-10">
+        <div className="mx-auto max-w-[1620px] px-8">
+          <div className="grid gap-10 lg:grid-cols-[1.3fr_0.8fr_0.8fr_0.8fr_1.5fr]">
+            <div>
+              <Logo compact />
+              <p className="mt-5 max-w-[230px] text-[13px] leading-[1.65] text-[#626a63]">
+                Gestão, inteligência e comunidade para apostadores.
+              </p>
+            </div>
+
+            {[
+              ["Produto", ["Recursos", "Planos"]],
+              ["Comunidade", ["Blog", "Conteúdos", "Grupo Premium"]],
+              ["Suporte", ["FAQ", "Contato"]],
+            ].map(([title, links]) => (
+              <div key={title}>
+                <h3 className="text-[12px] font-black text-[#171a17]">{title}</h3>
+                <div className="mt-4 space-y-3 text-[12px] font-bold text-[#626a63]">
+                  {links.map((link) => (
+                    <a key={link} href="#" className="block hover:text-[#087f32]">
+                      {link}
+                    </a>
                   ))}
                 </div>
-                <p className="mt-5 text-[15px] leading-[1.75] text-slate-300">
-                  “{item.text}”
-                </p>
-              </article>
+              </div>
             ))}
-          </div>
-        </div>
-      </section>
 
-      <section id="faq" className="relative z-10 px-5 pb-16 lg:px-8">
-        <div className="mx-auto grid max-w-[1160px] gap-8 overflow-hidden rounded-[30px] border border-lime-300/38 bg-[linear-gradient(135deg,rgba(14,34,17,0.86),rgba(5,11,18,0.98)_50%,rgba(11,21,31,0.96))] p-7 shadow-[0_0_86px_rgba(168,255,47,0.11)] lg:grid-cols-[1fr_320px] lg:p-10">
-          <div>
-            <Badge>Área do apostador</Badge>
-            <h2 className="mt-5 text-[34px] font-black italic leading-[1.04] tracking-[-0.045em] sm:text-[50px]">
-              Pronto para Apostar com{" "}
-              <span className="text-lime-300">Mais Controle?</span>
-            </h2>
-            <p className="mt-4 max-w-[670px] text-[16px] leading-[1.7] text-slate-300">
-              Tenha acesso ao painel completo e organize sua banca, métodos e
-              resultados em um só lugar.
-            </p>
-            <PrimaryButton className="mt-7 w-full sm:w-auto">
-              Acessar painel agora
-            </PrimaryButton>
-            <p className="mt-4 text-[13px] font-semibold text-slate-400">
-              Acesso imediato • Painel online • Atualizações constantes
-            </p>
-          </div>
-
-          <div className="rounded-[24px] border border-white/10 bg-black/24 p-6">
-            <div className="grid h-14 w-14 place-items-center rounded-[18px] bg-lime-300/12 text-lime-300">
-              <ShieldCheck size={31} strokeWidth={2.2} />
-            </div>
-            <h3 className="mt-6 text-[24px] font-black text-white">
-              Acesso ao Painel
-            </h3>
-            <p className="mt-3 text-[15px] leading-[1.65] text-slate-400">
-              Comece a organizar suas apostas hoje mesmo
-            </p>
-            <div className="mt-7 flex items-center gap-2 rounded-[16px] border border-lime-300/18 bg-lime-300/8 px-4 py-3 text-[13px] font-bold text-lime-200">
-              <Sparkles size={17} />
-              Dashboard liberado na hora
+            <div>
+              <h3 className="text-[12px] font-black text-[#171a17]">
+                Receba novidades do Filtto
+              </h3>
+              <div className="mt-5 flex rounded-[8px] border border-[#ded9cf] bg-[#ffffff] p-1.5">
+                <div className="flex flex-1 items-center gap-3 px-4 text-[#7a817a]">
+                  <Mail size={16} />
+                  <span className="text-[13px]">Seu melhor e-mail</span>
+                </div>
+                <button className="flex h-11 w-12 items-center justify-center rounded-[6px] bg-[#087f32] text-white">
+                  <ArrowRight size={18} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <footer className="relative z-10 border-t border-white/8 bg-[#03070d] py-7">
-        <div className="mx-auto flex max-w-[1220px] flex-col items-center justify-between gap-5 px-5 text-[13px] text-slate-500 lg:flex-row lg:px-8">
-          <Logo />
-          <p>© 2024 KRST Tips. Todos os direitos reservados.</p>
-          <div className="flex gap-6">
-            <a href="#" className="transition hover:text-lime-300">
-              Termos de Uso
-            </a>
-            <a href="#" className="transition hover:text-lime-300">
-              Política de Privacidade
-            </a>
+          <div className="mt-10 flex flex-col justify-between gap-4 border-t border-[#e8e3da] pt-6 text-[12px] font-medium text-[#747b74] md:flex-row">
+            <p>© 2024 Filtto. Todos os direitos reservados.</p>
+            <div className="flex gap-8">
+              <a href="#" className="hover:text-[#087f32]">
+                Termos de uso
+              </a>
+              <a href="#" className="hover:text-[#087f32]">
+                Política de privacidade
+              </a>
+            </div>
           </div>
         </div>
       </footer>

@@ -18,29 +18,30 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 const STORAGE_KEY = "progressao-execucao-v2";
-
-const moneyFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
-
-const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
-  dateStyle: "short",
-  timeStyle: "short",
-});
 
 function round(value) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }
 
 function formatMoney(value) {
+  const moneyFormatter = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+
   return moneyFormatter.format(Number.isFinite(value) ? value : 0);
 }
 
-function formatDate(value) {
+function formatDate(value, locale = "pt-BR") {
   if (!value) return "-";
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+
   return dateFormatter.format(new Date(value));
 }
 
@@ -105,23 +106,18 @@ function getEntryTone(status) {
   return "neutral";
 }
 
-function getEntryLabel(status) {
-  if (status === "pending") return "Pendente";
-  if (status === "green") return "Green";
-  if (status === "red") return "Red";
-  return "Bloqueado";
+function getEntryLabel(status, t) {
+  return t(`progression.entryStatus.${status}`);
 }
 
-function getFinalLabel(status) {
-  if (status === "completed") return "Concluída";
-  if (status === "red") return "Encerrada no Red";
-  return "Encerrada manualmente";
+function getFinalLabel(status, t) {
+  return t(`progression.finalLabel.${status}`);
 }
 
-function getShareStatusLabel(status) {
-  if (status === "completed") return "Progressão concluída";
-  if (status === "red") return "Finalizada com Red";
-  return "Encerrada manualmente";
+function getShareStatusLabel(status, t) {
+  if (status === "completed") return t("progression.shareStatusCompleted");
+  if (status === "red") return t("progression.shareStatusRed");
+  return t("progression.shareStatusManual");
 }
 
 function getProjectionShareStats(projection) {
@@ -155,7 +151,7 @@ function sanitizeFileName(value) {
     .toLowerCase();
 }
 
-function createProjectionFromForm(form) {
+function createProjectionFromForm(form, t) {
   const initialBankroll = Math.max(1, toNumber(form.initialBankroll, 100));
   const averageOdd = Math.max(1.01, toNumber(form.averageOdd, 1.5));
   const totalDays = Math.max(1, Math.min(60, Math.round(toNumber(form.totalDays, 7))));
@@ -195,7 +191,7 @@ function createProjectionFromForm(form) {
 
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    name: form.name?.trim() || "Nova progressão",
+    name: form.name?.trim() || t("progression.newProgression"),
     notes: form.notes?.trim() || "",
     createdAt: new Date().toISOString(),
     finishedAt: null,
@@ -223,12 +219,12 @@ function finalizeProjection(projection, finalStatus, finalBankroll) {
   };
 }
 
-function validateForm(form) {
-  if (!form.name.trim()) return "Informe um nome para a progressão.";
-  if (toNumber(form.initialBankroll) <= 0) return "Informe uma banca inicial maior que zero.";
-  if (toNumber(form.averageOdd) <= 1) return "Informe uma odd média maior que 1.";
-  if (Math.round(toNumber(form.totalDays)) < 1) return "Informe pelo menos 1 entrada.";
-  if (Math.round(toNumber(form.totalDays)) > 60) return "Use no máximo 60 entradas.";
+function validateForm(form, t) {
+  if (!form.name.trim()) return t("progression.missingName");
+  if (toNumber(form.initialBankroll) <= 0) return t("progression.missingInitialBankroll");
+  if (toNumber(form.averageOdd) <= 1) return t("progression.missingAverageOdd");
+  if (Math.round(toNumber(form.totalDays)) < 1) return t("progression.missingEntries");
+  if (Math.round(toNumber(form.totalDays)) > 60) return t("progression.maxEntries");
   return "";
 }
 
@@ -326,20 +322,23 @@ function MetricCard({ label, value, detail, tone = "neutral", icon: Icon }) {
 }
 
 function StatusBadge({ entryStatus }) {
+  const { t } = useLanguage();
+
   return (
     <Badge status={getEntryTone(entryStatus)}>
-      {getEntryLabel(entryStatus)}
+      {getEntryLabel(entryStatus, t)}
     </Badge>
   );
 }
 
 export default function ProgressaoPage() {
+  const { locale, t } = useLanguage();
   const [hydrated, setHydrated] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [formError, setFormError] = useState("");
 
   const [form, setForm] = useState({
-    name: "Progressão 1",
+    name: t("progression.progression") + " 1",
     notes: "",
     initialBankroll: "10",
     averageOdd: "1.50",
@@ -424,45 +423,45 @@ export default function ProgressaoPage() {
   }, [activeProjection]);
 
   const summaryCards = useMemo(() => {
-    const statusText = activeProjection ? "Em andamento" : "Sem ativa";
+    const statusText = activeProjection ? t("progression.summaryStatusInProgress") : t("progression.noActive");
     return [
       {
-        label: "Banca atual",
+        label: t("progression.currentBankroll"),
         value: activeProjection ? formatMoney(activeProjection.currentBankroll) : "--",
-        detail: activeProjection ? formatSignedMoney(activeProjection.profit) : "Sem progressão ativa",
+        detail: activeProjection ? formatSignedMoney(activeProjection.profit) : t("progression.noActiveProgression"),
         tone: activeProjection?.profit < 0 ? "negative" : "positive",
         icon: Wallet,
       },
       {
-        label: "Dia atual",
+        label: t("progression.currentDay"),
         value: activeProjection ? `${activeProjection.currentDay} / ${activeProjection.totalDays}` : "--",
-        detail: activeProjection ? `${progressInfo.completedDays} finalizado(s)` : "Aguardando criação",
+        detail: activeProjection ? t("progression.completedCount", { count: progressInfo.completedDays }) : t("progression.awaitingCreation"),
         tone: "neutral",
         icon: Clock3,
       },
       {
-        label: "Próxima entrada",
+        label: t("progression.nextEntry"),
         value: currentEntry ? formatMoney(currentEntry.stake) : "--",
-        detail: currentEntry ? `Retorno ${formatMoney(currentEntry.projectedReturn)}` : "Sem entrada pendente",
+        detail: currentEntry ? t("progression.returnValue", { value: formatMoney(currentEntry.projectedReturn) }) : t("progression.noPendingEntry"),
         tone: "warning",
         icon: TrendingUp,
       },
       {
         label: "Greens / Reds",
         value: activeProjection ? `${progressInfo.greens} / ${progressInfo.reds}` : "--",
-        detail: activeProjection ? `Odd média ${formatOdd(activeProjection.averageOdd)}` : "Sem dados",
+        detail: activeProjection ? t("progression.averageOddValue", { value: formatOdd(activeProjection.averageOdd) }) : t("progression.noData"),
         tone: "positive",
         icon: Target,
       },
       {
-        label: "Status",
+        label: t("common.status"),
         value: statusText,
-        detail: activeProjection ? activeProjection.name : "Crie uma progressão",
+        detail: activeProjection ? activeProjection.name : t("progression.createAProgression"),
         tone: activeProjection ? "positive" : "neutral",
         icon: ClipboardList,
       },
     ];
-  }, [activeProjection, currentEntry, progressInfo]);
+  }, [activeProjection, currentEntry, progressInfo, t]);
 
   function updateForm(field, value) {
     setForm((current) => ({
@@ -476,19 +475,19 @@ export default function ProgressaoPage() {
     event.preventDefault();
 
     if (activeProjection) {
-      setFeedback("Finalize a progressão ativa antes de criar outra.");
+      setFeedback(t("progression.youMustFinishActive"));
       return;
     }
 
-    const error = validateForm(form);
+    const error = validateForm(form, t);
     if (error) {
       setFormError(error);
       return;
     }
 
-    const projection = createProjectionFromForm(form);
+    const projection = createProjectionFromForm(form, t);
     setActiveProjection(projection);
-    setFeedback("Progressão criada. A primeira entrada já está disponível.");
+    setFeedback(t("progression.progressionCreated"));
   }
 
   function handleMarkGreen() {
@@ -534,7 +533,7 @@ export default function ProgressaoPage() {
 
       setFinalizedProjections((current) => [finalized, ...current]);
       setActiveProjection(null);
-      setFeedback("Progressão concluída e arquivada no histórico.");
+      setFeedback(t("progression.progressionFinishedHistory"));
       return;
     }
 
@@ -545,12 +544,12 @@ export default function ProgressaoPage() {
       currentDay: currentEntry.day + 1,
       profit: round(nextBankroll - current.initialBankroll),
     }));
-    setFeedback("Green registrado. Próxima entrada liberada.");
+    setFeedback(t("progression.greenRegistered"));
   }
 
   function handleMarkRed() {
     if (!activeProjection || !currentEntry) return;
-    if (!window.confirm("Marcar Red encerra e arquiva esta progressão. Deseja continuar?")) {
+    if (!window.confirm(t("progression.redConfirm"))) {
       return;
     }
 
@@ -584,7 +583,7 @@ export default function ProgressaoPage() {
 
     setFinalizedProjections((current) => [finalized, ...current]);
     setActiveProjection(null);
-    setFeedback("Progressão encerrada e arquivada após Red.");
+    setFeedback(t("progression.redFinished"));
   }
 
   function handleManualFinish() {
@@ -593,23 +592,23 @@ export default function ProgressaoPage() {
     const finalized = finalizeProjection(activeProjection, "manual", activeProjection.currentBankroll);
     setFinalizedProjections((current) => [finalized, ...current]);
     setActiveProjection(null);
-    setFeedback("Progressão encerrada manualmente e enviada ao histórico.");
+    setFeedback(t("progression.manualFinished"));
   }
 
   function handleClearHistory() {
     setFinalizedProjections([]);
     setOpenFinalizedId(null);
     setShareProjection(null);
-    setFeedback("Histórico limpo.");
+    setFeedback(t("progression.historyCleaned"));
   }
 
   function handleDownloadShareImage(projection) {
-    const dataUrl = renderProgressionShareImage(projection);
+    const dataUrl = renderProgressionShareImage(projection, t, locale);
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = `${sanitizeFileName(projection.name)}-alpha-tips.png`;
+    link.download = `${sanitizeFileName(projection.name)}-filtto.png`;
     link.click();
-    setFeedback("Imagem da progressão gerada para download.");
+    setFeedback(t("progression.imageGenerated"));
   }
 
   return (
@@ -619,14 +618,14 @@ export default function ProgressaoPage() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-[30px] font-semibold tracking-[-0.04em] text-slate-950 dark:text-white">
-                Progressão
+                {t("progression.title")}
               </h1>
               <Badge status={activeProjection ? "positive" : "neutral"}>
-                {activeProjection ? "Progressão em andamento" : "Sem progressão ativa"}
+                {activeProjection ? t("progression.progressionInProgress") : t("progression.noActiveProgression")}
               </Badge>
             </div>
             <p className="mt-2 max-w-[720px] text-[14px] leading-6 text-slate-600 dark:text-slate-300">
-              Crie uma sequência de entradas, acompanhe a entrada atual e arquive automaticamente ao bater Red.
+              {t("progression.progressionDescription")}
             </p>
           </div>
 
@@ -635,7 +634,7 @@ export default function ProgressaoPage() {
             className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[14px] bg-white px-4 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07] sm:w-auto"
           >
             <History className="h-4 w-4" />
-            Histórico
+            {t("progression.history")}
           </a>
         </header>
 
@@ -660,29 +659,29 @@ export default function ProgressaoPage() {
             <Panel className="p-6">
                 <div className="flex items-start justify-between gap-4">
                   <SectionTitle
-                    eyebrow="Configuração"
-                    title="Nova progressão"
-                    description="Uma progressão ativa por vez."
+                    eyebrow={t("progression.configuration")}
+                    title={t("progression.newProgression")}
+                    description={t("progression.oneActiveAtATime")}
                   />
                 </div>
 
                 <form onSubmit={handleCreateProjection} className="mt-5 grid gap-4">
                   <Input
-                    label="Nome da progressão"
+                    label={t("progression.progressionName")}
                     type="text"
                     value={form.name}
                     onChange={(event) => updateForm("name", event.target.value)}
                   />
 
                   <Textarea
-                    label="Observação"
+                    label={t("progression.note")}
                     value={form.notes}
                     onChange={(event) => updateForm("notes", event.target.value)}
-                    placeholder="Opcional"
+                    placeholder={t("common.optional")}
                   />
 
                   <Input
-                    label="Banca inicial"
+                    label={t("progression.initialBankroll")}
                     hint="R$"
                     type="number"
                     step="0.01"
@@ -692,14 +691,14 @@ export default function ProgressaoPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     <Input
-                      label="Odd média"
+                      label={t("progression.averageOdd")}
                       type="number"
                       step="0.01"
                       value={form.averageOdd}
                       onChange={(event) => updateForm("averageOdd", event.target.value)}
                     />
                     <Input
-                      label="Número de entradas"
+                      label={t("progression.numberOfEntries")}
                       type="number"
                       step="1"
                       value={form.totalDays}
@@ -709,12 +708,12 @@ export default function ProgressaoPage() {
 
                   <div>
                     <p className="mb-2 text-[12px] font-medium text-slate-600 dark:text-slate-300">
-                      Tipo de stake
+                      {t("progression.stakeMode")}
                     </p>
                     <div className="grid grid-cols-2 rounded-[14px] border border-slate-200 bg-slate-100 p-1 dark:border-white/[0.08] dark:bg-white/[0.04]">
                       {[
-                        ["fixed", "Fixa"],
-                        ["percent", "Variável"],
+                        ["fixed", t("progression.fixed")],
+                        ["percent", t("progression.variable")],
                       ].map(([value, label]) => (
                         <button
                           key={value}
@@ -734,7 +733,7 @@ export default function ProgressaoPage() {
 
                   {form.stakeMode === "fixed" ? (
                     <Input
-                      label="Valor fixo por entrada"
+                      label={t("progression.fixedStakeValue")}
                       hint="R$"
                       type="number"
                       step="0.01"
@@ -743,7 +742,7 @@ export default function ProgressaoPage() {
                     />
                   ) : (
                     <Input
-                      label="Percentual da banca por entrada"
+                      label={t("progression.percentStakeValue")}
                       hint="%"
                       type="number"
                       step="0.01"
@@ -763,7 +762,7 @@ export default function ProgressaoPage() {
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] bg-emerald-600 px-4 text-[13px] font-semibold text-white shadow-[0_10px_22px_rgba(5,150,105,0.18)] transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
                   >
                     <Plus className="h-4 w-4" />
-                    Criar progressão
+                    {t("progression.createProgression")}
                   </button>
                 </form>
             </Panel>
@@ -773,9 +772,9 @@ export default function ProgressaoPage() {
             <Panel className="overflow-hidden">
               <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 dark:border-white/[0.06] lg:flex-row lg:items-start lg:justify-between">
                 <SectionTitle
-                  eyebrow="Execução"
-                  title="Progressão em andamento"
-                  description="Marque a entrada atual como Green ou Red para seguir a sequência."
+                  eyebrow={t("progression.execution")}
+                  title={t("progression.progressionInProgress")}
+                  description={t("progression.markCurrent")}
                 />
 
                 {activeProjection ? (
@@ -785,7 +784,7 @@ export default function ProgressaoPage() {
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-[12px] bg-white px-3.5 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
                   >
                     <Archive className="h-4 w-4" />
-                    Encerrar manualmente
+                    {t("progression.manualFinish")}
                   </button>
                 ) : null}
               </div>
@@ -797,10 +796,10 @@ export default function ProgressaoPage() {
                       <Lock className="h-5 w-5" />
                     </div>
                     <p className="mt-3 text-[14px] font-semibold text-slate-950 dark:text-white">
-                      Nenhuma progressão ativa
+                      {t("progression.noneActive")}
                     </p>
                     <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
-                      Crie uma progressão no painel ao lado para liberar a primeira entrada.
+                      {t("progression.createActiveFirst")}
                     </p>
                   </div>
                 </div>
@@ -813,28 +812,28 @@ export default function ProgressaoPage() {
                           <h3 className="truncate text-[15px] font-semibold text-slate-950 dark:text-white">
                             {activeProjection.name}
                           </h3>
-                          <Badge status="positive">Ativa</Badge>
+                          <Badge status="positive">{t("progression.active")}</Badge>
                         </div>
                         <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">
-                          Criada em {formatDate(activeProjection.createdAt)}
+                          {t("progression.createdAt", { date: formatDate(activeProjection.createdAt, locale) })}
                         </p>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         <Badge status="neutral">
                           {activeProjection.stakeMode === "fixed"
-                            ? `Stake fixa ${formatMoney(activeProjection.fixedStake)}`
-                            : `Stake variável ${formatOdd(activeProjection.percentStake)}%`}
+                            ? t("progression.activeStakeFixed", { value: formatMoney(activeProjection.fixedStake) })
+                            : t("progression.activeStakeVariable", { value: formatOdd(activeProjection.percentStake) })}
                         </Badge>
                         <Badge status="neutral">
-                          Banca inicial {formatMoney(activeProjection.initialBankroll)}
+                          {t("progression.initialBankrollWithValue", { value: formatMoney(activeProjection.initialBankroll) })}
                         </Badge>
                       </div>
                     </div>
 
                     <div className="mt-4">
                       <div className="mb-2 flex items-center justify-between text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                        <span>Progresso</span>
+                        <span>{t("progression.progress")}</span>
                         <span>{round(progressInfo.progressPercent)}%</span>
                       </div>
                       <div className="h-2.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
@@ -851,21 +850,21 @@ export default function ProgressaoPage() {
                       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
                         <div className="min-w-0">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
-                            Entrada atual
+                            {t("progression.currentEntry")}
                           </p>
                           <h3 className="mt-1 text-[24px] font-semibold tracking-[-0.04em] text-slate-950 dark:text-white">
-                            {currentEntry.day}ª entrada de {activeProjection.totalDays}
+                            {t("progression.entryOfTotal", { day: currentEntry.day, total: activeProjection.totalDays })}
                           </h3>
                           <p className="mt-1 text-[13px] text-slate-600 dark:text-slate-300">
-                            Apostar {formatMoney(currentEntry.stake)} na odd {formatOdd(currentEntry.odd)}.
+                            {t("progression.betInstruction", { stake: formatMoney(currentEntry.stake), odd: formatOdd(currentEntry.odd) })}
                           </p>
                         </div>
 
                         <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[520px] xl:grid-cols-4">
-                          <SmallValue label="Banca antes" value={formatMoney(currentEntry.bankrollBefore)} />
-                          <SmallValue label="Entrada" value={formatMoney(currentEntry.stake)} />
-                          <SmallValue label="Retorno" value={formatMoney(currentEntry.projectedReturn)} tone="positive" />
-                          <SmallValue label="Após Green" value={formatMoney(currentEntry.bankrollIfGreen)} tone="positive" />
+                          <SmallValue label={t("progression.bankrollBefore")} value={formatMoney(currentEntry.bankrollBefore)} />
+                          <SmallValue label={t("progression.entry")} value={formatMoney(currentEntry.stake)} />
+                          <SmallValue label={t("progression.return")} value={formatMoney(currentEntry.projectedReturn)} tone="positive" />
+                          <SmallValue label={t("progression.afterGreen")} value={formatMoney(currentEntry.bankrollIfGreen)} tone="positive" />
                         </div>
                       </div>
 
@@ -876,7 +875,7 @@ export default function ProgressaoPage() {
                           className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] bg-emerald-600 px-4 text-[13px] font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
                         >
                           <CheckCircle2 className="h-4 w-4" />
-                          Marcar Green
+                          {t("progression.markGreen")}
                         </button>
                         <button
                           type="button"
@@ -884,7 +883,7 @@ export default function ProgressaoPage() {
                           className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] bg-rose-600 px-4 text-[13px] font-semibold text-white transition hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-400"
                         >
                           <XCircle className="h-4 w-4" />
-                          Marcar Red
+                          {t("progression.markRed")}
                         </button>
                       </div>
                     </div>
@@ -898,7 +897,7 @@ export default function ProgressaoPage() {
 
                   {activeProjection.notes ? (
                     <div className="mt-4 rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-slate-300">
-                      <span className="font-semibold text-slate-900 dark:text-white">Observação:</span>{" "}
+                      <span className="font-semibold text-slate-900 dark:text-white">{t("progression.note")}:</span>{" "}
                       {activeProjection.notes}
                     </div>
                   ) : null}
@@ -942,6 +941,8 @@ function SmallValue({ label, value, tone = "neutral" }) {
 }
 
 function ProgressionTable({ entries, onGreen, onRed }) {
+  const { locale, t } = useLanguage();
+
   return (
     <>
       <div className="mt-5 grid gap-3 lg:hidden">
@@ -964,7 +965,7 @@ function ProgressionTable({ entries, onGreen, onRed }) {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[12px] text-slate-500 dark:text-slate-400">
-                    {entry.day}ª entrada
+                    {t("progression.dayEntry", { day: entry.day })}
                   </p>
                   <p className="mt-1 text-[15px] font-semibold text-slate-950 dark:text-white">
                     {formatMoney(entry.stake)}
@@ -975,19 +976,19 @@ function ProgressionTable({ entries, onGreen, onRed }) {
 
               <div className="mt-4 grid grid-cols-3 gap-3 text-[12px]">
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400">Odd</p>
+                  <p className="text-slate-500 dark:text-slate-400">{t("progression.odd")}</p>
                   <p className="mt-1 font-semibold text-slate-950 dark:text-white">
                     {formatOdd(entry.odd)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400">Retorno</p>
+                  <p className="text-slate-500 dark:text-slate-400">{t("progression.return")}</p>
                   <p className="mt-1 font-semibold text-slate-950 dark:text-white">
                     {formatMoney(entry.projectedReturn)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400">Após</p>
+                  <p className="text-slate-500 dark:text-slate-400">{t("progression.after")}</p>
                   <p className={`mt-1 font-semibold ${isLocked ? "text-slate-400 dark:text-slate-500" : rowTone.text}`}>
                     {entry.actualBankrollAfter !== null
                       ? formatMoney(entry.actualBankrollAfter)
@@ -1006,7 +1007,7 @@ function ProgressionTable({ entries, onGreen, onRed }) {
                     className="inline-flex h-9 items-center gap-1.5 rounded-[11px] bg-emerald-50 px-3 text-[12px] font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-100 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20 dark:hover:bg-emerald-400/15"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />
-                    Green
+                    {t("progression.entryStatus.green")}
                   </button>
                   <button
                     type="button"
@@ -1014,7 +1015,7 @@ function ProgressionTable({ entries, onGreen, onRed }) {
                     className="inline-flex h-9 items-center gap-1.5 rounded-[11px] bg-rose-50 px-3 text-[12px] font-semibold text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-100 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20 dark:hover:bg-rose-400/15"
                   >
                     <XCircle className="h-3.5 w-3.5" />
-                    Red
+                    {t("progression.entryStatus.red")}
                   </button>
                 </div>
               ) : null}
@@ -1027,7 +1028,16 @@ function ProgressionTable({ entries, onGreen, onRed }) {
         <table className="w-full min-w-[1080px] text-sm">
           <thead className="bg-slate-50 dark:bg-white/[0.035]">
             <tr className="text-left">
-              {["Entrada", "Status", "Banca antes", "Entrada", "Odd", "Retorno previsto", "Banca após", "Ação"].map(
+              {[
+                t("progression.entry"),
+                t("common.status"),
+                t("progression.bankrollBefore"),
+                t("progression.entry"),
+                t("progression.odd"),
+                t("progression.projectedReturn"),
+                t("progression.bankrollAfter"),
+                t("progression.tableAction"),
+              ].map(
                 (heading, index) => (
                   <th
                     key={`${heading}-${index}`}
@@ -1059,7 +1069,7 @@ function ProgressionTable({ entries, onGreen, onRed }) {
                     : "bg-white text-slate-700 hover:bg-slate-50/80 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-white/[0.025]"
                 }`}
               >
-                <td className="whitespace-nowrap px-4 py-3 font-medium">{entry.day}ª entrada</td>
+                <td className="whitespace-nowrap px-4 py-3 font-medium">{t("progression.dayEntry", { day: entry.day })}</td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <StatusBadge entryStatus={entry.status} />
                 </td>
@@ -1091,7 +1101,7 @@ function ProgressionTable({ entries, onGreen, onRed }) {
                         className="inline-flex h-8 items-center gap-1.5 rounded-[10px] bg-emerald-50 px-2.5 text-[12px] font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-100 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20 dark:hover:bg-emerald-400/15"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
-                        Green
+                        {t("progression.entryStatus.green")}
                       </button>
                       <button
                         type="button"
@@ -1099,16 +1109,16 @@ function ProgressionTable({ entries, onGreen, onRed }) {
                         className="inline-flex h-8 items-center gap-1.5 rounded-[10px] bg-rose-50 px-2.5 text-[12px] font-semibold text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-100 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20 dark:hover:bg-rose-400/15"
                       >
                         <XCircle className="h-3.5 w-3.5" />
-                        Red
+                        {t("progression.entryStatus.red")}
                       </button>
                     </div>
                   ) : entry.status === "green" || entry.status === "red" ? (
                     <span className="text-[12px] text-slate-500 dark:text-slate-400">
-                      {formatDate(entry.checkedAt)}
+                      {formatDate(entry.checkedAt, locale)}
                     </span>
                   ) : (
                     <span className="text-[12px] text-slate-400 dark:text-slate-500">
-                      Aguarda anterior
+                      {t("progression.awaitingPrevious")}
                     </span>
                   )}
                 </td>
@@ -1123,13 +1133,15 @@ function ProgressionTable({ entries, onGreen, onRed }) {
 }
 
 function HistorySection({ projections, openFinalizedId, onToggle, onClear, onShare }) {
+  const { locale, t } = useLanguage();
+
   return (
     <Panel id="historico-progressao" className="overflow-hidden">
       <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 dark:border-white/[0.06] lg:flex-row lg:items-center lg:justify-between">
         <SectionTitle
-          eyebrow="Histórico"
-          title="Finalizadas recentes"
-          description="Progressões encerradas por Red, concluídas ou fechadas manualmente."
+          eyebrow={t("progression.history")}
+          title={t("progression.finalizedRecent")}
+          description={t("progression.progressionsEndedDescription")}
         />
 
         {projections.length > 0 ? (
@@ -1138,7 +1150,7 @@ function HistorySection({ projections, openFinalizedId, onToggle, onClear, onSha
             onClick={onClear}
             className="inline-flex h-10 items-center justify-center rounded-[12px] bg-white px-3.5 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
           >
-            Limpar histórico
+            {t("progression.clearHistory")}
           </button>
         ) : null}
       </div>
@@ -1146,10 +1158,10 @@ function HistorySection({ projections, openFinalizedId, onToggle, onClear, onSha
       {projections.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-[14px] font-semibold text-slate-950 dark:text-white">
-            Ainda não há progressões finalizadas
+            {t("progression.noFinalized")}
           </p>
           <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
-            Quando uma sequência terminar, ela aparecerá aqui.
+            {t("progression.whenSequenceEnds")}
           </p>
         </div>
       ) : (
@@ -1175,11 +1187,13 @@ function HistorySection({ projections, openFinalizedId, onToggle, onClear, onSha
                       <h3 className="truncate text-[15px] font-semibold text-slate-950 dark:text-white">
                         {projection.name}
                       </h3>
-                      <Badge status={finalTone}>{getFinalLabel(projection.finalStatus)}</Badge>
+                      <Badge status={finalTone}>{getFinalLabel(projection.finalStatus, t)}</Badge>
                     </div>
                     <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">
-                      Criada em {formatDate(projection.createdAt)} · Finalizada em{" "}
-                      {formatDate(projection.finishedAt)}
+                      {t("progression.createdFinishedAt", {
+                        created: formatDate(projection.createdAt, locale),
+                        finished: formatDate(projection.finishedAt, locale),
+                      })}
                     </p>
                   </div>
 
@@ -1190,26 +1204,26 @@ function HistorySection({ projections, openFinalizedId, onToggle, onClear, onSha
                       className="inline-flex h-9 items-center justify-center gap-2 rounded-[12px] bg-emerald-600 px-3.5 text-[13px] font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
                     >
                       <Share2 className="h-4 w-4" />
-                      Compartilhar
+                      {t("progression.share")}
                     </button>
                     <button
                       type="button"
                       onClick={() => onToggle(projection.id)}
                       className="inline-flex h-9 items-center justify-center rounded-[12px] bg-white px-3.5 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
                     >
-                      {isOpen ? "Ocultar detalhes" : "Ver detalhes"}
+                      {isOpen ? t("progression.hideDetails") : t("progression.viewDetails")}
                     </button>
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
                   {[
-                    ["Banca inicial", formatMoney(projection.initialBankroll), ""],
-                    ["Banca final", formatMoney(projection.currentBankroll), ""],
-                    ["Resultado", formatSignedMoney(projection.profit), resultTone.text],
+                    [t("progression.initialBankroll"), formatMoney(projection.initialBankroll), ""],
+                    [t("progression.finalBankroll"), formatMoney(projection.currentBankroll), ""],
+                    [t("progression.result"), formatSignedMoney(projection.profit), resultTone.text],
                     ["Greens / Reds", `${greens} / ${reds}`, ""],
-                    ["Parou na entrada", stoppedDay || "-", ""],
-                    ["Status final", getFinalLabel(projection.finalStatus), ""],
+                    [t("progression.stoppedAtEntry"), stoppedDay || "-", ""],
+                    [t("progression.finalStatus"), getFinalLabel(projection.finalStatus, t), ""],
                   ].map(([label, value, className]) => (
                     <div
                       key={label}
@@ -1225,7 +1239,7 @@ function HistorySection({ projections, openFinalizedId, onToggle, onClear, onSha
 
                 {projection.notes ? (
                   <div className="mt-4 rounded-[14px] border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-slate-300">
-                    <span className="font-semibold text-slate-900 dark:text-white">Observação:</span>{" "}
+                    <span className="font-semibold text-slate-900 dark:text-white">{t("progression.note")}:</span>{" "}
                     {projection.notes}
                   </div>
                 ) : null}
@@ -1235,7 +1249,15 @@ function HistorySection({ projections, openFinalizedId, onToggle, onClear, onSha
                     <table className="w-full min-w-[900px] text-sm">
                       <thead className="bg-slate-50 text-left dark:bg-white/[0.035]">
                         <tr>
-                          {["Entrada", "Status", "Banca antes", "Entrada", "Odd", "Retorno previsto", "Banca após"].map(
+                          {[
+                            t("progression.entry"),
+                            t("common.status"),
+                            t("progression.bankrollBefore"),
+                            t("progression.entry"),
+                            t("progression.odd"),
+                            t("progression.projectedReturn"),
+                            t("progression.bankrollAfter"),
+                          ].map(
                             (heading, index) => (
                               <th
                                 key={`${heading}-${index}`}
@@ -1253,7 +1275,7 @@ function HistorySection({ projections, openFinalizedId, onToggle, onClear, onSha
                         {projection.entries.map((entry) => (
                           <tr key={entry.id} className="text-slate-700 dark:text-slate-200">
                             <td className="whitespace-nowrap px-4 py-3 font-medium">
-                              {entry.day}ª entrada
+                              {t("progression.dayEntry", { day: entry.day })}
                             </td>
                             <td className="whitespace-nowrap px-4 py-3">
                               <StatusBadge entryStatus={entry.status} />
@@ -1291,11 +1313,13 @@ function HistorySection({ projections, openFinalizedId, onToggle, onClear, onSha
 }
 
 function ShareProgressionModal({ projection, onClose, onDownload }) {
+  const { t } = useLanguage();
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
       <button
         type="button"
-        aria-label="Fechar compartilhamento"
+        aria-label={t("common.close")}
         onClick={onClose}
         className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm dark:bg-black/65"
       />
@@ -1303,9 +1327,9 @@ function ShareProgressionModal({ projection, onClose, onDownload }) {
       <section className="relative z-10 max-h-[92vh] w-full max-w-[760px] overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)] dark:border-white/[0.1] dark:bg-slate-900">
         <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 dark:border-white/[0.06] sm:flex-row sm:items-start sm:justify-between">
           <SectionTitle
-            eyebrow="Compartilhar"
-            title="Imagem da progressão"
-            description="Prévia da arte gerada para baixar e compartilhar."
+            eyebrow={t("progression.share")}
+            title={t("progression.shareImage")}
+            description={t("progression.shareDescription")}
           />
 
           <button
@@ -1329,17 +1353,17 @@ function ShareProgressionModal({ projection, onClose, onDownload }) {
               className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] bg-emerald-600 px-4 text-[13px] font-semibold text-white shadow-[0_10px_22px_rgba(5,150,105,0.18)] transition hover:bg-emerald-700 dark:bg-emerald-500 dark:text-slate-950 dark:hover:bg-emerald-400"
             >
               <Download className="h-4 w-4" />
-              Baixar PNG
+              {t("common.downloadPng")}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="inline-flex h-11 items-center justify-center rounded-[14px] bg-white px-4 text-[13px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07]"
             >
-              Fechar
+              {t("common.close")}
             </button>
             <p className="text-[12px] leading-5 text-slate-500 dark:text-slate-400">
-              A imagem exportada usa um tema fixo para manter contraste e consistência no compartilhamento.
+              {t("progression.shareExportHint")}
             </p>
           </div>
         </div>
@@ -1349,6 +1373,7 @@ function ShareProgressionModal({ projection, onClose, onDownload }) {
 }
 
 function ShareProgressionCard({ projection }) {
+  const { locale, t } = useLanguage();
   const stats = getProjectionShareStats(projection);
   const resultTone = stats.result >= 0 ? "text-[#a3ff12]" : "text-rose-300";
   const shareEntries = getShareEntries(projection);
@@ -1362,22 +1387,26 @@ function ShareProgressionCard({ projection }) {
   return (
     <article className="relative mx-auto w-full max-w-[620px] overflow-hidden rounded-[24px] border border-white/10 bg-[#050d17] p-6 text-white shadow-[0_28px_70px_rgba(0,0,0,0.28)] sm:p-7">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_20%,rgba(163,255,18,0.08),transparent_28%),radial-gradient(circle_at_16%_92%,rgba(14,165,233,0.10),transparent_26%)]" />
-      <div className="pointer-events-none absolute inset-x-8 top-72 text-center text-[74px] font-black tracking-[-0.08em] text-white/[0.022]">ALPHA</div>
+      <div className="pointer-events-none absolute inset-x-8 top-72 text-center text-[74px] font-black tracking-[-0.08em] text-white/[0.022]">FILTTO</div>
 
       <div className="relative z-[1] flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#a3ff12]/50 bg-[#a3ff12]/10 text-[24px] font-black text-[#a3ff12]">α</span>
-          <p className="text-[22px] font-black tracking-[-0.05em]">ALPHA <span className="text-[#a3ff12]">TIPS</span></p>
+          <span className="relative h-8 w-7 shrink-0 text-[#a3ff12]">
+            <span className="absolute left-0 top-0 h-2.5 w-7 skew-x-[-24deg] rounded-[2px] bg-current" />
+            <span className="absolute left-0 top-3 h-2.5 w-5 skew-x-[-24deg] rounded-[2px] bg-current" />
+            <span className="absolute left-0 top-6 h-2.5 w-3 skew-x-[-24deg] rounded-[2px] bg-current" />
+          </span>
+          <p className="text-[28px] font-black leading-none tracking-[-0.05em]">Filtto</p>
         </div>
         <span className="rounded-[14px] border border-[#a3ff12]/25 bg-[#a3ff12]/8 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.06em] text-slate-100">
-          {getShareStatusLabel(projection.finalStatus)}
+          {getShareStatusLabel(projection.finalStatus, t)}
         </span>
       </div>
 
       <div className="relative z-[1] mt-5 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4 text-[12px] text-slate-400">
         <span className="font-medium text-slate-300">{projection.name}</span>
         <span>•</span>
-        <span>{formatDate(projection.createdAt)} até {formatDate(projection.finishedAt)}</span>
+        <span>{formatDate(projection.createdAt, locale)} {t("progression.until")} {formatDate(projection.finishedAt, locale)}</span>
       </div>
 
       <div className="relative z-[1] mt-5 overflow-hidden rounded-[22px] border border-[#a3ff12]/35 bg-[#071727] p-6">
@@ -1389,29 +1418,29 @@ function ShareProgressionCard({ projection }) {
           <div className="absolute bottom-0 left-28 h-24 w-7 rounded-t bg-[#a3ff12]/34" />
           <div className="absolute right-0 top-1 h-4 w-4 rounded-full bg-[#a3ff12] shadow-[0_0_28px_rgba(163,255,18,0.85)]" />
         </div>
-        <p className="text-[14px] font-black uppercase tracking-[0.08em] text-white">Resultado final</p>
+        <p className="text-[14px] font-black uppercase tracking-[0.08em] text-white">{t("progression.finalResult")}</p>
         <p className={"mt-4 text-[52px] font-black leading-none tracking-[-0.07em] " + resultTone}>{formatSignedMoney(stats.result)}</p>
         <p className="mt-4 text-[16px] font-medium text-slate-400">
-          Evolução <span className="text-slate-200">{stats.evolution > 0 ? "+" : ""}{stats.evolution.toFixed(1).replace(".", ",")}%</span>
+          {t("progression.progress")} <span className="text-slate-200">{stats.evolution > 0 ? "+" : ""}{stats.evolution.toFixed(1).replace(".", ",")}%</span>
         </p>
       </div>
 
       <div className="relative z-[1] mt-5 grid grid-cols-5 overflow-hidden rounded-[20px] border border-white/12 bg-[#071727]/88">
-        <ShareMetric label="Banca inicial" value={formatMoney(projection.initialBankroll)} />
-        <ShareMetric label="Banca final" value={formatMoney(projection.currentBankroll)} strong />
-        <ShareMetric label="Odd média" value={formatOdd(projection.averageOdd)} />
-        <ShareMetric label="Entradas" value={String(stats.completedEntries)} />
+        <ShareMetric label={t("progression.initialBankroll")} value={formatMoney(projection.initialBankroll)} />
+        <ShareMetric label={t("progression.finalBankroll")} value={formatMoney(projection.currentBankroll)} strong />
+        <ShareMetric label={t("progression.averageOdd")} value={formatOdd(projection.averageOdd)} />
+        <ShareMetric label={t("progression.entries")} value={String(stats.completedEntries)} />
         <ShareMetric label="Greens" value={String(stats.greens)} />
       </div>
 
       <div className="relative z-[1] mt-7 flex items-center gap-3 text-[#a3ff12]">
         <span className="text-[18px] font-black">≡</span>
-        <p className="text-[15px] font-black uppercase tracking-[0.05em]">Entradas da progressão</p>
+        <p className="text-[15px] font-black uppercase tracking-[0.05em]">{t("progression.entries")}</p>
       </div>
 
       <div className="relative z-[1] mt-4 overflow-hidden rounded-[18px] border border-white/10 bg-[#071727]/82">
         <div className="grid grid-cols-[0.48fr_0.86fr_1.1fr_1fr_0.6fr_1.05fr_1.1fr] gap-2 border-b border-white/10 px-3 py-3 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
-          <span>#</span><span>Status</span><span className="text-right">Banca antes</span><span className="text-right">Entrada</span><span className="text-right">Odd</span><span className="text-right">Retorno</span><span className="text-right">Banca após</span>
+          <span>#</span><span>{t("common.status")}</span><span className="text-right">{t("progression.bankrollBefore")}</span><span className="text-right">{t("progression.entry")}</span><span className="text-right">{t("progression.odd")}</span><span className="text-right">{t("progression.return")}</span><span className="text-right">{t("progression.bankrollAfter")}</span>
         </div>
         <div className="divide-y divide-white/[0.08]">
           {shareEntries.map((entry, index) => {
@@ -1427,7 +1456,7 @@ function ShareProgressionCard({ projection }) {
             return (
               <div key={entry.id} className={"grid grid-cols-[0.48fr_0.86fr_1.1fr_1fr_0.6fr_1.05fr_1.1fr] items-center gap-2 " + rowClass}>
                 <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/[0.055] font-bold text-slate-100">{entry.day}</span>
-                <span><span className={statusClass}>{getEntryLabel(entry.status)}</span></span>
+                <span><span className={statusClass}>{getEntryLabel(entry.status, t)}</span></span>
                 <span className="text-right text-slate-100">{formatMoney(entry.bankrollBefore)}</span>
                 <span className="text-right text-slate-100">{formatMoney(entry.stake)}</span>
                 <span className="text-right text-slate-100">{formatOdd(entry.odd)}</span>
@@ -1440,8 +1469,12 @@ function ShareProgressionCard({ projection }) {
       </div>
 
       <div className="relative z-[1] mt-7 flex items-center justify-center gap-4 border-t border-[#a3ff12]/20 pt-5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[#a3ff12]/45 bg-[#a3ff12]/10 text-[20px] font-black text-[#a3ff12]">α</span>
-        <p className="text-[16px] font-black tracking-[-0.04em]">ALPHA <span className="text-[#a3ff12]">TIPS</span></p>
+        <span className="relative h-6 w-5 shrink-0 text-[#a3ff12]">
+          <span className="absolute left-0 top-0 h-2 w-5 skew-x-[-24deg] rounded-[2px] bg-current" />
+          <span className="absolute left-0 top-2.5 h-2 w-4 skew-x-[-24deg] rounded-[2px] bg-current" />
+          <span className="absolute left-0 top-5 h-2 w-2.5 skew-x-[-24deg] rounded-[2px] bg-current" />
+        </span>
+        <p className="text-[20px] font-black leading-none tracking-[-0.04em]">Filtto</p>
       </div>
     </article>
   );
@@ -1458,7 +1491,7 @@ function ShareMetric({ label, value, strong = false }) {
   );
 }
 
-function renderProgressionShareImage(projection) {
+function renderProgressionShareImage(projection, t, locale) {
   const stats = getProjectionShareStats(projection);
   const shareEntries = getShareEntries(projection);
   const scale = 2;
@@ -1471,7 +1504,7 @@ function renderProgressionShareImage(projection) {
   const ctx = canvas.getContext("2d");
 
   ctx.scale(scale, scale);
-  drawShareImage(ctx, projection, stats, shareEntries, width, height, rowH);
+  drawShareImage(ctx, projection, stats, shareEntries, width, height, rowH, t, locale);
 
   return canvas.toDataURL("image/png", 1);
 }
@@ -1486,7 +1519,7 @@ function getShareImageHeight(count, rowH) {
   return 1040 + 58 + count * rowH + 170;
 }
 
-function drawShareImage(ctx, projection, stats, shareEntries, width, height, rowH) {
+function drawShareImage(ctx, projection, stats, shareEntries, width, height, rowH, t, locale) {
   const cardX = 34;
   const cardY = 34;
   const cardW = width - 68;
@@ -1509,11 +1542,9 @@ function drawShareImage(ctx, projection, stats, shareEntries, width, height, row
   ctx.fillStyle = "#ffffff";
   ctx.font = "900 39px Arial";
   ctx.textAlign = "left";
-  ctx.fillText("ALPHA", 162, 118);
-  ctx.fillStyle = lime;
-  ctx.fillText("TIPS", 310, 118);
+  ctx.fillText("Filtto", 162, 118);
 
-  drawCompletedBadge(ctx, width - 362, 78, 292, 64, getShareStatusLabel(projection.finalStatus));
+  drawCompletedBadge(ctx, width - 362, 78, 292, 64, getShareStatusLabel(projection.finalStatus, t));
 
   ctx.strokeStyle = "rgba(255,255,255,0.12)";
   ctx.beginPath();
@@ -1525,7 +1556,7 @@ function drawShareImage(ctx, projection, stats, shareEntries, width, height, row
   ctx.font = "400 24px Arial";
   ctx.fillText(projection.name, 106, 218);
   ctx.fillText("•", 276, 218);
-  ctx.fillText(formatDate(projection.createdAt) + " ate " + formatDate(projection.finishedAt), 326, 218);
+  ctx.fillText(formatDate(projection.createdAt, locale) + " " + t("progression.until") + " " + formatDate(projection.finishedAt, locale), 326, 218);
 
   const resultX = 70;
   const resultY = 262;
@@ -1540,14 +1571,14 @@ function drawShareImage(ctx, projection, stats, shareEntries, width, height, row
 
   ctx.fillStyle = "#ffffff";
   ctx.font = "900 28px Arial";
-  ctx.fillText("RESULTADO FINAL", resultX + 48, resultY + 74);
+  ctx.fillText(t("progression.finalResult").toUpperCase(), resultX + 48, resultY + 74);
   ctx.fillStyle = stats.result >= 0 ? lime : "#fda4af";
   ctx.font = "900 86px Arial";
   ctx.fillText(formatSignedMoney(stats.result), resultX + 48, resultY + 194);
 
   ctx.fillStyle = "#a6adba";
   ctx.font = "400 28px Arial";
-  ctx.fillText("EVOLUCAO " + (stats.evolution > 0 ? "+" : "") + stats.evolution.toFixed(1).replace(".", ",") + "%", resultX + 48, resultY + 270);
+  ctx.fillText(t("progression.progress").toUpperCase() + " " + (stats.evolution > 0 ? "+" : "") + stats.evolution.toFixed(1).replace(".", ",") + "%", resultX + 48, resultY + 270);
   drawGrowthChart(ctx, resultX + 600, resultY + 72, 270, 194, lime);
 
   const metricY = 632;
@@ -1560,10 +1591,10 @@ function drawShareImage(ctx, projection, stats, shareEntries, width, height, row
   ctx.stroke();
 
   const metrics = [
-    ["BANCA INICIAL", formatMoney(projection.initialBankroll), false],
-    ["BANCA FINAL", formatMoney(projection.currentBankroll), true],
-    ["ODD MEDIA", formatOdd(projection.averageOdd), false],
-    ["ENTRADAS", String(stats.completedEntries), false],
+    [t("progression.initialBankroll").toUpperCase(), formatMoney(projection.initialBankroll), false],
+    [t("progression.finalBankroll").toUpperCase(), formatMoney(projection.currentBankroll), true],
+    [t("progression.averageOdd").toUpperCase(), formatOdd(projection.averageOdd), false],
+    [t("progression.entries").toUpperCase(), String(stats.completedEntries), false],
     ["GREENS", String(stats.greens), false],
   ];
   const metricW = (width - 140) / metrics.length;
@@ -1581,7 +1612,7 @@ function drawShareImage(ctx, projection, stats, shareEntries, width, height, row
 
   ctx.fillStyle = lime;
   ctx.font = "900 26px Arial";
-  ctx.fillText("ENTRADAS DA PROGRESSAO", 104, 870);
+  ctx.fillText(t("progression.entries").toUpperCase(), 104, 870);
 
   const tableX = 70;
   const tableY = 902;
@@ -1614,13 +1645,13 @@ function drawShareImage(ctx, projection, stats, shareEntries, width, height, row
   ctx.font = "900 17px Arial";
   ctx.textAlign = "left";
   ctx.fillText("#", col.n - 8, tableY + 38);
-  ctx.fillText("STATUS", col.status, tableY + 38);
+  ctx.fillText(t("common.status").toUpperCase(), col.status, tableY + 38);
   ctx.textAlign = "right";
-  ctx.fillText("BANCA ANTES", col.before, tableY + 38);
-  ctx.fillText("ENTRADA", col.stake, tableY + 38);
-  ctx.fillText("ODD", col.odd, tableY + 38);
-  ctx.fillText("RETORNO", col.returns, tableY + 38);
-  ctx.fillText("BANCA APOS", col.after, tableY + 38);
+  ctx.fillText(t("progression.bankrollBefore").toUpperCase(), col.before, tableY + 38);
+  ctx.fillText(t("progression.entry").toUpperCase(), col.stake, tableY + 38);
+  ctx.fillText(t("progression.odd").toUpperCase(), col.odd, tableY + 38);
+  ctx.fillText(t("progression.return").toUpperCase(), col.returns, tableY + 38);
+  ctx.fillText(t("progression.bankrollAfter").toUpperCase(), col.after, tableY + 38);
   ctx.textAlign = "left";
 
   const rowFont = rowH <= 54 ? 19 : rowH <= 62 ? 21 : 23;
@@ -1640,7 +1671,7 @@ function drawShareImage(ctx, projection, stats, shareEntries, width, height, row
     }
 
     drawNumberBadge(ctx, col.n, centerY, entry.day, rowH <= 54 ? 22 : 25);
-    drawCanvasStatusPill(ctx, entry.status, col.status, centerY - 17 * pillScale, pillScale);
+    drawCanvasStatusPill(ctx, entry.status, col.status, centerY - 17 * pillScale, pillScale, t);
 
     ctx.textAlign = "right";
     ctx.fillStyle = "#f8fafc";
@@ -1666,9 +1697,7 @@ function drawShareImage(ctx, projection, stats, shareEntries, width, height, row
   drawShareLogo(ctx, 434, footerY - 38, 56);
   ctx.fillStyle = "#ffffff";
   ctx.font = "900 28px Arial";
-  ctx.fillText("ALPHA", 506, footerY);
-  ctx.fillStyle = lime;
-  ctx.fillText("TIPS", 616, footerY);
+  ctx.fillText("Filtto", 506, footerY);
 }
 
 function drawShareMetricCanvas(ctx, x, y, w, h, label, value, highlight = false) {
@@ -1682,11 +1711,11 @@ function drawShareMetricCanvas(ctx, x, y, w, h, label, value, highlight = false)
   ctx.textAlign = "left";
 }
 
-function drawCanvasStatusPill(ctx, status, x, y, scale = 1) {
+function drawCanvasStatusPill(ctx, status, x, y, scale = 1, t) {
   const styles = {
-    green: { label: "Green", bg: "rgba(163,255,18,0.14)", stroke: "rgba(163,255,18,0.24)", fg: "#a3ff12" },
-    red: { label: "Red", bg: "rgba(244,63,94,0.14)", stroke: "rgba(253,164,175,0.28)", fg: "#fda4af" },
-    pending: { label: "Pendente", bg: "rgba(245,158,11,0.14)", stroke: "rgba(252,211,77,0.28)", fg: "#fde68a" },
+    green: { label: t("progression.entryStatus.green"), bg: "rgba(163,255,18,0.14)", stroke: "rgba(163,255,18,0.24)", fg: "#a3ff12" },
+    red: { label: t("progression.entryStatus.red"), bg: "rgba(244,63,94,0.14)", stroke: "rgba(253,164,175,0.28)", fg: "#fda4af" },
+    pending: { label: t("progression.entryStatus.pending"), bg: "rgba(245,158,11,0.14)", stroke: "rgba(252,211,77,0.28)", fg: "#fde68a" },
   };
   const style = styles[status] || styles.pending;
   const w = 112 * scale;
@@ -1706,16 +1735,22 @@ function drawCanvasStatusPill(ctx, status, x, y, scale = 1) {
 }
 
 function drawShareLogo(ctx, x, y, size) {
-  roundRect(ctx, x, y, size, size, size * 0.22);
-  ctx.fillStyle = "rgba(163,255,18,0.10)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(163,255,18,0.75)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  const barH = size * 0.18;
+  const gap = size * 0.13;
+  const slant = size * 0.13;
+  const widths = [size * 0.82, size * 0.58, size * 0.36];
+
   ctx.fillStyle = "#a3ff12";
-  ctx.font = "900 " + size * 0.62 + "px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("α", x + size / 2, y + size * 0.72);
+  widths.forEach((barW, index) => {
+    const top = y + index * (barH + gap);
+    ctx.beginPath();
+    ctx.moveTo(x + slant, top);
+    ctx.lineTo(x + slant + barW, top);
+    ctx.lineTo(x + barW, top + barH);
+    ctx.lineTo(x, top + barH);
+    ctx.closePath();
+    ctx.fill();
+  });
   ctx.textAlign = "left";
 }
 
@@ -1809,16 +1844,22 @@ function drawNumberBadge(ctx, x, y, value, radius) {
 }
 
 function drawLogo(ctx, x, y) {
-  const gradient = ctx.createLinearGradient(x, y, x + 54, y + 54);
-  gradient.addColorStop(0, "#8df126");
-  gradient.addColorStop(1, "#67c61d");
-  roundRect(ctx, x, y, 54, 54, 16);
-  ctx.fillStyle = gradient;
-  ctx.fill();
-  ctx.fillStyle = "#08111b";
-  ctx.font = "900 32px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("α", x + 27, y + 38);
+  const barH = 10;
+  const gap = 6;
+  const slant = 7;
+  const widths = [42, 30, 18];
+
+  ctx.fillStyle = "#8df126";
+  widths.forEach((barW, index) => {
+    const top = y + index * (barH + gap);
+    ctx.beginPath();
+    ctx.moveTo(x + slant, top);
+    ctx.lineTo(x + slant + barW, top);
+    ctx.lineTo(x + barW, top + barH);
+    ctx.lineTo(x, top + barH);
+    ctx.closePath();
+    ctx.fill();
+  });
   ctx.textAlign = "left";
 }
 

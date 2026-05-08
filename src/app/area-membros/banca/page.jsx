@@ -116,7 +116,7 @@ function Panel({ children, className = "", id }) {
   return (
     <section
       id={id}
-      className={`rounded-[20px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900 ${className}`}
+      className={`min-w-0 rounded-[20px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900 ${className}`}
     >
       {children}
     </section>
@@ -276,8 +276,8 @@ function BetsTable({
 
   return (
     <>
-      <div className="hidden overflow-visible rounded-[16px] border border-slate-200 dark:border-white/[0.08] lg:block">
-        <table className="w-full">
+      <div className="hidden max-w-full overflow-x-auto overflow-y-visible rounded-[16px] border border-slate-200 dark:border-white/[0.08] 2xl:block">
+        <table className="w-full min-w-[900px]">
           <thead className="bg-slate-50 dark:bg-white/[0.035]">
             <tr className="text-left">
               {["Data", "Jogo/evento", "Mercado", "Odd", "Stake", "Retorno possível", "Status", "Ações"].map(
@@ -333,7 +333,7 @@ function BetsTable({
         </table>
       </div>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="grid gap-3 2xl:hidden">
         {entries.map((entry) => (
           <BetCard
             key={entry.id}
@@ -594,7 +594,7 @@ function BetActions({
   return (
     <div
       className={`flex items-center gap-2.5 ${
-        compact ? "min-w-0" : "min-w-[238px]"
+        compact ? "min-w-0 flex-wrap justify-between" : "min-w-[238px]"
       }`}
     >
       <div className="flex flex-col gap-1.5">
@@ -919,8 +919,8 @@ export default function BancaPage() {
   }
 
   return (
-    <main className="min-h-full bg-[#f5f7f9] text-slate-950 dark:bg-slate-950 dark:text-white">
-      <div className="mx-auto flex max-w-[1480px] flex-col gap-6 px-5 py-6 md:px-8">
+    <main className="min-h-full overflow-x-hidden bg-[#f5f7f9] text-slate-950 dark:bg-slate-950 dark:text-white">
+      <div className="mx-auto flex w-full max-w-[1480px] min-w-0 flex-col gap-6 px-5 py-6 md:px-8">
         <header className="flex flex-col gap-4 rounded-[20px] border border-slate-200 bg-white px-5 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400">
@@ -968,8 +968,8 @@ export default function BancaPage() {
           ))}
         </section>
 
-        <section className="grid items-start gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
-          <div className="grid gap-6">
+        <section className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(320px,380px)_minmax(0,1fr)]">
+          <div className="grid min-w-0 gap-6">
             <Panel id="registrar-aposta" className="p-6">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
@@ -1072,7 +1072,7 @@ export default function BancaPage() {
             </Panel>
           </div>
 
-          <div className="grid gap-6">
+          <div className="grid min-w-0 gap-6">
             <Panel className="p-6 ring-1 ring-emerald-500/5">
               <div className="flex flex-col gap-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">

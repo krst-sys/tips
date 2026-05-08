@@ -1,5 +1,20 @@
-export const BETS_STORAGE_KEY = "alpha_tips_bankroll_entries_v1";
-export const SETTINGS_STORAGE_KEY = "alpha_tips_bankroll_settings_v1";
+export const BETS_STORAGE_KEY = "filtto_bankroll_entries_v1";
+export const SETTINGS_STORAGE_KEY = "filtto_bankroll_settings_v1";
+
+const LEGACY_PREFIX = ["al", "pha", "tips"].join("_");
+const LEGACY_BETS_STORAGE_KEY = `${LEGACY_PREFIX}_bankroll_entries_v1`;
+const LEGACY_SETTINGS_STORAGE_KEY = `${LEGACY_PREFIX}_bankroll_settings_v1`;
+
+function getMigratedStorageItem(key, legacyKey) {
+  const current = window.localStorage.getItem(key);
+  if (current) return current;
+
+  const legacy = window.localStorage.getItem(legacyKey);
+  if (!legacy) return null;
+
+  window.localStorage.setItem(key, legacy);
+  return legacy;
+}
 
 export function toNumber(value) {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
@@ -48,7 +63,7 @@ export function loadBankrollEntries() {
   if (typeof window === "undefined") return [];
 
   try {
-    const raw = window.localStorage.getItem(BETS_STORAGE_KEY);
+    const raw = getMigratedStorageItem(BETS_STORAGE_KEY, LEGACY_BETS_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -68,7 +83,10 @@ export function loadBankrollSettings() {
   }
 
   try {
-    const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+    const raw = getMigratedStorageItem(
+      SETTINGS_STORAGE_KEY,
+      LEGACY_SETTINGS_STORAGE_KEY
+    );
     if (!raw) return { initialBankroll: "" };
 
     const parsed = JSON.parse(raw);

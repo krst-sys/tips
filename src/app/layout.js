@@ -1,16 +1,21 @@
 import "./globals.css";
-import SiteThemeProvider from "@/components/theme-provider";
+import { LanguageProvider } from "@/i18n/LanguageProvider";
+import LegacyTranslator from "@/i18n/LegacyTranslator";
 
 export const metadata = {
-  title: "Alpha Tips",
-  description: "Painel completo para apostadores esportivos",
+  title: "Filtto - Gestão profissional de apostas esportivas",
+  description:
+    "Painel SaaS para gestão de banca, registro de apostas, histórico, métricas e análise de desempenho.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body>
-        <SiteThemeProvider>{children}</SiteThemeProvider>
+        <LanguageProvider>
+          <LegacyTranslator />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
