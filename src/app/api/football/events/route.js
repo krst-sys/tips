@@ -8,15 +8,20 @@ function errorResponse(message, status, code) {
 }
 
 export async function GET(request) {
-  const date = request.nextUrl.searchParams.get("date");
-
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) {
-    return errorResponse("Informe uma data valida no formato YYYY-MM-DD.", 400, "INVALID_DATE");
-  }
+  const params = request.nextUrl.searchParams;
 
   try {
-    const result = await listFootballEvents({ date });
-    return Response.json({ success: true, games: result.games, meta: result.meta });
+    const result = await listFootballEvents({
+      date: params.get("date"),
+      dateFrom: params.get("date_from"),
+      dateTo: params.get("date_to"),
+      leagueId: params.get("league_id"),
+      status: params.get("status"),
+      limit: params.get("limit"),
+      offset: params.get("offset"),
+    });
+
+    return Response.json({ success: true, ...result });
   } catch (error) {
     if (error?.code === "BZZOIRO_API_KEY_NOT_CONFIGURED") {
       return errorResponse(

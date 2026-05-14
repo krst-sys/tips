@@ -1,5 +1,5 @@
 import { BzzoiroApiError } from "@/services/bzzoiro/client";
-import { listFootballEvents } from "@/services/football/footballAnalysisService";
+import { getFootballMatchAnalysis } from "@/services/football/footballAnalysisService";
 
 export const runtime = "nodejs";
 
@@ -7,16 +7,12 @@ function errorResponse(message, status, code) {
   return Response.json({ success: false, error: code, message }, { status });
 }
 
-export async function GET(request) {
-  const date = request.nextUrl.searchParams.get("date");
-
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) {
-    return errorResponse("Informe uma data valida no formato YYYY-MM-DD.", 400, "INVALID_DATE");
-  }
+export async function GET(_request, context) {
+  const { id } = await context.params;
 
   try {
-    const result = await listFootballEvents({ date });
-    return Response.json({ success: true, games: result.games, meta: result.meta });
+    const analysis = await getFootballMatchAnalysis(id);
+    return Response.json({ success: true, analysis });
   } catch (error) {
     if (error?.code === "BZZOIRO_API_KEY_NOT_CONFIGURED") {
       return errorResponse(
@@ -24,6 +20,10 @@ export async function GET(request) {
         500,
         "BZZOIRO_API_KEY_NOT_CONFIGURED"
       );
+    }
+
+    if (error instanceof BzzoiroApiError && error.status === 404) {
+      return errorResponse("Jogo nao encontrado.", 404, "EVENT_NOT_FOUND");
     }
 
     if (error instanceof BzzoiroApiError && (error.status === 401 || error.status === 403)) {
@@ -34,6 +34,6 @@ export async function GET(request) {
       return errorResponse("Limite de requests da API BSD/Bzzoiro atingido.", 429, "RATE_LIMIT");
     }
 
-    return errorResponse("Nao foi possivel buscar os jogos agora.", 503, "SERVICE_UNAVAILABLE");
+    return errorResponse("Nao foi possivel montar a analise do jogo agora.", 503, "SERVICE_UNAVAILABLE");
   }
 }

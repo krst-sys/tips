@@ -405,3 +405,453 @@ select,
 textarea {
   color-scheme: inherit;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+@property --filtto-donut-progress {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes filtto-draw-line {
+  from {
+    stroke-dashoffset: 420;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes filtto-line-fill {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes filtto-line-dot {
+  0% {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes filtto-line-dot-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(8, 127, 50, 0));
+    opacity: 0.92;
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(8, 127, 50, 0.28));
+    opacity: 1;
+  }
+}
+
+@keyframes filtto-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes filtto-mockup-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes filtto-donut {
+  from {
+    --filtto-donut-progress: 0deg;
+  }
+  to {
+    --filtto-donut-progress: 244.8deg;
+  }
+}
+
+.filtto-line-path {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+}
+
+.filtto-line-fill {
+  opacity: 0;
+  transform-origin: center bottom;
+}
+
+.filtto-line-dot {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.filtto-animate-when-visible.is-visible .filtto-line-path {
+  animation: filtto-draw-line 1.75s cubic-bezier(0.22, 1, 0.36, 1) 120ms forwards;
+}
+
+.filtto-animate-when-visible.is-visible .filtto-line-fill {
+  animation: filtto-line-fill 1.15s ease-out 700ms forwards;
+}
+
+.filtto-animate-when-visible.is-visible .filtto-line-dot {
+  animation:
+    filtto-line-dot 760ms cubic-bezier(0.22, 1, 0.36, 1) 1.45s forwards,
+    filtto-line-dot-pulse 2.8s ease-in-out 2.15s infinite;
+}
+
+.filtto-fade-up {
+  opacity: 0;
+  animation: filtto-fade-up 760ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.filtto-mockup-enter {
+  opacity: 0;
+  animation: filtto-mockup-enter 860ms cubic-bezier(0.22, 1, 0.36, 1) 120ms forwards;
+}
+
+.filtto-fade-up-delay-1 {
+  animation-delay: 120ms;
+}
+
+.filtto-fade-up-delay-2 {
+  animation-delay: 260ms;
+}
+
+.filtto-fade-up-delay-3 {
+  animation-delay: 400ms;
+}
+
+.filtto-donut {
+  --filtto-donut-progress: 0deg;
+  background: conic-gradient(#087f32 0 var(--filtto-donut-progress), #e3e5df var(--filtto-donut-progress) 360deg);
+}
+
+.filtto-animate-when-visible.is-visible .filtto-donut {
+  animation: filtto-donut 1.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.filtto-game-row {
+  opacity: 0;
+  animation: filtto-fade-up 560ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.filtto-hero-step {
+  opacity: 0;
+  animation: filtto-fade-up 820ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.filtto-hero-step-1 {
+  animation-delay: 80ms;
+}
+
+.filtto-hero-step-2 {
+  animation-delay: 190ms;
+}
+
+.filtto-hero-step-3 {
+  animation-delay: 300ms;
+}
+
+.filtto-hero-step-4 {
+  animation-delay: 410ms;
+}
+
+.filtto-hero-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(8, 127, 50, 0.11) 1px, transparent 1px);
+  background-position: 28px 22px;
+  background-size: 28px 28px;
+  mask-image: linear-gradient(110deg, transparent 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%);
+  opacity: 0.28;
+}
+
+.filtto-hero-field::after {
+  content: "";
+  position: absolute;
+  right: 9%;
+  top: 16%;
+  height: 340px;
+  width: 340px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(8, 127, 50, 0.13), transparent 64%);
+  filter: blur(14px);
+  opacity: 0.58;
+}
+
+.filtto-premium-card {
+  transition:
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    filter 240ms ease;
+}
+
+.filtto-premium-card:hover {
+  border-color: rgba(8, 127, 50, 0.24);
+  box-shadow: 0 24px 58px rgba(31, 32, 28, 0.085);
+  filter: saturate(1.02);
+}
+
+.filtto-sidebar-item {
+  transition:
+    background-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.filtto-sidebar-item:hover {
+  background-color: #f3f8f1;
+  box-shadow: inset 2px 0 0 rgba(8, 127, 50, 0.22);
+}
+
+.filtto-benefit-item {
+  transition:
+    background-color 240ms ease,
+    box-shadow 240ms ease;
+}
+
+.filtto-benefit-item:hover {
+  background-color: rgba(248, 251, 246, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.filtto-arrow-link svg {
+  transition: transform 220ms ease;
+}
+
+.filtto-arrow-link:hover svg {
+  transform: translateX(2px);
+}
+
+.filtto-reveal-ready .filtto-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  filter: blur(5px);
+}
+
+.filtto-reveal-ready .filtto-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  transition:
+    opacity 760ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 760ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 760ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.filtto-reveal-ready .filtto-reveal-delay-1.is-visible {
+  transition-delay: 120ms;
+}
+
+.filtto-reveal-ready .filtto-reveal .filtto-premium-card,
+.filtto-reveal-ready .filtto-reveal .filtto-benefit-item,
+.filtto-reveal-ready .filtto-reveal .filtto-faq-item {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.filtto-reveal-ready .filtto-reveal.is-visible .filtto-premium-card,
+.filtto-reveal-ready .filtto-reveal.is-visible .filtto-benefit-item,
+.filtto-reveal-ready .filtto-reveal.is-visible .filtto-faq-item {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 680ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 680ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    filter 240ms ease,
+    background-color 240ms ease;
+}
+
+@media (max-width: 640px) {
+  .filtto-mockup-enter {
+    height: 570px;
+    max-width: 420px;
+  }
+
+  .filtto-mockup-summary {
+    left: 0;
+    right: 0;
+    top: 0;
+    width: auto;
+    padding: 20px;
+  }
+
+  .filtto-mockup-summary > div:nth-of-type(2) {
+    grid-template-columns: 132px 1fr;
+    gap: 14px;
+  }
+
+  .filtto-mockup-summary > div:nth-of-type(2) > div:nth-child(2) {
+    padding-left: 14px;
+  }
+
+  .filtto-mockup-summary [class*="text-[25px]"] {
+    font-size: 22px;
+  }
+
+  .filtto-mockup-sidebar {
+    left: 0;
+    top: 180px;
+    height: 342px;
+    width: 252px;
+    padding: 20px;
+  }
+
+  .filtto-mockup-sidebar nav {
+    margin-top: 22px;
+  }
+
+  .filtto-mockup-games {
+    left: auto;
+    right: 0;
+    top: 362px;
+    width: min(274px, 76vw);
+    padding: 18px;
+  }
+
+  .filtto-mockup-performance {
+    right: 0;
+    top: 230px;
+    width: 132px;
+    padding: 20px 14px;
+  }
+}
+
+@media (max-width: 390px) {
+  .filtto-mockup-enter {
+    height: 595px;
+  }
+
+  .filtto-mockup-summary {
+    padding: 17px;
+  }
+
+  .filtto-mockup-summary > div:nth-of-type(2) {
+    grid-template-columns: 118px 1fr;
+    gap: 10px;
+  }
+
+  .filtto-mockup-summary [class*="text-[25px]"] {
+    font-size: 20px;
+  }
+
+  .filtto-mockup-sidebar {
+    width: 232px;
+  }
+
+  .filtto-mockup-games {
+    top: 376px;
+    width: min(254px, 74vw);
+  }
+}
+
+.filtto-landing,
+.dark .filtto-landing {
+  color-scheme: light;
+  background: #fbfaf7 !important;
+  color: #171a17 !important;
+}
+
+.dark .filtto-landing [class*="bg-[#"],
+.dark .filtto-landing [class~="bg-white"],
+.dark .filtto-landing [class*="bg-white/"],
+.dark .filtto-landing [class~="bg-slate-50"],
+.dark .filtto-landing [class~="bg-slate-100"] {
+  background-color: revert-layer !important;
+}
+
+.dark .filtto-landing [class*="text-[#"],
+.dark .filtto-landing [class~="text-slate-950"],
+.dark .filtto-landing [class~="text-slate-900"],
+.dark .filtto-landing [class~="text-slate-700"],
+.dark .filtto-landing [class~="text-slate-600"],
+.dark .filtto-landing [class~="text-slate-500"],
+.dark .filtto-landing [class~="text-slate-400"] {
+  color: revert-layer !important;
+}
+
+.dark .filtto-landing [class*="border-[#"],
+.dark .filtto-landing [class~="border-slate-200"],
+.dark .filtto-landing [class~="border-slate-100"] {
+  border-color: revert-layer !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .filtto-line-path,
+  .filtto-line-fill,
+  .filtto-line-dot,
+  .filtto-fade-up,
+  .filtto-hero-step,
+  .filtto-mockup-enter,
+  .filtto-donut,
+  .filtto-game-row {
+    animation: none !important;
+  }
+
+  .filtto-line-path {
+    stroke-dashoffset: 0;
+  }
+
+  .filtto-line-fill,
+  .filtto-line-dot,
+  .filtto-fade-up,
+  .filtto-hero-step,
+  .filtto-mockup-enter,
+  .filtto-reveal,
+  .filtto-game-row {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .filtto-reveal-ready .filtto-reveal,
+  .filtto-reveal-ready .filtto-reveal.is-visible,
+  .filtto-reveal-ready .filtto-reveal .filtto-premium-card,
+  .filtto-reveal-ready .filtto-reveal .filtto-benefit-item,
+  .filtto-reveal-ready .filtto-reveal .filtto-faq-item,
+  .filtto-reveal-ready .filtto-reveal.is-visible .filtto-premium-card,
+  .filtto-reveal-ready .filtto-reveal.is-visible .filtto-benefit-item,
+  .filtto-reveal-ready .filtto-reveal.is-visible .filtto-faq-item {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  .filtto-donut {
+    --filtto-donut-progress: 244.8deg;
+  }
+}

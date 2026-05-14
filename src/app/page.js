@@ -1,4 +1,6 @@
 import Link from "next/link";
+import AnimatedNumber from "@/components/AnimatedNumber";
+import LandingReveal from "@/components/LandingReveal";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import {
   ArrowRight,
@@ -170,20 +172,23 @@ function TinyLineChart({ className = "", stroke = "#087f32" }) {
   return (
     <svg
       viewBox="0 0 260 90"
-      className={`h-full w-full overflow-visible ${className}`}
+      className={`filtto-animate-when-visible h-full w-full overflow-visible ${className}`}
       fill="none"
       aria-hidden="true"
     >
       <path
+        className="filtto-line-path"
         d="M4 72C25 66 33 52 51 57C68 62 73 32 91 43C107 53 116 28 133 34C151 41 158 18 178 24C197 29 198 49 218 36C237 24 238 16 256 12"
         stroke={stroke}
         strokeWidth="4"
         strokeLinecap="round"
       />
       <path
+        className="filtto-line-fill"
         d="M4 72C25 66 33 52 51 57C68 62 73 32 91 43C107 53 116 28 133 34C151 41 158 18 178 24C197 29 198 49 218 36C237 24 238 16 256 12V90H4V72Z"
         fill="url(#lineFill)"
       />
+      <circle className="filtto-line-dot" cx="256" cy="12" r="4.5" fill={stroke} />
       <defs>
         <linearGradient id="lineFill" x1="130" x2="130" y1="12" y2="90">
           <stop stopColor={stroke} stopOpacity="0.22" />
@@ -196,11 +201,11 @@ function TinyLineChart({ className = "", stroke = "#087f32" }) {
 
 function DonutChart() {
   return (
-    <div className="relative mx-auto h-[114px] w-[114px]">
-      <div className="absolute inset-0 rounded-full bg-[conic-gradient(#087f32_0_68%,#e3e5df_68%_100%)]" />
+    <div className="filtto-animate-when-visible relative mx-auto h-[114px] w-[114px]">
+      <div className="filtto-donut absolute inset-0 rounded-full" />
       <div className="absolute inset-[15px] rounded-full bg-[#ffffff]" />
       <div className="absolute inset-0 flex items-center justify-center text-[21px] font-black text-[#087f32]">
-        68%
+        <AnimatedNumber value={68} suffix="%" duration={1350} />
       </div>
     </div>
   );
@@ -217,14 +222,14 @@ function HeroMockup() {
   ];
 
   return (
-    <div className="relative mx-auto h-[620px] w-full max-w-[720px] lg:max-w-none">
-      <div className="absolute left-[8%] top-[86px] h-[424px] w-[370px] rounded-[22px] border border-[#dfddd5] bg-[#ffffff] p-7 shadow-[0_26px_70px_rgba(38,39,34,0.12)]">
+    <div className="filtto-mockup-enter relative mx-auto h-[620px] w-full max-w-[720px] lg:max-w-none">
+      <div className="filtto-mockup-sidebar filtto-fade-up filtto-premium-card absolute left-[8%] top-[86px] h-[424px] w-[370px] rounded-[22px] border border-[#dfddd5] bg-[#ffffff] p-7 shadow-[0_26px_70px_rgba(38,39,34,0.12)]">
         <Logo compact />
         <nav className="mt-8 space-y-1.5 text-[13px] font-bold text-[#4f5650]">
           {menu.map(([label, Icon, active]) => (
             <div
               key={label}
-              className={`flex items-center gap-3 rounded-[8px] px-4 py-3 ${
+              className={`filtto-sidebar-item flex items-center gap-3 rounded-[8px] px-4 py-3 ${
                 active ? "bg-[#eaf3e9] !text-[#087f32]" : ""
               }`}
             >
@@ -235,7 +240,7 @@ function HeroMockup() {
         </nav>
       </div>
 
-      <div className="absolute right-[3%] top-[24px] w-[450px] rounded-[18px] border border-[#e3ded4] bg-[#ffffff] p-7 shadow-[0_24px_68px_rgba(35,37,32,0.12)]">
+      <div className="filtto-mockup-summary filtto-fade-up filtto-fade-up-delay-1 filtto-premium-card absolute right-[3%] top-[24px] w-[450px] rounded-[18px] border border-[#e3ded4] bg-[#ffffff] p-7 shadow-[0_24px_68px_rgba(35,37,32,0.12)]">
         <div className="flex items-start justify-between">
           <h3 className="text-[14px] font-black tracking-[-0.02em] text-[#171a17]">
             Resumo da banca
@@ -245,14 +250,28 @@ function HeroMockup() {
           </button>
         </div>
 
-        <div className="mt-8 grid grid-cols-[150px_1fr] gap-8">
+        <div className="mt-8 grid grid-cols-[168px_1fr] gap-6">
           <div>
             <p className="text-[12px] font-bold text-[#7e857e]">Lucro</p>
-            <p className="mt-3 text-[27px] font-black tracking-[-0.04em] text-[#087f32]">
-              R$ 1.942,50
+            <p className="mt-3 whitespace-nowrap text-[25px] font-black tracking-[-0.04em] text-[#087f32] tabular-nums xl:text-[27px]">
+              <AnimatedNumber
+                value={1942.5}
+                prefix="R$"
+                decimals={2}
+                duration={1750}
+                locale="pt-BR"
+                className="gap-1.5"
+              />
             </p>
-            <p className="mt-3 inline-flex rounded-full bg-[#e8f4e8] px-2.5 py-1 text-[10px] font-black text-[#087f32]">
-              + 10,6%
+            <p className="mt-3 inline-flex rounded-full bg-[#e8f4e8] px-2.5 py-1 text-[10px] font-black text-[#087f32] tabular-nums">
+              <AnimatedNumber
+                value={10.6}
+                prefix="+"
+                suffix="%"
+                decimals={1}
+                duration={1750}
+                locale="pt-BR"
+              />
             </p>
             <p className="mt-2 text-[11px] font-medium text-[#858a84]">
               vs. período anterior
@@ -269,7 +288,7 @@ function HeroMockup() {
         </div>
       </div>
 
-      <div className="absolute left-[33%] top-[318px] w-[320px] rounded-[16px] border border-[#e5e0d7] bg-[#ffffff] p-6 shadow-[0_22px_56px_rgba(35,37,32,0.12)]">
+      <div className="filtto-mockup-games filtto-fade-up filtto-fade-up-delay-2 filtto-premium-card absolute left-[33%] top-[318px] w-[320px] rounded-[16px] border border-[#e5e0d7] bg-[#ffffff] p-6 shadow-[0_22px_56px_rgba(35,37,32,0.12)]">
         <h3 className="text-[15px] font-black tracking-[-0.02em] text-[#171a17]">
           Próximos jogos
         </h3>
@@ -278,10 +297,11 @@ function HeroMockup() {
             ["Hoje", "19:00", "Manchester City", "Arsenal", "1.72"],
             ["Hoje", "21:30", "Real Madrid", "Villarreal", "1.65"],
             ["Amanhã", "16:00", "Inter", "Milan", "1.90"],
-          ].map(([day, time, home, away, odd]) => (
+          ].map(([day, time, home, away, odd], index) => (
             <div
               key={`${home}-${away}`}
-              className="grid grid-cols-[62px_1fr_38px] items-center gap-3 border-b border-[#ece8e0] pb-3 last:border-0 last:pb-0"
+              className="filtto-game-row grid grid-cols-[62px_1fr_38px] items-center gap-3 rounded-[8px] border-b border-[#ece8e0] px-2 py-1.5 pb-3 -mx-2 transition-colors duration-200 hover:bg-[#f5f9f2] last:border-0 last:pb-1.5"
+              style={{ animationDelay: `${520 + index * 110}ms` }}
             >
               <div className="text-[#8a9088]">
                 <p>{day}</p>
@@ -296,20 +316,26 @@ function HeroMockup() {
         </div>
         <Link
           href="#"
-          className="mt-5 flex items-center justify-between text-[12px] font-black !text-[#087f32]"
+          className="filtto-arrow-link mt-5 flex items-center justify-between text-[12px] font-black !text-[#087f32]"
         >
           Ver todos os jogos <ArrowRight size={15} />
         </Link>
       </div>
 
-      <div className="absolute right-[6%] top-[350px] w-[160px] rounded-[16px] border border-[#e5e0d7] bg-[#ffffff] px-5 py-7 text-center shadow-[0_22px_54px_rgba(35,37,32,0.11)]">
+      <div className="filtto-mockup-performance filtto-fade-up filtto-fade-up-delay-3 filtto-premium-card absolute right-[6%] top-[350px] w-[160px] rounded-[16px] border border-[#e5e0d7] bg-[#ffffff] px-5 py-7 text-center shadow-[0_22px_54px_rgba(35,37,32,0.11)]">
         <h3 className="text-[13px] font-black text-[#363b36]">Performance</h3>
         <div className="mt-5">
           <DonutChart />
         </div>
         <p className="mt-5 text-[12px] font-bold text-[#6d746d]">ROI</p>
-        <p className="mt-1 text-[19px] font-black tracking-[-0.04em] text-[#171a17]">
-          12,7%
+        <p className="mt-1 text-[19px] font-black tracking-[-0.04em] text-[#171a17] tabular-nums">
+          <AnimatedNumber
+            value={12.7}
+            suffix="%"
+            decimals={1}
+            duration={1350}
+            locale="pt-BR"
+          />
         </p>
       </div>
     </div>
@@ -336,14 +362,15 @@ function BenefitStrip() {
   ];
 
   return (
-    <div className="mx-auto -mt-4 max-w-[1620px] px-8 pb-9">
-      <div className="grid overflow-hidden rounded-[16px] border border-[#e2ded5] bg-[#ffffff]/82 shadow-[0_18px_44px_rgba(31,32,28,0.06)] backdrop-blur md:grid-cols-3">
+    <div className="mx-auto -mt-4 max-w-[1620px] px-5 pb-9 sm:px-8">
+      <div className="filtto-reveal filtto-reveal-delay-1 grid overflow-hidden rounded-[16px] border border-[#e2ded5] bg-[#ffffff]/82 shadow-[0_18px_44px_rgba(31,32,28,0.06)] backdrop-blur md:grid-cols-3">
         {items.map(({ icon: Icon, title, desc }, index) => (
           <div
             key={title}
-            className={`flex items-center gap-7 px-12 py-8 ${
+            className={`filtto-benefit-item flex items-center gap-5 px-6 py-7 sm:gap-7 sm:px-12 sm:py-8 ${
               index ? "border-t border-[#e8e3db] md:border-l md:border-t-0" : ""
             }`}
+            style={{ transitionDelay: `${index * 90}ms` }}
           >
             <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-[#e7f3e7] text-[#087f32]">
               <Icon size={30} strokeWidth={1.8} />
@@ -363,14 +390,15 @@ function BenefitStrip() {
   );
 }
 
-function ModuleCard({ module }) {
+function ModuleCard({ module, index = 0 }) {
   const Icon = module.icon;
 
   return (
     <div
-      className={`rounded-[14px] border border-[#e2ded5] bg-[#ffffff] p-6 shadow-[0_16px_36px_rgba(33,34,30,0.05)] ${
+      className={`filtto-premium-card rounded-[14px] border border-[#e2ded5] bg-[#ffffff] p-6 shadow-[0_16px_36px_rgba(33,34,30,0.05)] ${
         module.featured ? "row-span-2 min-h-[290px]" : "min-h-[142px]"
       }`}
+      style={{ transitionDelay: `${index * 90}ms` }}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -466,7 +494,7 @@ function PublicResultCard() {
   ];
 
   return (
-    <div className="rounded-[16px] border border-[#e1ddd4] bg-[#ffffff] p-7 shadow-[0_20px_50px_rgba(31,32,28,0.06)]">
+    <div className="filtto-premium-card rounded-[16px] border border-[#e1ddd4] bg-[#ffffff] p-7 shadow-[0_20px_50px_rgba(31,32,28,0.06)]">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <h3 className="text-[17px] font-black tracking-[-0.03em] text-[#171a17]">
@@ -515,12 +543,13 @@ function PublicResultCard() {
   );
 }
 
-function PricingCard({ plan }) {
+function PricingCard({ plan, index = 0 }) {
   return (
     <div
-      className={`relative flex h-full min-h-[440px] flex-col rounded-[14px] border bg-[#ffffff] p-7 shadow-[0_16px_38px_rgba(31,32,28,0.05)] ${
+      className={`filtto-premium-card relative flex h-full min-h-[440px] flex-col rounded-[14px] border bg-[#ffffff] p-7 shadow-[0_16px_38px_rgba(31,32,28,0.05)] ${
         plan.featured ? "border-[#087f32]" : "border-[#e1ddd4]"
       }`}
+      style={{ transitionDelay: `${index * 100}ms` }}
     >
       {plan.featured && (
         <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-b-[7px] rounded-t-[7px] bg-[#087f32] px-7 py-2 text-[11px] font-black !text-white">
@@ -583,9 +612,10 @@ function PricingCard({ plan }) {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#fbfaf7] text-[#171a17]">
+    <main className="filtto-landing min-h-screen bg-[#fbfaf7] text-[#171a17]">
+      <LandingReveal />
       <header className="sticky top-0 z-50 border-b border-[#e8e3da] bg-[#fbfaf7]/92 backdrop-blur-xl">
-        <div className="mx-auto flex h-[88px] max-w-[1620px] items-center justify-between px-8">
+        <div className="mx-auto flex h-[76px] max-w-[1620px] items-center justify-between px-5 sm:h-[88px] sm:px-8">
           <Logo />
 
           <nav className="hidden items-center gap-14 text-[14px] font-bold text-[#232923] lg:flex">
@@ -596,7 +626,7 @@ export default function Home() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3 sm:gap-5">
             <LanguageSwitcher light />
             <Link
               href="/login"
@@ -604,22 +634,22 @@ export default function Home() {
             >
               Entrar
             </Link>
-            <PrimaryButton className="px-6 py-3.5 text-[14px]">
+            <PrimaryButton className="hidden px-6 py-3.5 text-[14px] sm:inline-flex">
               Começar agora
             </PrimaryButton>
           </div>
         </div>
       </header>
 
-      <section className="relative overflow-hidden border-b border-[#e8e3da]">
+      <section className="filtto-hero-field relative overflow-hidden border-b border-[#e8e3da]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_24%,rgba(8,127,50,0.08),transparent_30%),linear-gradient(115deg,rgba(255,255,255,0)_0%,rgba(8,127,50,0.045)_100%)]" />
         <div className="absolute right-[-120px] top-[-180px] h-[780px] w-[780px] rounded-full border border-[#087f32]/10" />
         <div className="absolute right-[150px] top-[160px] h-[620px] w-[620px] rounded-full border border-[#087f32]/8" />
 
-        <div className="relative mx-auto grid max-w-[1620px] gap-10 px-8 pb-16 pt-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div className="max-w-[720px]">
+        <div className="relative mx-auto grid max-w-[1620px] gap-8 px-5 pb-12 pt-12 sm:gap-10 sm:px-8 sm:pb-16 sm:pt-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div className="filtto-hero-copy max-w-[720px]">
             <h1
-              className="text-[56px] font-normal leading-[0.98] tracking-[-0.06em] text-[#111411] md:text-[78px] xl:text-[88px]"
+              className="filtto-hero-step filtto-hero-step-1 text-[46px] font-normal leading-[0.98] tracking-[-0.06em] text-[#111411] sm:text-[56px] md:text-[78px] xl:text-[88px]"
               style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
             >
               A plataforma para apostar com{" "}
@@ -628,17 +658,17 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="mt-9 max-w-[610px] text-[18px] leading-[1.65] text-[#5d655e]">
+            <p className="filtto-hero-step filtto-hero-step-2 mt-7 max-w-[610px] text-[16px] leading-[1.65] text-[#5d655e] sm:mt-9 sm:text-[18px]">
               Controle sua banca, registre entradas, acompanhe resultados e
               acesse recursos premium para evoluir com mais consistência.
             </p>
 
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <div className="filtto-hero-step filtto-hero-step-3 mt-10 flex flex-col gap-4 sm:flex-row">
               <PrimaryButton>Começar agora</PrimaryButton>
               <SecondaryButton>Ver demonstração</SecondaryButton>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-4 text-[14px] font-bold text-[#5f665f]">
+            <div className="filtto-hero-step filtto-hero-step-4 mt-10 flex flex-wrap items-center gap-4 text-[14px] font-bold text-[#5f665f]">
               <div className="flex -space-x-2">
                 {["M", "C", "L", "R"].map((avatar, index) => (
                   <span
@@ -663,8 +693,8 @@ export default function Home() {
 
       <BenefitStrip />
 
-      <section id="produto" className="bg-[#f5f1e9] py-24">
-        <div className="mx-auto grid max-w-[1620px] gap-14 px-8 lg:grid-cols-[390px_1fr] lg:items-center">
+      <section id="produto" className="filtto-reveal bg-[#f5f1e9] py-24">
+        <div className="mx-auto grid max-w-[1620px] gap-10 px-5 sm:px-8 lg:grid-cols-[390px_1fr] lg:items-center xl:gap-14">
           <div>
             <SectionLabel>Módulos principais</SectionLabel>
             <SerifTitle className="mt-5 text-[43px] leading-[1.02] md:text-[50px]">
@@ -674,15 +704,15 @@ export default function Home() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {modules.map((module) => (
-              <ModuleCard key={module.title} module={module} />
+            {modules.map((module, index) => (
+              <ModuleCard key={module.title} module={module} index={index} />
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-[#fbfaf7] py-24">
-        <div className="mx-auto grid max-w-[1620px] gap-14 px-8 lg:grid-cols-[330px_1fr] lg:items-center">
+      <section className="filtto-reveal bg-[#fbfaf7] py-24">
+        <div className="mx-auto grid max-w-[1620px] gap-10 px-5 sm:px-8 lg:grid-cols-[330px_1fr] lg:items-center xl:gap-14">
           <div>
             <SectionLabel>Transparência</SectionLabel>
             <SerifTitle className="mt-5 text-[43px] leading-[1.02] md:text-[52px]">
@@ -694,7 +724,7 @@ export default function Home() {
             </p>
             <Link
               href="#"
-              className="mt-10 inline-flex items-center gap-3 text-[13px] font-black !text-[#087f32]"
+              className="filtto-arrow-link mt-10 inline-flex items-center gap-3 text-[13px] font-black !text-[#087f32]"
             >
               Ver exemplo completo <ArrowRight size={16} />
             </Link>
@@ -704,8 +734,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="planos" className="bg-[#fbfaf7] pb-24">
-        <div className="mx-auto grid max-w-[1620px] gap-14 px-8 lg:grid-cols-[330px_1fr] lg:items-center">
+      <section id="planos" className="filtto-reveal bg-[#fbfaf7] pb-24">
+        <div className="mx-auto grid max-w-[1620px] gap-10 px-5 sm:px-8 lg:grid-cols-[330px_1fr] lg:items-center xl:gap-14">
           <div>
             <SectionLabel>Planos</SectionLabel>
             <SerifTitle className="mt-5 text-[43px] leading-[1.02] md:text-[52px]">
@@ -722,15 +752,15 @@ export default function Home() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {plans.map((plan) => (
-              <PricingCard key={plan.title} plan={plan} />
+            {plans.map((plan, index) => (
+              <PricingCard key={plan.title} plan={plan} index={index} />
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-y border-[#e8e3da] bg-[#fbfaf7] py-16">
-        <div className="mx-auto grid max-w-[1620px] gap-12 px-8 lg:grid-cols-[330px_1fr]">
+      <section className="filtto-reveal border-y border-[#e8e3da] bg-[#fbfaf7] py-16">
+        <div className="mx-auto grid max-w-[1620px] gap-10 px-5 sm:px-8 lg:grid-cols-[330px_1fr] xl:gap-12">
           <div>
             <SectionLabel>Dúvidas frequentes</SectionLabel>
             <SerifTitle className="mt-5 text-[43px] leading-[1.02] md:text-[52px]">
@@ -739,8 +769,12 @@ export default function Home() {
           </div>
 
           <div className="divide-y divide-[#ded9cf]">
-            {faqs.map((item) => (
-              <details key={item.question} className="group">
+            {faqs.map((item, index) => (
+              <details
+                key={item.question}
+                className="filtto-faq-item group"
+                style={{ transitionDelay: `${index * 75}ms` }}
+              >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left text-[16px] font-bold text-[#202620] marker:hidden">
                   <span>{item.question}</span>
                   <ChevronDown
@@ -758,7 +792,7 @@ export default function Home() {
       </section>
 
       <footer className="bg-[#fbfaf7] py-10">
-        <div className="mx-auto max-w-[1620px] px-8">
+        <div className="mx-auto max-w-[1620px] px-5 sm:px-8">
           <div className="grid gap-10 lg:grid-cols-[1.3fr_0.8fr_0.8fr_0.8fr_1.5fr]">
             <div>
               <Logo compact />
