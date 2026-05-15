@@ -995,7 +995,7 @@ export default function EstatisticasPage() {
   ];
 
   return (
-    <main className="min-h-full bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-white">
+    <main className="min-h-full bg-[#f5f7f9] text-slate-950 dark:bg-slate-950 dark:text-white">
       <div className="mx-auto flex max-w-[1480px] flex-col gap-5 px-5 py-5 md:px-8">
         <header className="rounded-[18px] border border-slate-200/80 bg-white px-5 py-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-white/[0.08] dark:bg-slate-900/92">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
