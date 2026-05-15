@@ -365,6 +365,8 @@ export function normalizeTeamFixtures(fixturesPayload) {
       awayTeamId: event.away_team_id,
       homeTeam: event.home_team,
       awayTeam: event.away_team,
+      homeLogo: event.home_team_id ? `${BZZOIRO_IMAGE_BASE_URL}/team/${event.home_team_id}/` : null,
+      awayLogo: event.away_team_id ? `${BZZOIRO_IMAGE_BASE_URL}/team/${event.away_team_id}/` : null,
       eventDate: event.event_date,
       status: normalizeBzzoiroStatus(event),
       homeScore: event.home_score,

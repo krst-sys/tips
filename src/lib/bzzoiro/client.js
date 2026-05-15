@@ -1,5 +1,6 @@
 const API_BASE_URL = "https://sports.bzzoiro.com/api/v2";
-export const BZZOIRO_IMAGE_BASE_URL = "https://sports.bzzoiro.com/img";
+export const BZZOIRO_EXTERNAL_IMAGE_BASE_URL = "https://sports.bzzoiro.com/img";
+export const BZZOIRO_IMAGE_BASE_URL = "/api/football/assets";
 
 export class BzzoiroApiError extends Error {
   constructor(message, status, payload) {

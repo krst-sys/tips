@@ -178,11 +178,11 @@ function getErrorContent(error) {
 
   if (error.code === "BZZOIRO_API_KEY_NOT_CONFIGURED") {
     return {
-      title: "Token da BSD/Bzzoiro ausente",
-      text: "A chave da API BSD/Bzzoiro nao esta configurada no servidor.",
+      title: "Token de dados ausente",
+      text: "A chave da fonte de dados nao esta configurada no servidor.",
       detail:
         process.env.NODE_ENV === "development"
-          ? "Configure BZZOIRO_API_KEY nas variaveis de ambiente da Vercel e faca um novo deploy."
+          ? "Configure a variavel de ambiente do provedor esportivo na Vercel e faca um novo deploy."
           : null,
       icon: ShieldAlert,
     };
@@ -191,15 +191,15 @@ function getErrorContent(error) {
   if (error.code === "RATE_LIMIT") {
     return {
       title: "Limite de requests atingido",
-      text: "A API BSD/Bzzoiro recusou novas chamadas por enquanto. Tente novamente em alguns minutos.",
+      text: "A fonte de dados recusou novas chamadas por enquanto. Tente novamente em alguns minutos.",
       icon: ShieldAlert,
     };
   }
 
   if (error.code === "SERVICE_UNAVAILABLE" || error.code === "UPSTREAM_ERROR") {
     return {
-      title: "API indisponivel",
-      text: error.message || "Nao conseguimos contato com a API BSD/Bzzoiro agora.",
+      title: "Dados indisponiveis",
+      text: error.message || "Nao conseguimos contato com a fonte de dados agora.",
       icon: AlertCircle,
     };
   }
@@ -805,7 +805,7 @@ export default function ProximosJogosPage() {
             title="Nenhum jogo encontrado"
             text={
               games.length === 0
-                ? "Nao ha partidas disponiveis na API BSD/Bzzoiro para esta data."
+                ? "Nao ha partidas disponiveis para esta data."
                 : visibleGames.length === 0
                   ? "Nao ha partidas para esta selecao."
                 : viewMode === "popular"

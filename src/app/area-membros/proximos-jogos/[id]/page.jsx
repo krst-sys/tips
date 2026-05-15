@@ -11,7 +11,6 @@ import {
   Clock3,
   Loader2,
   ShieldAlert,
-  Sparkles,
   MapPin,
   Table2,
 } from "lucide-react";
@@ -81,14 +80,14 @@ function TeamLogo({ src, name }) {
   );
 }
 
-function SmallTeamLogo({ teamId, name }) {
+function SmallTeamLogo({ teamId, name, src }) {
   const [failed, setFailed] = useState(false);
-  const src = teamId && !failed ? `https://sports.bzzoiro.com/img/team/${teamId}/` : null;
+  const imageSrc = !failed ? src || (teamId ? `/api/football/assets/team/${teamId}/` : null) : null;
 
   return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-[10px] font-black text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-white/[0.1]">
-      {src ? (
-        <img src={src} alt="" className="h-6 w-6 object-contain" loading="lazy" onError={() => setFailed(true)} />
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-[10px] font-black text-slate-500 ring-1 ring-slate-200 dark:bg-white dark:text-slate-600 dark:ring-white/[0.16]">
+      {imageSrc ? (
+        <img src={imageSrc} alt="" className="h-6 w-6 object-contain" loading="lazy" onError={() => setFailed(true)} />
       ) : (
         name?.slice(0, 1) || "T"
       )}
@@ -111,7 +110,7 @@ function PageState({ loading, error }) {
         </h1>
         <p className="mx-auto mt-2 max-w-[540px] text-[14px] leading-6 text-slate-600 dark:text-slate-400">
           {loading
-            ? "Estamos buscando as informações disponíveis da Bzzoiro."
+            ? "Estamos buscando as informações disponíveis para este jogo."
             : error?.message || "Tente novamente em instantes."}
         </p>
       </section>
@@ -261,7 +260,7 @@ function getFixtureResult(match, teamId) {
   return "D";
 }
 
-function TeamFormColumn({ teamName, teamId, matches }) {
+function TeamFormColumn({ teamName, teamId, teamLogo, matches }) {
   const lastFive = (matches || []).slice(0, 5);
   const record = lastFive.reduce(
     (acc, match) => {
@@ -277,7 +276,10 @@ function TeamFormColumn({ teamName, teamId, matches }) {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="font-black text-slate-950 dark:text-white">{teamName}</h3>
+        <div className="flex min-w-0 items-center gap-2">
+          <SmallTeamLogo teamId={teamId} name={teamName} src={teamLogo} />
+          <h3 className="min-w-0 truncate font-black text-slate-950 dark:text-white">{teamName}</h3>
+        </div>
         <span className="text-[13px] font-black text-slate-700 dark:text-slate-300">
           {record.w}W · {record.d}D · {record.l}L
         </span>
@@ -287,12 +289,17 @@ function TeamFormColumn({ teamName, teamId, matches }) {
           lastFive.map((match) => {
             const result = getFixtureResult(match, teamId);
             const opponent = match.homeTeamId === teamId ? match.awayTeam : match.homeTeam;
+            const opponentId = match.homeTeamId === teamId ? match.awayTeamId : match.homeTeamId;
+            const opponentLogo = match.homeTeamId === teamId ? match.awayLogo : match.homeLogo;
             const prefix = match.homeTeamId === teamId ? "vs" : "@";
             return (
               <div key={match.id} className="grid grid-cols-[minmax(0,1fr)_64px] items-center gap-3 py-3">
-                <p className="min-w-0 truncate text-[13px] font-semibold text-slate-700 dark:text-slate-300">
-                  {prefix} {opponent}
-                </p>
+                <div className="flex min-w-0 items-center gap-2">
+                  <SmallTeamLogo teamId={opponentId} name={opponent} src={opponentLogo} />
+                  <p className="min-w-0 truncate text-[13px] font-semibold text-slate-700 dark:text-slate-300">
+                    {prefix} {opponent}
+                  </p>
+                </div>
                 <span className={cn("justify-self-end rounded-lg px-2.5 py-1 text-[12px] font-black", resultTone(result))}>
                   {match.homeScore ?? "-"}-{match.awayScore ?? "-"}
                 </span>
@@ -314,11 +321,13 @@ function TeamForm({ analysis }) {
         <TeamFormColumn
           teamName={analysis.event.homeShortName || analysis.event.homeTeam}
           teamId={analysis.event.homeTeamId}
+          teamLogo={analysis.event.homeLogo}
           matches={analysis.h2h?.homeRecent}
         />
         <TeamFormColumn
           teamName={analysis.event.awayShortName || analysis.event.awayTeam}
           teamId={analysis.event.awayTeamId}
+          teamLogo={analysis.event.awayLogo}
           matches={analysis.h2h?.awayRecent}
         />
       </div>
@@ -405,16 +414,15 @@ function MatchFacts({ analysis }) {
     ["Rodada", analysis.event.round],
     ["Kickoff", analysis.event.eventDate ? `${DATE_FORMATTER.format(new Date(analysis.event.eventDate))} · ${TIME_FORMATTER.format(new Date(analysis.event.eventDate))}` : null],
     ["Status", statusLabel(analysis.event.status)],
-    ["Fonte", "Bzzoiro"],
   ].filter(([, value]) => value !== undefined && value !== null && value !== "");
 
   return (
-    <Section title="Match Facts" eyebrow="Informações do evento">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <Section title="Informações da partida" eyebrow="Resumo do evento">
+      <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-slate-50/60 px-4 dark:divide-white/[0.07] dark:border-white/[0.08] dark:bg-white/[0.03]">
         {facts.map(([label, value]) => (
-          <div key={label} className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/[0.03] dark:ring-white/[0.07]">
-            <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">{label}</p>
-            <p className="mt-1 text-[14px] font-black text-slate-900 dark:text-white">{value}</p>
+          <div key={label} className="flex items-center justify-between gap-4 py-3">
+            <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-400">{label}</p>
+            <p className="text-right text-[14px] font-black text-slate-900 dark:text-white">{value}</p>
           </div>
         ))}
       </div>
@@ -480,7 +488,7 @@ function getCoachCandidate(analysis, lineups, side) {
       lineup.coach?.name ||
       lineup.manager?.name ||
       (coachId ? `Treinador ID ${coachId}` : "Treinador indisponÃ­vel"),
-    photo: eventCoach?.photo || rawCoach?.photo || (coachId ? `https://sports.bzzoiro.com/img/manager/${coachId}/` : null),
+    photo: eventCoach?.photo || rawCoach?.photo || (coachId ? `/api/football/assets/manager/${coachId}/` : null),
     formation: lineup.formation || eventCoach?.preferredFormation || rawCoach?.preferred_formation,
     confidence: lineup.confidence || lineup.prediction_confidence || lineup.lineup_confidence || null,
     nationality: eventCoach?.nationality || rawCoach?.nationality || rawCoach?.country || lineup.coach?.nationality || null,
@@ -561,7 +569,7 @@ function HeadCoaches({ analysis, lineups }) {
 
 function PlayerPhoto({ player }) {
   const [failed, setFailed] = useState(false);
-  const src = player?.id && !failed ? `https://sports.bzzoiro.com/img/player/${player.id}/` : null;
+  const src = player?.id && !failed ? `/api/football/assets/player/${player.id}/` : null;
   const initial = (player?.short_name || player?.name || "P").slice(0, 1);
 
   return (
@@ -608,79 +616,138 @@ function PlayerList({ title, players, empty = "Dados indisponíveis.", subtle = 
   );
 }
 
+function formatOdd(value) {
+  if (value === null || value === undefined || value === "") return "-";
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toFixed(2) : value;
+}
+
+function hasOdd(value) {
+  return value !== null && value !== undefined && value !== "";
+}
+
+function OddsOption({ label, sublabel, value }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition dark:border-white/[0.08] dark:bg-white/[0.04]">
+      <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">{label}</p>
+      {sublabel ? <p className="mt-1 truncate text-[12px] font-semibold text-slate-500 dark:text-slate-400">{sublabel}</p> : null}
+      <p className="mt-3 text-[22px] font-black text-slate-950 dark:text-white">{formatOdd(value)}</p>
+    </div>
+  );
+}
+
+function OddsMarketCard({ title, description, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <section className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm dark:border-white/[0.08] dark:bg-[#0d1624]">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-slate-50 dark:hover:bg-white/[0.03]"
+      >
+        <div>
+          <h2 className="text-[16px] font-black text-slate-950 dark:text-white">{title}</h2>
+          <p className="mt-1 text-[12px] font-semibold text-slate-500 dark:text-slate-400">{description}</p>
+        </div>
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-slate-400 transition", open && "rotate-180")} />
+      </button>
+      {open ? <div className="border-t border-slate-100 p-5 dark:border-white/[0.07]">{children}</div> : null}
+    </section>
+  );
+}
+
 function OddsTab({ analysis }) {
   const odds = analysis.odds?.odds || {};
-  const [open, setOpen] = useState("1x2");
-  const markets = [
-    {
-      id: "1x2",
-      title: "1X2",
-      columns: ["Home", "Draw", "Away"],
-      rows: [["Consensus", odds.home_win, odds.draw, odds.away_win]],
-    },
-    {
-      id: "goals",
-      title: "Total Goals",
-      columns: ["Over", "Line", "Under"],
-      rows: [
-        ["1.5", odds.over_15_goals, "1.5", odds.under_15_goals],
-        ["2.5", odds.over_25_goals, "2.5", odds.under_25_goals],
-        ["3.5", odds.over_35_goals, "3.5", odds.under_35_goals],
-      ],
-    },
-    {
-      id: "btts",
-      title: "Both Teams To Score",
-      columns: ["Yes", "", "No"],
-      rows: [["Consensus", odds.btts_yes, "", odds.btts_no]],
-    },
-  ];
+  const homeTeam = analysis.event.homeShortName || analysis.event.homeTeam || "Mandante";
+  const awayTeam = analysis.event.awayShortName || analysis.event.awayTeam || "Visitante";
+  const availableOdds = Object.values(odds).filter(hasOdd).length;
 
-  if (!Object.keys(odds).length) return <EmptyState>Odds ainda não disponíveis para este evento.</EmptyState>;
+  if (!availableOdds) {
+    return (
+      <div className="rounded-[22px] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/[0.12] dark:bg-white/[0.03]">
+        <h2 className="text-[18px] font-black text-slate-950 dark:text-white">Odds indisponíveis</h2>
+        <p className="mx-auto mt-2 max-w-[520px] text-[14px] font-semibold leading-6 text-slate-500 dark:text-slate-400">
+          Ainda não há odds consolidadas para esta partida. Quando os mercados forem atualizados, eles aparecerão aqui de forma organizada.
+        </p>
+      </div>
+    );
+  }
+
+  const mainOdds = [
+    { label: "Casa", sublabel: homeTeam, value: odds.home_win },
+    { label: "Empate", sublabel: "X", value: odds.draw },
+    { label: "Fora", sublabel: awayTeam, value: odds.away_win },
+  ];
+  const goalLines = [
+    { line: "1.5", over: odds.over_15_goals, under: odds.under_15_goals },
+    { line: "2.5", over: odds.over_25_goals, under: odds.under_25_goals },
+    { line: "3.5", over: odds.over_35_goals, under: odds.under_35_goals },
+  ].filter((row) => hasOdd(row.over) || hasOdd(row.under));
 
   return (
     <div className="grid gap-4">
-      {markets.map((market) => (
-        <section key={market.id} className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm dark:border-white/[0.08] dark:bg-[#0d1624]">
-          <button
-            type="button"
-            onClick={() => setOpen(open === market.id ? "" : market.id)}
-            className="flex w-full items-center justify-between px-5 py-4 text-left"
-          >
-            <div>
-              <h2 className="text-[16px] font-black">{market.title}</h2>
-              <p className="mt-1 text-[12px] text-slate-500">Consenso disponível</p>
-            </div>
-            <ChevronDown className={cn("h-4 w-4 transition", open === market.id && "rotate-180")} />
-          </button>
-          {open === market.id ? (
-            <div className="border-t border-slate-100 p-5 dark:border-white/[0.07]">
-              <table className="w-full text-left text-[13px]">
-                <thead className="text-slate-400">
-                  <tr>
-                    <th className="pb-3 font-black">Bookmaker</th>
-                    {market.columns.map((column) => (
-                      <th key={column || "line"} className="pb-3 text-right font-black">{column}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {market.rows.map((row) => (
-                    <tr key={row[0]} className="border-t border-slate-100 dark:border-white/[0.06]">
-                      <td className="py-3 font-black">{row[0]}</td>
-                      {row.slice(1).map((value, index) => (
-                        <td key={`${row[0]}-${index}`} className="py-3 text-right font-black text-slate-800 dark:text-slate-100">
-                          {value || "-"}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
-        </section>
-      ))}
+      <div className="rounded-[22px] border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-white/[0.08] dark:bg-[#0d1624]">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-300">Mercados disponíveis</p>
+            <h2 className="mt-1 text-[20px] font-black text-slate-950 dark:text-white">Odds da partida</h2>
+          </div>
+          <p className="text-[12px] font-semibold text-slate-500 dark:text-slate-400">
+            {availableOdds} cotações consolidadas
+          </p>
+        </div>
+      </div>
+
+      <OddsMarketCard title="Resultado final" description="Mercado 1X2" defaultOpen>
+        <div className="grid gap-3 md:grid-cols-3">
+          {mainOdds.map((item) => (
+            <OddsOption
+              key={item.label}
+              label={item.label}
+              sublabel={item.sublabel}
+              value={item.value}
+            />
+          ))}
+        </div>
+      </OddsMarketCard>
+
+      <OddsMarketCard title="Total de gols" description="Linhas principais de over/under" defaultOpen>
+        {goalLines.length ? (
+          <div className="grid gap-3">
+            {goalLines.map((row) => {
+              return (
+                <div key={row.line} className="grid grid-cols-[1fr_72px_1fr] items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.04]">
+                  <div>
+                    <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Over {row.line}</p>
+                    <p className="mt-1 text-[20px] font-black text-slate-950 dark:text-white">{formatOdd(row.over)}</p>
+                  </div>
+                  <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-center text-[12px] font-black text-slate-500 dark:border-white/[0.08] dark:bg-slate-950/30 dark:text-slate-300">
+                    {row.line}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Under {row.line}</p>
+                    <p className="mt-1 text-[20px] font-black text-slate-950 dark:text-white">{formatOdd(row.under)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState>Linhas de gols ainda não disponíveis.</EmptyState>
+        )}
+      </OddsMarketCard>
+
+      <OddsMarketCard title="Ambos marcam" description="Sim ou não" defaultOpen>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <OddsOption label="Sim" value={odds.btts_yes} />
+          <OddsOption label="Não" value={odds.btts_no} />
+        </div>
+      </OddsMarketCard>
+
+      <p className="text-center text-[12px] font-semibold leading-5 text-slate-500 dark:text-slate-400">
+        Odds podem variar até o início da partida. Use como referência e valide antes de criar uma entrada.
+      </p>
     </div>
   );
 }
@@ -851,10 +918,6 @@ export default function MatchAnalysisPage() {
                 {event.venue}{event.venueCity ? `, ${event.venueCity}` : ""}
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-teal-500" />
-              Fonte Bzzoiro
-            </span>
           </div>
 
         </header>
