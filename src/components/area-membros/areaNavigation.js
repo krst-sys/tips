@@ -16,41 +16,40 @@ export const NAV_SECTIONS = [
         actionLabelKey: "topbar.recordBet",
       },
       {
-        href: "/area-membros/estatisticas",
-        labelKey: "sidebar.statistics",
-        descriptionKey: "navigation.statisticsDescription",
-        icon: "ChartNoAxesCombined",
-      },
-      {
         href: "/area-membros/proximos-jogos",
         labelKey: "sidebar.upcomingGames",
         descriptionKey: "navigation.upcomingGamesDescription",
         icon: "CalendarDays",
       },
       {
-        href: "/area-membros/simulador-progressao",
+        href: "/area-membros/progressao",
         labelKey: "sidebar.progression",
         descriptionKey: "navigation.progressionDescription",
         icon: "TrendingUp",
         actionLabelKey: "progression.newProgression",
       },
+      {
+        href: "/area-membros/oportunidades",
+        labelKey: "sidebar.opportunities",
+        descriptionKey: "navigation.opportunitiesDescription",
+        icon: "Lightbulb",
+      },
     ],
   },
   {
-    labelKey: "sidebar.intelligence",
+    labelKey: "sidebar.social",
     items: [
-      {
-        href: "/area-membros/metodos",
-        labelKey: "sidebar.methods",
-        descriptionKey: "navigation.methodsDescription",
-        icon: "BookOpenCheck",
-        badge: "Pro",
-      },
       {
         href: "/area-membros/ranking",
         labelKey: "sidebar.ranking",
         descriptionKey: "navigation.rankingDescription",
         icon: "Trophy",
+      },
+      {
+        href: "/area-membros/palpites",
+        labelKey: "sidebar.predictions",
+        descriptionKey: "navigation.predictionsDescription",
+        icon: "Sparkles",
       },
       {
         href: "/area-membros/bilhetes",
@@ -88,6 +87,15 @@ export function getNavigationItems() {
 }
 
 export function getCurrentNavigationItem(pathname) {
+  if (pathname === "/area-membros/estatisticas" || pathname.startsWith("/area-membros/estatisticas/")) {
+    return {
+      href: "/area-membros/estatisticas",
+      labelKey: "sidebar.statistics",
+      descriptionKey: "navigation.statisticsDescription",
+      icon: "ChartNoAxesCombined",
+    };
+  }
+
   return (
     getNavigationItems()
       .slice()

@@ -3,6 +3,7 @@ export const POPULAR_FALLBACK_LIMIT = 20;
 export const POPULAR_FALLBACK_MINIMUM = 10;
 
 export const LEAGUE_PRIORITY = {
+  1: 100,
   2: 100,
   3: 95,
   9: 95,

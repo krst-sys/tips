@@ -44,7 +44,7 @@ const INITIAL_POSTS = [
     liked: true,
     comments: [
       { id: "c1", author: "Bruno Castro", initials: "BC", time: "14:22", text: "Boa leitura no over. Peguei uma linha parecida." },
-      { id: "c2", author: "Camila Rocha", initials: "CR", time: "14:31", text: "A odd subiu depois da confirmacao do time titular." },
+      { id: "c2", author: "Camila Rocha", initials: "CR", time: "14:31", text: "A odd subiu depois da confirmação do time titular." },
     ],
   },
   {
@@ -65,16 +65,16 @@ const INITIAL_POSTS = [
     id: "ticket-003",
     author: { id: "camila", name: "Camila Rocha", initials: "CR" },
     createdAt: "Ontem, 21:44",
-    caption: "Compartilhando o bilhete que usei como referencia hoje.",
+    caption: "Compartilhando o bilhete que usei como referência hoje.",
     imageSrc: "/teste3.png",
     imageWidth: 1284,
     imageHeight: 2778,
     likes: 28,
     liked: false,
     comments: [
-      { id: "c4", author: "Henrique Prado", initials: "HP", time: "22:01", text: "Gostei da combinacao com gols. Mercado estava bem precificado." },
+      { id: "c4", author: "Henrique Prado", initials: "HP", time: "22:01", text: "Gostei da combinação com gols. Mercado estava bem precificado." },
       { id: "c5", author: "Ana Martins", initials: "AM", time: "22:08", text: "Stake baixa faz todo sentido aqui." },
-      { id: "c6", author: "Voce", initials: "AT", time: "22:13", text: "Tambem peguei River, mas fiquei fora do over." },
+      { id: "c6", author: "Você", initials: "AT", time: "22:13", text: "Também peguei River, mas fiquei fora do over." },
     ],
   },
   {
@@ -101,7 +101,7 @@ function Panel({ children, className = "" }) {
   return (
     <section
       className={cn(
-        "rounded-[20px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900",
+        "bankroll-panel",
         className
       )}
     >
@@ -140,7 +140,7 @@ function FilterButton({ active, children, onClick }) {
       className={cn(
         "inline-flex h-9 shrink-0 items-center rounded-[11px] px-3.5 text-[13px] font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-slate-300 dark:focus-visible:ring-white/[0.16]",
         active
-          ? "bg-white text-slate-950 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-slate-200 dark:bg-white/[0.1] dark:text-white dark:ring-white/[0.1]"
+          ? "bg-slate-950 text-white shadow-sm ring-1 ring-transparent dark:bg-white dark:text-slate-950"
           : "text-slate-600 hover:bg-white/70 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/[0.055] dark:hover:text-white"
       )}
     >
@@ -193,7 +193,7 @@ function ActionButton({ active, onClick, icon: Icon, children, disabled = false 
 
 function PostCard({ post, onOpen, onLike }) {
   return (
-    <article className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-slate-900">
+    <article className="bankroll-panel overflow-hidden">
       <div className="flex items-center justify-between gap-4 px-5 py-4">
         <div className="flex min-w-0 items-center gap-3">
           <Avatar user={post.author} />
@@ -226,7 +226,7 @@ function PostCard({ post, onOpen, onLike }) {
               {post.likes} curtidas
             </ActionButton>
             <ActionButton onClick={() => onOpen(post.id)} icon={MessageSquare}>
-              {post.comments.length} comentarios
+              {post.comments.length} comentários
             </ActionButton>
             <ActionButton onClick={() => onOpen(post.id)} icon={Share2}>
               Compartilhar
@@ -238,7 +238,7 @@ function PostCard({ post, onOpen, onLike }) {
             onClick={() => onOpen(post.id)}
             className="text-[13px] font-semibold text-slate-600 transition hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
           >
-            Ver comentarios
+            Ver comentários
           </button>
         </div>
 
@@ -301,7 +301,7 @@ function DetailModal({ post, currentUser, onClose, onLike, onComment }) {
                 ))
               ) : (
                 <div className="rounded-[16px] border border-slate-200 bg-slate-50 p-4 text-[13px] leading-5 text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-slate-300">
-                  Nenhum comentario ainda.
+                  Nenhum comentário ainda.
                 </div>
               )}
             </div>
@@ -317,7 +317,7 @@ function DetailModal({ post, currentUser, onClose, onLike, onComment }) {
                 className="inline-flex h-10 items-center gap-2 rounded-[12px] px-3 text-[13px] font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-950 dark:text-slate-400 dark:ring-white/[0.08] dark:hover:bg-white/[0.06] dark:hover:text-white"
               >
                 <MessageSquare className="h-4 w-4" />
-                {post.comments.length} comentarios
+                {post.comments.length} comentários
               </button>
             </div>
 
@@ -325,10 +325,10 @@ function DetailModal({ post, currentUser, onClose, onLike, onComment }) {
               <input
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
-                placeholder="Escreva um comentario"
+                placeholder="Escreva um comentário"
                 className="h-11 min-w-0 flex-1 rounded-[13px] border border-slate-200 bg-white px-3 text-[13px] text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-300 focus:ring-2 focus:ring-slate-200 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-white dark:focus:border-white/[0.16] dark:focus:ring-white/[0.08]"
               />
-              <button type="submit" disabled={!message.trim()} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] bg-slate-950 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200" aria-label="Enviar comentario">
+              <button type="submit" disabled={!message.trim()} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] bg-slate-950 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200" aria-label="Enviar comentário">
                 <Send className="h-4 w-4" />
               </button>
             </form>
@@ -355,7 +355,7 @@ function SubmitModal({ onClose, onSubmit }) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Novo post</p>
             <h2 className="mt-1 text-[22px] font-semibold tracking-[-0.035em] text-slate-950 dark:text-white">Enviar bilhete</h2>
             <p className="mt-2 max-w-[420px] text-[13px] leading-5 text-slate-600 dark:text-slate-300">
-              Seu bilhete sera revisado antes de aparecer na comunidade.
+              Seu bilhete será revisado antes de aparecer na comunidade.
             </p>
           </div>
           <button type="button" onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-white" aria-label="Fechar">
@@ -367,7 +367,7 @@ function SubmitModal({ onClose, onSubmit }) {
           <label className="flex min-h-[170px] cursor-pointer flex-col items-center justify-center rounded-[18px] border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center transition hover:border-slate-400 hover:bg-white dark:border-white/[0.14] dark:bg-white/[0.035] dark:hover:bg-white/[0.055]">
             <ImageUp className="h-7 w-7 text-slate-400 dark:text-slate-500" />
             <span className="mt-3 text-[14px] font-semibold text-slate-950 dark:text-white">Imagem do bilhete</span>
-            <span className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">PNG, JPG ou captura de tela legivel</span>
+            <span className="mt-1 text-[12px] text-slate-500 dark:text-slate-400">PNG, JPG ou captura de tela legível</span>
             <input type="file" accept="image/*" className="sr-only" />
           </label>
 
@@ -407,9 +407,9 @@ function PremiumGate() {
           </span>
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Premium</p>
-            <h2 className="mt-1 text-[20px] font-semibold tracking-[-0.03em] text-slate-950 dark:text-white">Bilhetes e exclusivo para assinantes</h2>
+            <h2 className="mt-1 text-[20px] font-semibold tracking-[-0.03em] text-slate-950 dark:text-white">Bilhetes são exclusivos para assinantes</h2>
             <p className="mt-2 max-w-[600px] text-[14px] leading-6 text-slate-600 dark:text-slate-300">
-              Assine para ver publicacoes, curtir e conversar com a comunidade premium.
+              Assine para ver publicações, curtir e conversar com a comunidade premium.
             </p>
           </div>
         </div>
@@ -466,7 +466,7 @@ export default function BilhetesPage() {
                 ...post.comments,
                 {
                   id: `comment-${Date.now()}`,
-                  author: "Voce",
+                  author: "Você",
                   initials: CURRENT_USER.initials,
                   time: "Agora",
                   text,
@@ -481,7 +481,7 @@ export default function BilhetesPage() {
   function handleSubmit(caption) {
     const newPost = {
       id: `ticket-${Date.now()}`,
-      author: { id: CURRENT_USER.id, name: "Voce", initials: CURRENT_USER.initials },
+      author: { id: CURRENT_USER.id, name: "Você", initials: CURRENT_USER.initials },
       createdAt: "Agora",
       caption: caption || "Novo bilhete compartilhado com a comunidade.",
       imageSrc: "/teste1.png",
@@ -499,9 +499,9 @@ export default function BilhetesPage() {
   }
 
   return (
-    <main className="min-h-full bg-[#f5f7f9] text-slate-950 dark:bg-slate-950 dark:text-white">
-      <div className="mx-auto flex max-w-[960px] flex-col gap-4 px-5 py-5 md:px-8">
-        <header className="mx-auto w-full max-w-[760px] rounded-[18px] border border-slate-200 bg-white px-4 py-4 shadow-[0_8px_20px_rgba(15,23,42,0.04)] dark:border-white/[0.08] dark:bg-slate-900 sm:px-5">
+    <main className="bankroll-page">
+      <div className="bankroll-shell flex max-w-[960px] flex-col gap-4">
+        <header className="bankroll-panel mx-auto w-full max-w-[760px] px-4 py-4 sm:px-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-start gap-3">
               <div className="min-w-0">
@@ -532,13 +532,13 @@ export default function BilhetesPage() {
         ) : (
           <>
             {notice ? (
-              <div className="mx-auto flex w-full max-w-[760px] items-start gap-3 rounded-[16px] border border-emerald-200 bg-emerald-50 p-4 text-[13px] leading-5 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
+            <div className="bankroll-panel mx-auto flex w-full max-w-[760px] items-start gap-3 p-4 text-[13px] leading-5 text-emerald-700 dark:text-emerald-300">
                 <Check className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{notice}</span>
               </div>
             ) : null}
 
-            <div className="mx-auto flex w-full max-w-[760px] gap-1 overflow-x-auto rounded-[14px] border border-slate-200 bg-slate-100 p-1 dark:border-white/[0.08] dark:bg-white/[0.04]">
+            <div className="bankroll-panel mx-auto flex w-full max-w-[760px] gap-1 overflow-x-auto p-1">
               {FEED_FILTERS.map((filter) => (
                 <FilterButton key={filter.value} active={feedFilter === filter.value} onClick={() => setFeedFilter(filter.value)}>
                   {filter.label}
@@ -560,7 +560,7 @@ export default function BilhetesPage() {
                     <div>
                       <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-slate-950 dark:text-white">Nenhum bilhete neste filtro</h2>
                       <p className="mt-2 text-[14px] leading-6 text-slate-600 dark:text-slate-300">
-                        Quando voce publicar ou interagir com bilhetes, eles aparecem aqui.
+                        Quando você publicar ou interagir com bilhetes, eles aparecem aqui.
                       </p>
                     </div>
                   </div>

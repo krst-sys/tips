@@ -16,6 +16,13 @@ import {
 } from "lucide-react";
 import { fetchMatchAnalysis } from "@/lib/fetchMatchAnalysis";
 import MatchLiveReading from "@/components/match-analysis/MatchLiveReading";
+import FilttoScoreCard from "@/components/filtto/FilttoScoreCard";
+import {
+  calculateFilttoScore,
+  formatOdd as formatFilttoOdd,
+  formatProbability,
+  getSuggestedMarket,
+} from "@/lib/filttoScore";
 
 const APP_TIME_ZONE = "America/Sao_Paulo";
 
@@ -32,10 +39,11 @@ const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
 
 const TABS = [
   { id: "facts", label: "Resumo" },
+  { id: "odds", label: "Odds" },
+  { id: "stats", label: "Estatísticas" },
   { id: "lineups", label: "Escalações" },
   { id: "h2h", label: "H2H" },
   { id: "standings", label: "Classificação" },
-  { id: "odds", label: "Odds" },
 ];
 
 function cn(...classes) {
@@ -430,9 +438,66 @@ function MatchFacts({ analysis }) {
   );
 }
 
+function KeyReadingCard({ analysis }) {
+  const suggested = getSuggestedMarket(analysis);
+  const score = calculateFilttoScore({
+    probability: suggested?.probability,
+    odd: suggested?.odd,
+    confidence: analysis.model?.confidence,
+    analysis,
+    status: analysis.event?.status,
+  });
+  const risk =
+    score.score === null
+      ? "Dados insuficientes"
+      : score.score >= 75
+        ? "Controlado"
+        : score.score >= 60
+          ? "Moderado"
+          : score.score >= 40
+            ? "Atencao"
+            : "Alto";
+
+  return (
+    <section className="grid gap-4 lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1fr)]">
+      <FilttoScoreCard score={score.score} status={score.status} summary={score.summary} />
+
+      <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/[0.08] dark:bg-[#0d1624]">
+        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">
+          Melhor leitura
+        </p>
+        <h2 className="mt-1 text-[18px] font-black text-slate-950 dark:text-white">
+          {suggested?.market || "Dados insuficientes para definir mercado"}
+        </h2>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-4">
+          {[
+            ["Odd atual", suggested?.odd ? formatFilttoOdd(suggested.odd) : "Odds ainda não disponíveis"],
+            ["Probabilidade", suggested?.probability !== undefined ? formatProbability(suggested.probability) : "Dados insuficientes"],
+            ["Confiança", analysis.model?.confidence !== undefined ? formatProbability(analysis.model.confidence) : "Dados insuficientes"],
+            ["Risco", risk],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/[0.08] dark:bg-white/[0.035]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                {label}
+              </p>
+              <p className="mt-1.5 text-[14px] font-black text-slate-950 dark:text-white">{value}</p>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-4 text-[12px] leading-5 text-slate-500 dark:text-slate-400">
+          O score combina dados disponíveis e pode mudar quando odds, escalações ou estatísticas ao vivo forem atualizadas. Ele não é garantia de acerto.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function FactsTab({ analysis }) {
   return (
     <div className="grid gap-5">
+      <KeyReadingCard analysis={analysis} />
       <ModelPredictions analysis={analysis} />
       {shouldShowLiveAnalysis(analysis) ? <MatchLiveReading analysis={analysis} /> : null}
       <TeamForm analysis={analysis} />
@@ -752,6 +817,52 @@ function OddsTab({ analysis }) {
   );
 }
 
+function formatStatValue(value, suffix = "") {
+  if (value === null || value === undefined || value === "") return "-";
+  const number = Number(value);
+  if (!Number.isFinite(number)) return String(value);
+  return `${number % 1 === 0 ? number.toFixed(0) : number.toFixed(2).replace(".", ",")}${suffix}`;
+}
+
+function StatsTab({ analysis }) {
+  const rows = analysis.stats?.comparison || [];
+  const showLive = shouldShowLiveAnalysis(analysis);
+
+  if (!rows.length && !showLive) {
+    return <EmptyState>Estatísticas ainda não disponíveis para este jogo.</EmptyState>;
+  }
+
+  return (
+    <div className="grid gap-5">
+      {showLive ? <MatchLiveReading analysis={analysis} /> : null}
+
+      {rows.length ? (
+        <Section title="Estatísticas da partida" eyebrow="Comparativo">
+          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-slate-50/60 dark:divide-white/[0.07] dark:border-white/[0.08] dark:bg-white/[0.03]">
+            {rows.map((row) => (
+              <div key={row.label} className="grid grid-cols-[72px_minmax(0,1fr)_72px] items-center gap-3 px-4 py-3">
+                <p className="text-[14px] font-black text-slate-950 dark:text-white">
+                  {formatStatValue(row.home, row.suffix)}
+                </p>
+                <div className="min-w-0 text-center">
+                  <p className="truncate text-[12px] font-black uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                    {row.label}
+                  </p>
+                </div>
+                <p className="text-right text-[14px] font-black text-slate-950 dark:text-white">
+                  {formatStatValue(row.away, row.suffix)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Section>
+      ) : (
+        <EmptyState>Estatísticas ainda não disponíveis para este jogo.</EmptyState>
+      )}
+    </div>
+  );
+}
+
 function StandingsTab({ analysis }) {
   const rows = analysis.standings?.rows || [];
 
@@ -942,10 +1053,11 @@ export default function MatchAnalysisPage() {
 
         <div className="mt-5">
           {activeTab === "facts" ? <FactsTab analysis={analysis} /> : null}
+          {activeTab === "odds" ? <OddsTab analysis={analysis} /> : null}
+          {activeTab === "stats" ? <StatsTab analysis={analysis} /> : null}
           {activeTab === "lineups" ? <LineupsTab analysis={analysis} /> : null}
           {activeTab === "h2h" ? <H2HSummary analysis={analysis} showTable /> : null}
           {activeTab === "standings" ? <StandingsTab analysis={analysis} /> : null}
-          {activeTab === "odds" ? <OddsTab analysis={analysis} /> : null}
         </div>
 
         <p className="mx-auto mt-6 max-w-[760px] text-center text-[12px] leading-5 text-slate-500 dark:text-slate-500">

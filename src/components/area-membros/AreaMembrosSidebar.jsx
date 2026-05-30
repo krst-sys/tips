@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BookOpenCheck,
   CalendarDays,
-  ChartNoAxesCombined,
+  ChevronRight,
   CreditCard,
   LayoutDashboard,
-  MessagesSquare,
+  Lightbulb,
+  ReceiptText,
+  ShieldCheck,
+  Sparkles,
   Trophy,
   TrendingUp,
   Wallet,
@@ -18,12 +20,12 @@ import { NAV_SECTIONS, isPathActive } from "@/components/area-membros/areaNaviga
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 const ICONS = {
-  BookOpenCheck,
   CalendarDays,
-  ChartNoAxesCombined,
   CreditCard,
   LayoutDashboard,
-  MessagesSquare,
+  Lightbulb,
+  ReceiptText,
+  Sparkles,
   Trophy,
   TrendingUp,
   Wallet,
@@ -56,14 +58,14 @@ function NavItem({ item, onNavigate }) {
     <Link
       href={item.href}
       onClick={onNavigate}
-      className={`group relative grid min-h-10 grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2 text-[13px] transition ${
+      className={`group relative grid min-h-10 grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] transition ${
         active
-          ? "font-semibold text-[var(--gp-text)]"
+          ? "bg-[var(--gp-primary-soft)] font-semibold text-[var(--gp-text)]"
           : "font-medium text-[var(--gp-text-secondary)] hover:text-[var(--gp-text)]"
       }`}
     >
       <span
-        className={`absolute left-0 top-2 bottom-2 w-[2px] rounded-full transition ${
+        className={`absolute left-[-4px] top-2 bottom-2 w-[2px] rounded-full transition ${
           active ? "bg-emerald-500" : "bg-transparent"
         }`}
       />
@@ -74,11 +76,6 @@ function NavItem({ item, onNavigate }) {
         strokeWidth={1.85}
       />
       <span className="truncate">{t(item.labelKey)}</span>
-      {item.badge ? (
-        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--gp-text-muted)]">
-          {item.badge}
-        </span>
-      ) : null}
     </Link>
   );
 }
@@ -119,10 +116,29 @@ function SidebarContent({ onNavigate, mobile = false }) {
         </nav>
       </div>
 
-      <div className="shrink-0 border-t border-[var(--gp-border)] px-6 py-4">
-        <div className="flex items-center justify-between text-[12px]">
-          <span className="font-medium text-[var(--gp-text-secondary)]">{t("sidebar.proPlan")}</span>
-          <span className="font-semibold text-emerald-500">{t("common.active")}</span>
+      <div className="shrink-0 px-4 pb-5 pt-3">
+        <div className="filtto-plan-card rounded-[12px] border border-[var(--gp-border)] bg-[var(--gp-surface)] p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20">
+                <ShieldCheck className="h-4 w-4" strokeWidth={1.9} />
+              </span>
+              <span className="truncate text-[14px] font-semibold text-[var(--gp-text)]">
+                {t("sidebar.proPlan")}
+              </span>
+            </div>
+            <span className="text-[12px] font-semibold text-emerald-500">{t("common.active")}</span>
+          </div>
+          <p className="mt-4 text-[12.5px] leading-5 text-[var(--gp-text-secondary)]">
+            Aproveite todos os recursos para lucrar mais.
+          </p>
+          <button
+            type="button"
+            className="mt-4 flex h-10 w-full items-center justify-between rounded-[9px] border border-[var(--gp-border)] bg-[var(--gp-bg-secondary)] px-3 text-[13px] font-medium text-[var(--gp-text)] transition hover:border-emerald-500/30 hover:bg-[var(--gp-hover)]"
+          >
+            Gerenciar plano
+            <ChevronRight className="h-4 w-4 text-[var(--gp-text-secondary)]" strokeWidth={1.8} />
+          </button>
         </div>
       </div>
     </div>

@@ -7,7 +7,6 @@ import {
   CalendarDays,
   ChevronRight,
   Clock3,
-  Globe2,
   Loader2,
   Search,
   ShieldAlert,
@@ -29,6 +28,7 @@ const SORT_OPTIONS = [
 
 const VIEW_MODES = [
   { label: "Populares", value: "popular" },
+  { label: "Ao vivo", value: "live" },
   { label: "Todos", value: "all" },
 ];
 
@@ -162,6 +162,28 @@ function getGameBucket(game) {
   return "upcoming";
 }
 
+function getLiveIndicator(game) {
+  const status = getGameStatus(game);
+  if (status !== "live") return null;
+
+  const homeDanger = Number(game?.stats?.home?.dangerous_attack ?? game?.homeDangerousAttacks ?? game?.dangerousAttacks?.home);
+  const awayDanger = Number(game?.stats?.away?.dangerous_attack ?? game?.awayDangerousAttacks ?? game?.dangerousAttacks?.away);
+  const homeShots = Number(game?.stats?.home?.total_shots ?? game?.homeShots ?? game?.shots?.home);
+  const awayShots = Number(game?.stats?.away?.total_shots ?? game?.awayShots ?? game?.shots?.away);
+  const hasDanger = Number.isFinite(homeDanger) || Number.isFinite(awayDanger);
+  const hasShots = Number.isFinite(homeShots) || Number.isFinite(awayShots);
+
+  if (!hasDanger && !hasShots) return null;
+
+  const homePressure = (Number.isFinite(homeDanger) ? homeDanger : 0) * 1.5 + (Number.isFinite(homeShots) ? homeShots : 0);
+  const awayPressure = (Number.isFinite(awayDanger) ? awayDanger : 0) * 1.5 + (Number.isFinite(awayShots) ? awayShots : 0);
+  const total = homePressure + awayPressure;
+
+  if (total < 10) return null;
+  if (Math.abs(homePressure - awayPressure) <= Math.max(4, total * 0.18)) return "Jogo aberto";
+  return homePressure > awayPressure ? "Pressão mandante" : "Pressão visitante";
+}
+
 function sortFixturesForCalendar(games) {
   return games.slice().sort((a, b) => {
     const bucketOrder = { live: 0, upcoming: 1, finished: 2 };
@@ -179,10 +201,10 @@ function getErrorContent(error) {
   if (error.code === "BZZOIRO_API_KEY_NOT_CONFIGURED") {
     return {
       title: "Token de dados ausente",
-      text: "A chave da fonte de dados nao esta configurada no servidor.",
+      text: "A chave da fonte de dados não está configurada no servidor.",
       detail:
         process.env.NODE_ENV === "development"
-          ? "Configure a variavel de ambiente do provedor esportivo na Vercel e faca um novo deploy."
+          ? "Configure a variável de ambiente do provedor esportivo na Vercel e faça um novo deploy."
           : null,
       icon: ShieldAlert,
     };
@@ -198,8 +220,8 @@ function getErrorContent(error) {
 
   if (error.code === "SERVICE_UNAVAILABLE" || error.code === "UPSTREAM_ERROR") {
     return {
-      title: "Dados indisponiveis",
-      text: error.message || "Nao conseguimos contato com a fonte de dados agora.",
+      title: "Dados indisponíveis",
+      text: error.message || "Não conseguimos contato com a fonte de dados agora.",
       icon: AlertCircle,
     };
   }
@@ -237,26 +259,6 @@ function LeagueLogo({ src, name }) {
       ) : (
         <Trophy className="h-4 w-4 text-teal-300" />
       )}
-    </span>
-  );
-}
-
-function CountryFlag({ src, country }) {
-  if (src) {
-    return (
-      <span className="flex min-w-0 items-center gap-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">
-        <img src={src} alt="" className="h-3.5 w-5 rounded-[3px] object-cover" loading="lazy" />
-        <span className="max-w-[120px] truncate">{country}</span>
-      </span>
-    );
-  }
-
-  return (
-    <span className="flex min-w-0 items-center gap-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 dark:bg-indigo-400/12 dark:text-indigo-200 dark:ring-indigo-300/20">
-        <Globe2 className="h-3 w-3" />
-      </span>
-      <span className="max-w-[140px] truncate">{country}</span>
     </span>
   );
 }
@@ -325,10 +327,10 @@ function DateButton({ active, children, onClick }) {
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-[13px] font-bold ring-1 transition",
+        "inline-flex h-[31px] shrink-0 items-center justify-center rounded-[9px] px-3 text-[12px] font-semibold ring-1 transition",
         active
-          ? "bg-teal-400 text-slate-950 ring-teal-300"
-          : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50 hover:text-slate-950 dark:bg-white/[0.035] dark:text-slate-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.07] dark:hover:text-white"
+          ? "bg-slate-950 text-white ring-transparent shadow-sm dark:bg-white dark:text-slate-950"
+          : "bg-transparent text-[var(--gp-text-secondary)] ring-transparent hover:bg-[var(--gp-hover)] hover:text-[var(--gp-text)]"
       )}
     >
       {children}
@@ -338,17 +340,17 @@ function DateButton({ active, children, onClick }) {
 
 function DisplayToggle({ value, onChange }) {
   return (
-    <div className="flex w-fit items-center rounded-full bg-slate-100 p-1 ring-1 ring-slate-200 dark:bg-white/[0.04] dark:ring-white/[0.08]">
+    <div className="flex w-full rounded-[12px] bg-[var(--gp-surface-elevated)] p-0.5 ring-1 ring-[var(--gp-border)] sm:w-auto">
       {VIEW_MODES.map((mode) => (
         <button
           key={mode.value}
           type="button"
           onClick={() => onChange(mode.value)}
           className={cn(
-            "h-8 rounded-full px-3.5 text-[12px] font-bold transition",
+            "h-[31px] flex-1 rounded-[8px] px-3 text-[12px] font-semibold transition sm:flex-none",
             value === mode.value
-              ? "bg-white text-slate-950 shadow-sm dark:bg-teal-400 dark:text-slate-950"
-              : "text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+              ? "bg-slate-950 text-white shadow-sm dark:bg-white dark:text-slate-950"
+              : "text-[var(--gp-text-secondary)] hover:bg-[var(--gp-hover)] hover:text-[var(--gp-text)]"
           )}
         >
           {mode.label}
@@ -382,9 +384,9 @@ function Filters({
   };
 
   return (
-    <section className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm dark:border-white/[0.08] dark:bg-[#0d1624]">
-      <div className="grid gap-3 xl:grid-cols-[auto_minmax(280px,1fr)_150px] xl:items-center">
-        <div className="flex gap-2 overflow-x-auto">
+    <section className="bankroll-panel flex flex-col gap-2 p-2" style={{ overflow: "visible" }}>
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+        <div className="flex w-full shrink-0 gap-1 rounded-[12px] bg-[var(--gp-surface-elevated)] p-0.5 ring-1 ring-[var(--gp-border)] sm:w-auto">
           <DateButton active={dateMode === "today"} onClick={() => setPreset("today", today)}>
             Hoje
           </DateButton>
@@ -396,38 +398,38 @@ function Filters({
           </DateButton>
         </div>
 
-        <label className="flex h-11 min-w-0 items-center gap-3 rounded-full bg-slate-50 px-4 text-[14px] text-slate-700 ring-1 ring-slate-200 focus-within:bg-white focus-within:ring-teal-400/45 dark:bg-slate-950/45 dark:text-slate-300 dark:ring-white/[0.08] dark:focus-within:ring-teal-300/45">
-          <Search className="h-4 w-4 shrink-0 text-slate-500" />
+        <label className="flex h-9 min-w-[220px] flex-1 items-center gap-2 rounded-[12px] border border-[var(--gp-border)] bg-[var(--gp-input-bg)] px-3 text-[12px] text-[var(--gp-text-secondary)] transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10">
+          <Search className="h-4 w-4 shrink-0" />
           <input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Buscar por time ou competição..."
-            className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="min-w-0 flex-1 bg-transparent text-[12px] font-medium text-[var(--gp-text)] outline-none placeholder:text-[var(--gp-text-muted)]"
           />
         </label>
 
-        <label className="flex h-11 items-center gap-2 rounded-full bg-slate-50 px-4 text-[13px] font-bold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-950/45 dark:text-slate-300 dark:ring-white/[0.08]">
-          <SlidersHorizontal className="h-4 w-4 shrink-0 text-slate-500" />
+        <label className="flex h-9 items-center gap-2 rounded-[12px] border border-[var(--gp-border)] bg-[var(--gp-input-bg)] px-3 text-[12px] font-semibold text-[var(--gp-text-secondary)]">
+          <SlidersHorizontal className="h-4 w-4 shrink-0" />
           <span>Ordenar</span>
           <select
             value={sort}
             onChange={(event) => onSortChange(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-right outline-none [color-scheme:light] dark:[color-scheme:dark]"
+            className="min-w-0 flex-1 bg-transparent text-right text-[var(--gp-text)] outline-none [color-scheme:light] dark:[color-scheme:dark]"
           >
             {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label.replace("Ordenar por ", "")}
+                {option.label}
               </option>
             ))}
           </select>
         </label>
       </div>
 
-      <div className="mt-3 flex flex-col gap-3 border-t border-slate-100 pt-3 dark:border-white/[0.07] sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <DisplayToggle value={viewMode} onChange={onViewModeChange} />
-          <label className="inline-flex h-9 shrink-0 items-center gap-2 rounded-full bg-slate-50 px-3 text-[12px] font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-white dark:bg-white/[0.035] dark:text-slate-300 dark:ring-white/[0.08]">
-            <CalendarDays className="h-4 w-4 text-teal-600 dark:text-teal-300" />
+          <label className="inline-flex h-9 shrink-0 items-center gap-2 rounded-[12px] border border-[var(--gp-border)] bg-[var(--gp-input-bg)] px-3 text-[12px] font-semibold text-[var(--gp-text-secondary)]">
+            <CalendarDays className="h-4 w-4 text-[var(--gp-primary)]" />
             <input
               type="date"
               value={selectedDate}
@@ -435,7 +437,7 @@ function Filters({
                 onDateModeChange("custom");
                 onDateChange(event.target.value);
               }}
-              className="bg-transparent text-slate-700 outline-none [color-scheme:light] dark:text-slate-200 dark:[color-scheme:dark]"
+              className="bg-transparent text-[var(--gp-text)] outline-none [color-scheme:light] dark:[color-scheme:dark]"
             />
           </label>
         </div>
@@ -445,14 +447,14 @@ function Filters({
             type="button"
             onClick={() => setAdvancedOpen((current) => !current)}
             className={cn(
-              "inline-flex h-9 items-center gap-2 rounded-full px-3 text-[12px] font-bold ring-1 transition",
+              "inline-flex h-9 items-center gap-2 rounded-[12px] border px-3 text-[12px] font-semibold transition",
               leagueFilter !== "all"
-                ? "bg-teal-50 text-teal-700 ring-teal-200 dark:bg-teal-400/10 dark:text-teal-200 dark:ring-teal-300/20"
-                : "bg-slate-50 text-slate-600 ring-slate-200 hover:bg-white dark:bg-white/[0.035] dark:text-slate-300 dark:ring-white/[0.08]"
+                ? "border-[var(--gp-primary)] bg-[var(--gp-primary-soft)] text-[var(--gp-text)]"
+                : "border-[var(--gp-border)] bg-[var(--gp-input-bg)] text-[var(--gp-text-secondary)] hover:bg-[var(--gp-hover)] hover:text-[var(--gp-text)]"
             )}
           >
             <Trophy className="h-4 w-4" />
-            Filtros avançados
+            Filtros
           </button>
 
           {advancedOpen ? (
@@ -492,6 +494,7 @@ function GameRow({ game, onSelect }) {
   const status = getGameStatus(game);
   const minute = game.minute || game.currentMinute;
   const liveLabel = minute ? `AO VIVO ${minute}'` : "AO VIVO";
+  const liveIndicator = getLiveIndicator(game);
 
   return (
     <article
@@ -502,19 +505,19 @@ function GameRow({ game, onSelect }) {
         if (event.key === "Enter" || event.key === " ") onSelect(game);
       }}
       className={cn(
-        "group grid cursor-pointer gap-3.5 border-t border-slate-100 px-4 py-4 transition-colors hover:bg-slate-50/90 dark:border-white/[0.06] dark:hover:bg-white/[0.04] lg:grid-cols-[130px_minmax(260px,1fr)_145px_96px_40px] lg:items-center lg:gap-4 lg:px-5",
+        "group grid cursor-pointer gap-3 border-t border-[var(--gp-border-soft)] px-4 py-3.5 transition-colors hover:bg-[var(--gp-hover)] lg:grid-cols-[124px_minmax(260px,1fr)_96px_40px] lg:items-center lg:gap-4 lg:px-5",
         status === "live" && "bg-rose-50/35 dark:bg-rose-400/[0.035]"
       )}
     >
       <div className="flex items-center justify-between gap-3 lg:block">
         {status === "live" ? (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-black text-rose-700 ring-1 ring-rose-200 dark:bg-rose-400/12 dark:text-rose-200 dark:ring-rose-300/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" />
             {liveLabel}
           </span>
         ) : (
-          <div className="flex min-w-0 items-center gap-2.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
-            <Clock3 className="h-4 w-4 shrink-0 text-teal-600 dark:text-teal-300/80" />
+          <div className="flex min-w-0 items-center gap-2.5 text-[13px] font-medium text-[var(--gp-text-secondary)]">
+            <Clock3 className="h-4 w-4 shrink-0 text-[var(--gp-primary)]" />
             <span className="truncate">{WEEKDAY_FORMATTER.format(date)}</span>
           </div>
         )}
@@ -523,28 +526,30 @@ function GameRow({ game, onSelect }) {
         </div>
       </div>
 
-      <TeamScoreRows game={game} />
-
-      <div className="hidden lg:block">
-        <CountryFlag src={game.countryFlag} country={game.country} />
+      <div className="min-w-0">
+        <TeamScoreRows game={game} />
+        {liveIndicator ? (
+          <div className="mt-2">
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-400/10 dark:text-amber-200 dark:ring-amber-300/20">
+              {liveIndicator}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div className="hidden lg:flex lg:items-center">
         <StatusChip game={game} />
       </div>
 
-      <div className="flex items-center justify-between gap-3 lg:justify-end">
-        <div className="lg:hidden">
-          <CountryFlag src={game.countryFlag} country={game.country} />
-        </div>
+      <div className="flex items-center justify-end">
         <button
           type="button"
-          title="Ver detalhes do jogo"
+          title="Ver análise"
           onClick={(event) => {
             event.stopPropagation();
             onSelect(game);
           }}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-600 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-500 dark:group-hover:text-slate-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-[var(--gp-text-muted)] transition group-hover:translate-x-0.5 group-hover:text-[var(--gp-text)] hover:bg-[var(--gp-hover)]"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -552,24 +557,23 @@ function GameRow({ game, onSelect }) {
     </article>
   );
 }
-
 function LeagueGroup({ group, onSelectGame }) {
   return (
-    <section className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_8px_18px_rgba(15,23,42,0.035)] dark:border-white/[0.08] dark:bg-[#0d1624] dark:shadow-none">
-      <header className="flex min-h-12 items-center justify-between gap-4 border-b border-slate-200 bg-slate-50/90 px-4 py-3 dark:border-white/[0.08] dark:bg-white/[0.045] lg:px-5">
+    <section className="bankroll-panel overflow-hidden">
+      <header className="flex min-h-12 items-center justify-between gap-4 border-b border-[var(--gp-border-soft)] bg-[var(--gp-surface-elevated)] px-4 py-3 lg:px-5">
         <div className="flex min-w-0 items-center gap-3.5">
           <LeagueLogo src={group.leagueLogo} name={group.leagueName} />
           <div className="min-w-0">
-            <h2 className="truncate text-[15px] font-bold text-slate-950 dark:text-white">
+            <h2 className="truncate text-[15px] font-semibold text-[var(--gp-text)]">
               {group.leagueName}
             </h2>
-            <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500/85 dark:text-slate-400">
+            <p className="mt-0.5 truncate text-[11px] font-medium text-[var(--gp-text-secondary)]">
               {group.country}
             </p>
           </div>
         </div>
 
-        <span className="shrink-0 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:bg-white/[0.06] dark:text-slate-300 dark:ring-white/[0.09] dark:shadow-none">
+        <span className="shrink-0 rounded-full bg-[var(--gp-surface-elevated)] px-2.5 py-1 text-[11px] font-semibold text-[var(--gp-text-secondary)] ring-1 ring-[var(--gp-border-soft)]">
           {group.games.length} jogos
         </span>
       </header>
@@ -625,7 +629,7 @@ function StatePanel({ type, title, text }) {
   const Icon = type === "loading" ? Loader2 : type === "empty" ? CalendarDays : AlertCircle;
 
   return (
-    <section className="rounded-[20px] border border-slate-200 bg-white px-5 py-10 text-center shadow-[0_10px_24px_rgba(15,23,42,0.045)] dark:border-white/[0.08] dark:bg-[#0d1624] dark:shadow-none">
+    <section className="bankroll-panel px-5 py-10 text-center">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[15px] bg-teal-50 text-teal-700 ring-1 ring-teal-200 dark:bg-white/[0.055] dark:text-teal-300 dark:ring-white/[0.08]">
         <Icon className={cn("h-5 w-5", type === "loading" && "animate-spin")} />
       </div>
@@ -685,7 +689,9 @@ export default function ProximosJogosPage() {
   const visibleGames = useMemo(() => games.filter(shouldShowGame), [games]);
 
   const relevantGames = useMemo(() => {
-    return viewMode === "popular" ? filterPopularGames(visibleGames) : visibleGames;
+    if (viewMode === "popular") return filterPopularGames(visibleGames);
+    if (viewMode === "live") return visibleGames.filter((game) => getGameStatus(game) === "live");
+    return visibleGames;
   }, [visibleGames, viewMode]);
 
   const filteredGames = useMemo(() => {
@@ -726,26 +732,21 @@ export default function ProximosJogosPage() {
   };
 
   return (
-    <main className="min-h-full bg-[#f5f7f9] text-slate-950 dark:bg-slate-950 dark:text-white">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="rounded-[20px] border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-white/[0.08] dark:bg-[#0b111d]">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-teal-700 dark:text-teal-300">
-                {"Calend\u00e1rio de partidas"}
-              </p>
-              <h1 className="mt-1.5 text-[28px] font-semibold text-slate-950 dark:text-white sm:text-[32px]">
-                {"Pr\u00f3ximos Jogos"}
-              </h1>
-              <p className="mt-1.5 max-w-[680px] text-[14px] leading-6 text-slate-600 dark:text-slate-400">
-                {"Acompanhe os jogos dispon\u00edveis por data."}
-              </p>
-            </div>
+    <main className="bankroll-page">
+      <div className="bankroll-shell flex flex-col gap-4">
+        <header className="flex flex-col gap-3 py-1 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-[28px] font-semibold tracking-[-0.03em] text-[var(--gp-text)]">
+              Próximos Jogos
+            </h1>
+            <p className="mt-1.5 max-w-[680px] text-[14px] leading-6 text-[var(--gp-text-secondary)]">
+              Acompanhe os jogos disponíveis por data.
+            </p>
+          </div>
 
-            <div className="flex w-fit items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-[12px] font-semibold text-slate-600 ring-1 ring-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:ring-white/[0.08]">
-              <Clock3 className="h-4 w-4" />
-              {meta?.cached ? "Dados em cache" : "Atualiza\u00e7\u00e3o protegida"}
-            </div>
+          <div className="flex w-fit items-center gap-2 rounded-[12px] border border-[var(--gp-border)] bg-[var(--gp-surface)] px-3 py-2 text-[12px] font-semibold text-[var(--gp-text-secondary)]">
+            <Clock3 className="h-4 w-4" />
+            {meta?.cached ? "Cache ativo" : "Atualizado"}
           </div>
         </header>
 
@@ -794,6 +795,13 @@ export default function ProximosJogosPage() {
                     {errorContent.detail}
                   </p>
                 ) : null}
+                <button
+                  type="button"
+                  onClick={() => loadGames()}
+                  className="mt-4 inline-flex h-10 items-center justify-center rounded-[12px] bg-white px-4 text-[13px] font-semibold text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-50 dark:bg-white/[0.06] dark:text-rose-100 dark:ring-rose-300/20 dark:hover:bg-white/[0.1]"
+                >
+                  Tentar novamente
+                </button>
               </div>
             </div>
           </section>
@@ -805,9 +813,9 @@ export default function ProximosJogosPage() {
             title="Nenhum jogo encontrado"
             text={
               games.length === 0
-                ? "Nao ha partidas disponiveis para esta data."
+                ? "Não há partidas disponíveis para esta data."
                 : visibleGames.length === 0
-                  ? "Nao ha partidas para esta selecao."
+                  ? "Não há partidas para esta seleção."
                 : viewMode === "popular"
                   ? "Nenhum jogo popular corresponde a busca atual. Alterne para Todos para ampliar a lista."
                   : "Nenhum time ou liga corresponde a busca atual."
